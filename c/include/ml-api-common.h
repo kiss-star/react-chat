@@ -191,3 +191,312 @@ int ml_tensors_info_create (ml_tensors_info_h *info);
  * @retval #ML_ERROR_NONE Successful.
  * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
  * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ * @retval #ML_ERROR_OUT_OF_MEMORY Failed to allocate required memory.
+ */
+int ml_tensors_info_create_extended (ml_tensors_info_h *info);
+
+/**
+ * @brief Frees the given handle of a tensors information.
+ * @since_tizen 5.5
+ * @param[in] info The handle of tensors information.
+ * @return 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_tensors_info_destroy (ml_tensors_info_h info);
+
+/**
+ * @brief Validates the given tensors information.
+ * @details If the function returns an error, @a valid may not be changed.
+ * @since_tizen 5.5
+ * @param[in] info The handle of tensors information to be validated.
+ * @param[out] valid @c true if it's valid, @c false if it's invalid.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_tensors_info_validate (const ml_tensors_info_h info, bool *valid);
+
+/**
+ * @brief Copies the tensors information.
+ * @since_tizen 5.5
+ * @param[out] dest A destination handle of tensors information.
+ * @param[in] src The tensors information to be copied.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid. Note that src should be a valid tensors info handle and dest should be a created (allocated) tensors info handle.
+ */
+int ml_tensors_info_clone (ml_tensors_info_h dest, const ml_tensors_info_h src);
+
+/**
+ * @brief Sets the number of tensors with given handle of tensors information.
+ * @since_tizen 5.5
+ * @param[in] info The handle of tensors information.
+ * @param[in] count The number of tensors.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_tensors_info_set_count (ml_tensors_info_h info, unsigned int count);
+
+/**
+ * @brief Gets the number of tensors with given handle of tensors information.
+ * @since_tizen 5.5
+ * @param[in] info The handle of tensors information.
+ * @param[out] count The number of tensors.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_tensors_info_get_count (ml_tensors_info_h info, unsigned int *count);
+
+/**
+ * @brief Sets the tensor name with given handle of tensors information.
+ * @since_tizen 5.5
+ * @param[in] info The handle of tensors information.
+ * @param[in] index The index of the tensor to be updated.
+ * @param[in] name The tensor name to be set.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_tensors_info_set_tensor_name (ml_tensors_info_h info, unsigned int index, const char *name);
+
+/**
+ * @brief Gets the tensor name with given handle of tensors information.
+ * @since_tizen 5.5
+ * @remarks Before 6.0 this function returned the internal pointer so application developers do not need to free. Since 6.0 the name string is internally copied and returned. So if the function succeeds, @a name should be released using g_free().
+ * @param[in] info The handle of tensors information.
+ * @param[in] index The index of the tensor.
+ * @param[out] name The tensor name.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_tensors_info_get_tensor_name (ml_tensors_info_h info, unsigned int index, char **name);
+
+/**
+ * @brief Sets the tensor type with given handle of tensors information.
+ * @since_tizen 5.5
+ * @param[in] info The handle of tensors information.
+ * @param[in] index The index of the tensor to be updated.
+ * @param[in] type The tensor type to be set.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported. E.g., in a machine without fp16 support, trying FLOAT16 is not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_tensors_info_set_tensor_type (ml_tensors_info_h info, unsigned int index, const ml_tensor_type_e type);
+
+/**
+ * @brief Gets the tensor type with given handle of tensors information.
+ * @since_tizen 5.5
+ * @param[in] info The handle of tensors information.
+ * @param[in] index The index of the tensor.
+ * @param[out] type The tensor type.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_tensors_info_get_tensor_type (ml_tensors_info_h info, unsigned int index, ml_tensor_type_e *type);
+
+/**
+ * @brief Sets the tensor dimension with given handle of tensors information.
+ * @since_tizen 5.5
+ * @param[in] info The handle of tensors information.
+ * @param[in] index The index of the tensor to be updated.
+ * @param[in] dimension The tensor dimension to be set.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_tensors_info_set_tensor_dimension (ml_tensors_info_h info, unsigned int index, const ml_tensor_dimension dimension);
+
+/**
+ * @brief Gets the tensor dimension with given handle of tensors information.
+ * @since_tizen 5.5
+ * @param[in] info The handle of tensors information.
+ * @param[in] index The index of the tensor.
+ * @param[out] dimension The tensor dimension.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_tensors_info_get_tensor_dimension (ml_tensors_info_h info, unsigned int index, ml_tensor_dimension dimension);
+
+/**
+ * @brief Gets the size of tensors data in the given tensors information handle in bytes.
+ * @details If an application needs to get the total byte size of tensors, set the @a index '-1'. Note that the maximum number of tensors is 16 (#ML_TENSOR_SIZE_LIMIT).
+ * @since_tizen 5.5
+ * @param[in] info The handle of tensors information.
+ * @param[in] index The index of the tensor.
+ * @param[out] data_size The byte size of tensor data.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_tensors_info_get_tensor_size (ml_tensors_info_h info, int index, size_t *data_size);
+
+/**
+ * @brief Creates a tensor data frame with the given tensors information.
+ * @since_tizen 5.5
+ * @remarks Before 6.0, this function returned #ML_ERROR_STREAMS_PIPE in case of an internal error. Since 6.0, #ML_ERROR_OUT_OF_MEMORY is returned in such cases, so #ML_ERROR_STREAMS_PIPE is not returned by this function anymore.
+ * @param[in] info The handle of tensors information for the allocation.
+ * @param[out] data The handle of tensors data. The caller is responsible for freeing the allocated data with ml_tensors_data_destroy().
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ * @retval #ML_ERROR_OUT_OF_MEMORY Failed to allocate required memory.
+ */
+int ml_tensors_data_create (const ml_tensors_info_h info, ml_tensors_data_h *data);
+
+/**
+ * @brief Frees the given tensors' data handle.
+ * @details Note that the opened handle should be closed before calling this function in the case of a single API.
+ *          If not, the inference engine might try to access the data that is already freed.
+ *          And it causes the segmentation fault.
+ * @since_tizen 5.5
+ * @param[in] data The handle of tensors data.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_tensors_data_destroy (ml_tensors_data_h data);
+
+/**
+ * @brief Gets a tensor data of given handle.
+ * @details This returns the pointer of memory block in the handle. Do not deallocate the returned tensor data. The returned pointer (raw_data) directly points to the internal data of data. If you modify the returned memory block (raw_data), the contents of data is updated.
+ * @since_tizen 5.5
+ * @param[in] data The handle of tensors data.
+ * @param[in] index The index of the tensor.
+ * @param[out] raw_data Raw tensor data in the handle.
+ * @param[out] data_size Byte size of tensor data.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_tensors_data_get_tensor_data (ml_tensors_data_h data, unsigned int index, void **raw_data, size_t *data_size);
+
+/**
+ * @brief Copies a tensor data to given handle.
+ * @since_tizen 5.5
+ * @param[in] data The handle of tensors data.
+ * @param[in] index The index of the tensor.
+ * @param[in] raw_data Raw tensor data to be copied.
+ * @param[in] data_size Byte size of raw data.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_tensors_data_set_tensor_data (ml_tensors_data_h data, unsigned int index, const void *raw_data, const size_t data_size);
+
+/**
+ * @brief Returns a human-readable string describing the last error.
+ * @details This returns a human-readable, null-terminated string describing
+ *         the most recent error that occurred from a call to one of the
+ *         functions in the Machine Learning API since the last call to
+ *         ml_error(). The returned string should *not* be freed or
+ *         overwritten by the caller.
+ * @since_tizen 7.0
+ * @return @c NULL if no error to be reported. Otherwise the error description.
+ */
+const char * ml_error (void);
+
+/**
+ * @brief Returns a human-readable string describing an error code.
+ * @details This returns a human-readable, null-terminated string describing
+ *         the error code of machine learning API.
+ *         The returned string should *not* be freed or
+ *         overwritten by the caller.
+ * @since_tizen 7.0
+ * @param[in] error_code The error code of machine learning API.
+ * @return @c NULL for invalid error code. Otherwise the error description.
+ */
+const char * ml_strerror (int error_code);
+
+/*************
+ * ML OPTION *
+ *************/
+
+/**
+ * @brief A handle of a ml-option instance.
+ * @since_tizen 7.0
+ */
+typedef void *ml_option_h;
+
+/**
+ * @brief Creates ml-option instance.
+ * @since_tizen 7.0
+ * @remarks The @a option should be released using ml_option_destroy().
+ * @param[out] option Newly created option handle is returned.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Fail. The parameter is invalid.
+ * @retval #ML_ERROR_OUT_OF_MEMORY Failed to allocate required memory.
+ */
+int ml_option_create (ml_option_h *option);
+
+/**
+ * @brief Destroys the ml-option instance.
+ * @details Note that, user should free the allocated values of ml-option in the case that destroy function is not given.
+ * @since_tizen 7.0
+ * @param[in] option The option handle to be destroyed.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Fail. The parameter is invalid.
+ */
+int ml_option_destroy (ml_option_h option);
+
+/**
+ * @brief Sets a new key-value in ml-option instance.
+ * @details Note that the @a value should be valid during single task and be freed after destroying the ml-option instance unless proper @a destroy function is given. When duplicated @a key is given, the corresponding @a value is updated with the new one.
+ * @since_tizen 7.0
+ * @param[in] option The handle of ml-option.
+ * @param[in] key The key to be set.
+ * @param[in] value The value to be set.
+ * @param[in] destroy The function to destroy the value. It is called when the ml-option instance is destroyed.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Fail. The parameter is invalid.
+ */
+int ml_option_set (ml_option_h option, const char *key, void *value, ml_data_destroy_cb destroy);
+
+/**
+ * @brief Gets a value of key in ml-option instance.
+ * @details This returns the pointer of memory in the handle. Do not deallocate the returned value. If you modify the returned memory (value), the contents of value is updated.
+ * @since_tizen 7.5
+ * @param[in] option The handle of ml-option.
+ * @param[in] key The key to get the corresponding value.
+ * @param[out] value The value of the key.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Fail. The parameter is invalid.
+ */
+int ml_option_get (ml_option_h option, const char *key, void **value);
+
+/**
+ * @}
+ */
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+#endif /* __ML_API_COMMON_H__ */
