@@ -16,4 +16,22 @@
 #include <nnstreamer-single.h>
 
 #ifdef __cplusplus
-ext
+extern "C" {
+#endif /* __cplusplus */
+
+/**
+ * @brief Constructs the pipeline (GStreamer + NNStreamer).
+ * @details This function is to construct the pipeline without checking the permission in platform internally. See ml_pipeline_construct() for the details.
+ * @since_tizen 5.5
+ */
+int ml_pipeline_construct_internal (const char *pipeline_description, ml_pipeline_state_cb cb, void *user_data, ml_pipeline_h *pipe);
+
+/**
+ * @brief An information to create single-shot instance.
+ */
+typedef struct {
+  ml_tensors_info_h input_info;  /**< The input tensors information. */
+  ml_tensors_info_h output_info; /**< The output tensors information. */
+  ml_nnfw_type_e nnfw;           /**< The neural network framework. */
+  ml_nnfw_hw_e hw;               /**< The type of hardware resource. */
+  char *models;                  /**< Comma separated neural network m
