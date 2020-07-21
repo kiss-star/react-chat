@@ -34,4 +34,18 @@ typedef struct {
   ml_tensors_info_h output_info; /**< The output tensors information. */
   ml_nnfw_type_e nnfw;           /**< The neural network framework. */
   ml_nnfw_hw_e hw;               /**< The type of hardware resource. */
-  char *models;                  /**< Comma separated neural network m
+  char *models;                  /**< Comma separated neural network model files. */
+  char *custom_option;           /**< Custom option string for neural network framework. */
+  char *fw_name;                 /**< The explicit framework name given by user */
+} ml_single_preset;
+
+/**
+ * @brief Opens an ML model with the custom options and returns the instance as a handle.
+ * This is internal function to handle various options in public APIs.
+ */
+int ml_single_open_custom (ml_single_h *single, ml_single_preset *info);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+#endif /* __TIZEN_MACHINELEARNING_NNSTREAMER_INTERNAL_H__ */
