@@ -106,4 +106,23 @@ typedef enum {
  * @since_tizen 5.5
  */
 typedef enum {
-  ML_PIPELINE_STATE_UNKNOWN				= 
+  ML_PIPELINE_STATE_UNKNOWN				= 0, /**< Unknown state. Maybe not constructed? */
+  ML_PIPELINE_STATE_NULL				= 1, /**< GST-State "Null" */
+  ML_PIPELINE_STATE_READY				= 2, /**< GST-State "Ready" */
+  ML_PIPELINE_STATE_PAUSED				= 3, /**< GST-State "Paused" */
+  ML_PIPELINE_STATE_PLAYING				= 4, /**< GST-State "Playing" */
+} ml_pipeline_state_e;
+
+/**
+ * @brief Enumeration for switch types.
+ * @details This designates different GStreamer filters, "GstInputSelector"/"GstOutputSelector".
+ * @since_tizen 5.5
+ */
+typedef enum {
+  ML_PIPELINE_SWITCH_OUTPUT_SELECTOR			= 0, /**< GstOutputSelector */
+  ML_PIPELINE_SWITCH_INPUT_SELECTOR			= 1, /**< GstInputSelector */
+} ml_pipeline_switch_e;
+
+/**
+ * @brief Callback for sink element of NNStreamer pipelines (pipeline's output).
+ * @details If an application wants to accept data outputs of an NNStreamer stream, use this callb
