@@ -130,4 +130,21 @@ typedef enum {
  * @remarks The @a data can be used only in the callback. To use outside, make a copy.
  * @remarks The @a info can be used only in the callback. To use outside, make a copy.
  * @param[in] data The handle of the tensor output of the pipeline (a single frame. tensor/tensors). Number of tensors is determined by ml_tensors_info_get_count() with the handle 'info'. Note that the maximum number of tensors is 16 (#ML_TENSOR_SIZE_LIMIT).
- * @param[in] info The handle of tensors information (cardi
+ * @param[in] info The handle of tensors information (cardinality, dimension, and type of given tensor/tensors).
+ * @param[in,out] user_data User application's private data.
+ */
+typedef void (*ml_pipeline_sink_cb) (const ml_tensors_data_h data, const ml_tensors_info_h info, void *user_data);
+
+/**
+ * @brief Callback for the change of pipeline state.
+ * @details If an application wants to get the change of pipeline state, use this callback. This callback can be registered when constructing the pipeline using ml_pipeline_construct(). Do not spend too much time in the callback.
+ * @since_tizen 5.5
+ * @param[in] state The new state of the pipeline.
+ * @param[out] user_data User application's private data.
+ */
+typedef void (*ml_pipeline_state_cb) (ml_pipeline_state_e state, void *user_data);
+
+/**
+ * @brief Callback for custom condition of tensor_if.
+ * @since_tizen 6.5
+ * @remarks The @a data can be used only in the call
