@@ -65,4 +65,33 @@ typedef void *ml_pipeline_src_h;
 typedef void *ml_pipeline_switch_h;
 
 /**
- * @brief A handle of a "valve node" of an NNStreamer 
+ * @brief A handle of a "valve node" of an NNStreamer pipeline.
+ * @since_tizen 5.5
+ */
+typedef void *ml_pipeline_valve_h;
+
+/**
+ * @brief A handle of a common element (i.e. All GstElement except AppSrc, AppSink, TensorSink, Selector and Valve) of an NNStreamer pipeline.
+ * @since_tizen 6.0
+ */
+typedef void *ml_pipeline_element_h;
+
+/**
+ * @brief A handle of a "custom-easy filter" of an NNStreamer pipeline.
+ * @since_tizen 6.0
+ */
+typedef void *ml_custom_easy_filter_h;
+
+/**
+ * @brief A handle of a "if node" of an NNStreamer pipeline.
+ * @since_tizen 6.5
+ */
+typedef void *ml_pipeline_if_h;
+
+/**
+ * @brief Enumeration for buffer deallocation policies.
+ * @since_tizen 5.5
+ */
+typedef enum {
+  ML_PIPELINE_BUF_POLICY_AUTO_FREE      = 0, /**< Default. Application should not deallocate this buffer. NNStreamer will deallocate when the buffer is no more needed. */
+  ML_PIPELINE_BUF
