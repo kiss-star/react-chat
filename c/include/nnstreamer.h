@@ -125,4 +125,9 @@ typedef enum {
 
 /**
  * @brief Callback for sink element of NNStreamer pipelines (pipeline's output).
- * @details If an application wants to accept data outputs of an NNStreamer stream, use this callb
+ * @details If an application wants to accept data outputs of an NNStreamer stream, use this callback to get data from the stream. Note that the buffer may be deallocated after the return and this is synchronously called. Thus, if you need the data afterwards, copy the data to another buffer and return fast. Do not spend too much time in the callback. It is recommended to use very small tensors at sinks.
+ * @since_tizen 5.5
+ * @remarks The @a data can be used only in the callback. To use outside, make a copy.
+ * @remarks The @a info can be used only in the callback. To use outside, make a copy.
+ * @param[in] data The handle of the tensor output of the pipeline (a single frame. tensor/tensors). Number of tensors is determined by ml_tensors_info_get_count() with the handle 'info'. Note that the maximum number of tensors is 16 (#ML_TENSOR_SIZE_LIMIT).
+ * @param[in] info The handle of tensors information (cardi
