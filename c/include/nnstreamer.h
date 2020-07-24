@@ -168,4 +168,11 @@ typedef int (*ml_pipeline_if_custom_cb) (const ml_tensors_data_h data, const ml_
  * @remarks If the function succeeds, @a pipe handle must be released using ml_pipeline_destroy().
  * @remarks %http://tizen.org/privilege/mediastorage is needed if @a pipeline_description is relevant to media storage.
  * @remarks %http://tizen.org/privilege/externalstorage is needed if @a pipeline_description is relevant to external storage.
- * @remarks %http
+ * @remarks %http://tizen.org/privilege/camera is needed if @a pipeline_description accesses the camera device.
+ * @remarks %http://tizen.org/privilege/recorder is needed if @a pipeline_description accesses the recorder device.
+ * @param[in] pipeline_description The pipeline description compatible with GStreamer gst_parse_launch(). Refer to GStreamer manual or NNStreamer (https://github.com/nnstreamer/nnstreamer) documentation for examples and the grammar.
+ * @param[in] cb The function to be called when the pipeline state is changed. You may set NULL if it's not required.
+ * @param[in] user_data Private data for the callback. This value is passed to the callback when it's invoked.
+ * @param[out] pipe The NNStreamer pipeline handler from the given description.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE 
