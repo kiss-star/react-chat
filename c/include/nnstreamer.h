@@ -156,4 +156,16 @@ typedef void (*ml_pipeline_state_cb) (ml_pipeline_state_e state, void *user_data
  * @param[in,out] user_data User application's private data.
  * @return @c 0 on success. Otherwise a negative error value.
  */
-typed
+typedef int (*ml_pipeline_if_custom_cb) (const ml_tensors_data_h data, const ml_tensors_info_h info, int *result, void *user_data);
+
+/****************************************************
+ ** NNStreamer Pipeline Construction (gst-parse)   **
+ ****************************************************/
+/**
+ * @brief Constructs the pipeline (GStreamer + NNStreamer).
+ * @details Use this function to create gst_parse_launch compatible NNStreamer pipelines.
+ * @since_tizen 5.5
+ * @remarks If the function succeeds, @a pipe handle must be released using ml_pipeline_destroy().
+ * @remarks %http://tizen.org/privilege/mediastorage is needed if @a pipeline_description is relevant to media storage.
+ * @remarks %http://tizen.org/privilege/externalstorage is needed if @a pipeline_description is relevant to external storage.
+ * @remarks %http
