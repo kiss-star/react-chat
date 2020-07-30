@@ -188,4 +188,21 @@ typedef int (*ml_pipeline_if_custom_cb) (const ml_tensors_data_h data, const ml_
 int ml_pipeline_construct (const char *pipeline_description, ml_pipeline_state_cb cb, void *user_data, ml_pipeline_h *pipe);
 
 /**
- * @
+ * @brief Destroys the pipeline.
+ * @details Use this function to destroy the pipeline constructed with ml_pipeline_construct().
+ * @since_tizen 5.5
+ * @param[in] pipe The pipeline to be destroyed.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER The parameter is invalid. (Pipeline is not negotiated yet.)
+ * @retval #ML_ERROR_STREAMS_PIPE Failed to access the pipeline state.
+ *
+ * @pre The pipeline state should be #ML_PIPELINE_STATE_PLAYING or #ML_PIPELINE_STATE_PAUSED.
+ * @post The pipeline state will be #ML_PIPELINE_STATE_NULL.
+ */
+int ml_pipeline_destroy (ml_pipeline_h pipe);
+
+/**
+ * @brief Gets the state of pipeline.
+ * @details Gets the state of the pipeline handle retur
