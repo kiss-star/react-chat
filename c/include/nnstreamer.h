@@ -175,4 +175,17 @@ typedef int (*ml_pipeline_if_custom_cb) (const ml_tensors_data_h data, const ml_
  * @param[in] user_data Private data for the callback. This value is passed to the callback when it's invoked.
  * @param[out] pipe The NNStreamer pipeline handler from the given description.
  * @return @c 0 on success. Otherwise a negative error value.
- * @retval #ML_ERROR_NONE 
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_PERMISSION_DENIED The application does not have the required privilege to access to the media storage, external storage, microphone, or camera.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid. (Pipeline is not negotiated yet.)
+ * @retval #ML_ERROR_STREAMS_PIPE Pipeline construction is failed because of wrong parameter or initialization failure.
+ * @retval #ML_ERROR_OUT_OF_MEMORY Failed to allocate required memory to construct the pipeline.
+ *
+ * @pre The pipeline state should be #ML_PIPELINE_STATE_UNKNOWN or #ML_PIPELINE_STATE_NULL.
+ * @post The pipeline state will be #ML_PIPELINE_STATE_PAUSED in the same thread.
+ */
+int ml_pipeline_construct (const char *pipeline_description, ml_pipeline_state_cb cb, void *user_data, ml_pipeline_h *pipe);
+
+/**
+ * @
