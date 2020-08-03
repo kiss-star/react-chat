@@ -205,4 +205,21 @@ int ml_pipeline_destroy (ml_pipeline_h pipe);
 
 /**
  * @brief Gets the state of pipeline.
- * @details Gets the state of the pipeline handle retur
+ * @details Gets the state of the pipeline handle returned by ml_pipeline_construct().
+ * @since_tizen 5.5
+ * @param[in] pipe The pipeline handle.
+ * @param[out] state The pipeline state.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid. (Pipeline is not negotiated yet.)
+ * @retval #ML_ERROR_STREAMS_PIPE Failed to get state from the pipeline.
+ */
+int ml_pipeline_get_state (ml_pipeline_h pipe, ml_pipeline_state_e *state);
+
+/****************************************************
+ ** NNStreamer Pipeline Start/Stop Control         **
+ ****************************************************/
+/**
+ * @brief Starts the pipeline, asynchronously.
+ * @details The pipeline handle returned by ml_pipeline_construct() is started
