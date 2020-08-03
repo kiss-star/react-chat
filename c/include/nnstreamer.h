@@ -286,4 +286,22 @@ int ml_pipeline_flush (ml_pipeline_h pipe, bool start);
  * @retval #ML_ERROR_NONE Successful.
  * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
  * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid. (Not negotiated, @a sink_name is not found, or @a sink_name has an invalid type.)
- * @retval #ML_ERROR_
+ * @retval #ML_ERROR_STREAMS_PIPE Failed to connect a signal to sink element.
+ * @retval #ML_ERROR_OUT_OF_MEMORY Failed to allocate required memory.
+ *
+ * @pre The pipeline state should be #ML_PIPELINE_STATE_PAUSED.
+ */
+int ml_pipeline_sink_register (ml_pipeline_h pipe, const char *sink_name, ml_pipeline_sink_cb cb, void *user_data, ml_pipeline_sink_h *sink_handle);
+
+/**
+ * @brief Unregisters a callback for sink node of NNStreamer pipelines.
+ * @since_tizen 5.5
+ * @param[in] sink_handle The sink handle to be unregistered.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ *
+ * @pre The pipeline state should be #ML_PIPELINE_STATE_PAUSED.
+ */
+int ml_pipeline_sink_unregister (ml_pipelin
