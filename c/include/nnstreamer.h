@@ -304,4 +304,19 @@ int ml_pipeline_sink_register (ml_pipeline_h pipe, const char *sink_name, ml_pip
  *
  * @pre The pipeline state should be #ML_PIPELINE_STATE_PAUSED.
  */
-int ml_pipeline_sink_unregister (ml_pipelin
+int ml_pipeline_sink_unregister (ml_pipeline_sink_h sink_handle);
+
+/**
+ * @brief Gets a handle to operate as a src node of NNStreamer pipelines.
+ * @since_tizen 5.5
+ * @remarks If the function succeeds, @a src_handle handle must be released using ml_pipeline_src_release_handle().
+ * @param[in] pipe The pipeline to be attached with a src node.
+ * @param[in] src_name The name of src node, described with ml_pipeline_construct().
+ * @param[out] src_handle The src handle.
+ * @return 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ * @retval #ML_ERROR_STREAMS_PIPE Failed to get src element.
+ * @retval #ML_ERROR_TRY_AGAIN The pipeline is not ready yet.
+ * @retval #ML_ERROR_OUT_OF_MEMORY Failed to allocate req
