@@ -240,4 +240,21 @@ int ml_pipeline_start (ml_pipeline_h pipe);
 
 /**
  * @brief Stops the pipeline, asynchronously.
- * @details The pipeline handle returned by ml_pip
+ * @details The pipeline handle returned by ml_pipeline_construct() is stopped.
+ *          Note that this is asynchronous function. State might be "pending".
+ *          If you need to get the changed state, add a callback while constructing a pipeline with ml_pipeline_construct().
+ * @since_tizen 5.5
+ * @param[in] pipe The pipeline to be stopped.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid. (Pipeline is not negotiated yet.)
+ * @retval #ML_ERROR_STREAMS_PIPE Failed to stop the pipeline.
+ *
+ * @pre The pipeline state should be #ML_PIPELINE_STATE_PLAYING.
+ * @post The pipeline state will be #ML_PIPELINE_STATE_PAUSED.
+ */
+int ml_pipeline_stop (ml_pipeline_h pipe);
+
+/**
+ * @brief Clears all data and r
