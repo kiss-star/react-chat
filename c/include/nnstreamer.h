@@ -339,4 +339,13 @@ int ml_pipeline_src_release_handle (ml_pipeline_src_h src_handle);
  * @since_tizen 5.5
  * @param[in] src_handle The source handle returned by ml_pipeline_src_get_handle().
  * @param[in] data The handle of input tensors, in the format of tensors info given by ml_pipeline_src_get_tensors_info().
- *                 This funct
+ *                 This function takes ownership of the data if @a policy is #ML_PIPELINE_BUF_POLICY_AUTO_FREE.
+ * @param[in] policy The policy of buffer deallocation. The policy value may include buffer deallocation mechanisms or event triggers for appsrc elements. If event triggers are provided, these functions will not give input data to the appsrc element, but will trigger the given event only.
+ * @return 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ * @retval #ML_ERROR_STREAMS_PIPE The pipeline has inconsistent pad caps. (Pipeline is not negotiated yet.)
+ * @retval #ML_ERROR_TRY_AGAIN The pipeline is not ready yet.
+ */
+int ml_pipeline_src_input_data (ml_pipeline_src_h src_handle, ml_tensors_data_h data, ml
