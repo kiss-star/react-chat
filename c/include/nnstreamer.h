@@ -274,4 +274,16 @@ int ml_pipeline_flush (ml_pipeline_h pipe, bool start);
  ** NNStreamer Pipeline Sink/Src Control           **
  ****************************************************/
 /**
- * @b
+ * @brief Registers a callback for sink node of NNStreamer pipelines.
+ * @since_tizen 5.5
+ * @remarks If the function succeeds, @a sink_handle handle must be unregistered using ml_pipeline_sink_unregister().
+ * @param[in] pipe The pipeline to be attached with a sink node.
+ * @param[in] sink_name The name of sink node, described with ml_pipeline_construct().
+ * @param[in] cb The function to be called by the sink node.
+ * @param[in] user_data Private data for the callback. This value is passed to the callback when it's invoked.
+ * @param[out] sink_handle The sink handle.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid. (Not negotiated, @a sink_name is not found, or @a sink_name has an invalid type.)
+ * @retval #ML_ERROR_
