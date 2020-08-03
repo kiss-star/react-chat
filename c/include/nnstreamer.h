@@ -319,4 +319,24 @@ int ml_pipeline_sink_unregister (ml_pipeline_sink_h sink_handle);
  * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
  * @retval #ML_ERROR_STREAMS_PIPE Failed to get src element.
  * @retval #ML_ERROR_TRY_AGAIN The pipeline is not ready yet.
- * @retval #ML_ERROR_OUT_OF_MEMORY Failed to allocate req
+ * @retval #ML_ERROR_OUT_OF_MEMORY Failed to allocate required memory.
+ */
+int ml_pipeline_src_get_handle (ml_pipeline_h pipe, const char *src_name, ml_pipeline_src_h *src_handle);
+
+/**
+ * @brief Releases the given src handle.
+ * @since_tizen 5.5
+ * @param[in] src_handle The src handle to be released.
+ * @return 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_pipeline_src_release_handle (ml_pipeline_src_h src_handle);
+
+/**
+ * @brief Adds an input data frame.
+ * @since_tizen 5.5
+ * @param[in] src_handle The source handle returned by ml_pipeline_src_get_handle().
+ * @param[in] data The handle of input tensors, in the format of tensors info given by ml_pipeline_src_get_tensors_info().
+ *                 This funct
