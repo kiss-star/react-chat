@@ -348,4 +348,13 @@ int ml_pipeline_src_release_handle (ml_pipeline_src_h src_handle);
  * @retval #ML_ERROR_STREAMS_PIPE The pipeline has inconsistent pad caps. (Pipeline is not negotiated yet.)
  * @retval #ML_ERROR_TRY_AGAIN The pipeline is not ready yet.
  */
-int ml_pipeline_src_input_data (ml_pipeline_src_h src_handle, ml_tensors_data_h data, ml
+int ml_pipeline_src_input_data (ml_pipeline_src_h src_handle, ml_tensors_data_h data, ml_pipeline_buf_policy_e policy);
+
+/**
+ * @brief Callbacks for src input events.
+ * @details A set of callbacks that can be installed on the appsrc with ml_pipeline_src_set_event_cb().
+ * @since_tizen 6.5
+ */
+typedef struct {
+  void (*need_data) (ml_pipeline_src_h src_handle, unsigned int length, void *user_data);   /**< Called when the appsrc needs more data. User may submit a buffer via ml_pipeline_src_input_data() from this thread or another thread. length is just a hint and when it is set to -1, any number of bytes can be pushed into appsrc. */
+  void (*enough_data) (ml_pipeline_src_h src_handle, void *user_data);                      /**< Called when appsrc has enough data. It is recommended that the application stops calling push-buffer until the need_data callback is emitted again to avoid 
