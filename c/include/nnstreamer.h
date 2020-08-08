@@ -442,4 +442,24 @@ int ml_pipeline_switch_select (ml_pipeline_switch_h switch_handle, const char *p
  * @since_tizen 5.5
  * @remarks If the function succeeds, @a list and its contents should be released using g_free(). Refer the below sample code.
  * @param[in] switch_handle The switch handle returned by ml_pipeline_switch_get_handle().
- * @param[out] list NULL terminated array of char*. The caller must free each string (char*) in the list and free 
+ * @param[out] list NULL terminated array of char*. The caller must free each string (char*) in the list and free the list itself.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ * @retval #ML_ERROR_STREAMS_PIPE The element is not both input and output switch (Internal data inconsistency).
+ * @retval #ML_ERROR_OUT_OF_MEMORY Failed to allocate required memory.
+ *
+ * Here is an example of the usage:
+ * @code
+ * int status;
+ * gchar *pipeline;
+ * ml_pipeline_h handle;
+ * ml_pipeline_switch_e switch_type;
+ * ml_pipeline_switch_h switch_handle;
+ * gchar **node_list = NULL;
+ *
+ * // pipeline description
+ * pipeline = g_strdup ("videotestsrc is-live=true ! videoconvert ! tensor_converter ! output-selector name=outs "
+ *     "outs.src_0 ! tensor_sink name=sink0 async=false "
+ * 
