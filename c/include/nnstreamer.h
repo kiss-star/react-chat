@@ -497,4 +497,21 @@ int ml_pipeline_switch_select (ml_pipeline_switch_h switch_handle, const char *p
  * }
  *
  * error:
- * ml_pipeline_switch_release_
+ * ml_pipeline_switch_release_handle (switch_handle);
+ * ml_pipeline_destroy (handle);
+ * g_free (pipeline);
+ * @endcode
+ */
+int ml_pipeline_switch_get_pad_list (ml_pipeline_switch_h switch_handle, char ***list);
+
+/**
+ * @brief Gets a handle to operate a "GstValve" node of NNStreamer pipelines.
+ * @details Refer to https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer-plugins/html/gstreamer-plugins-valve.html for more information.
+ * @since_tizen 5.5
+ * @remarks If the function succeeds, @a valve_handle handle must be released using ml_pipeline_valve_release_handle().
+ * @param[in] pipe The pipeline to be managed.
+ * @param[in] valve_name The name of valve (Valve).
+ * @param[out] valve_handle The valve handle.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
