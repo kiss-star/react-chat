@@ -429,4 +429,17 @@ int ml_pipeline_switch_release_handle (ml_pipeline_switch_h switch_handle);
  * @brief Controls the switch with the given handle to select input/output nodes(pads).
  * @since_tizen 5.5
  * @param[in] switch_handle The switch handle returned by ml_pipeline_switch_get_handle().
- * @para
+ * @param[in] pad_name The name of the chosen pad to be activated. Use ml_pipeline_switch_get_pad_list() to list the available pad names.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_pipeline_switch_select (ml_pipeline_switch_h switch_handle, const char *pad_name);
+
+/**
+ * @brief Gets the pad names of a switch.
+ * @since_tizen 5.5
+ * @remarks If the function succeeds, @a list and its contents should be released using g_free(). Refer the below sample code.
+ * @param[in] switch_handle The switch handle returned by ml_pipeline_switch_get_handle().
+ * @param[out] list NULL terminated array of char*. The caller must free each string (char*) in the list and free 
