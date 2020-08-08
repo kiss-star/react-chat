@@ -398,4 +398,15 @@ int ml_pipeline_src_get_tensors_info (ml_pipeline_src_h src_handle, ml_tensors_i
 
 /**
  * @brief Gets a handle to operate a "GstInputSelector"/"GstOutputSelector" node of NNStreamer pipelines.
- * @details Refer to https://gstreamer.freedesktop.org/dat
+ * @details Refer to https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer-plugins/html/gstreamer-plugins-input-selector.html for input selectors.
+ *          Refer to https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer-plugins/html/gstreamer-plugins-output-selector.html for output selectors.
+ * @since_tizen 5.5
+ * @remarks If the function succeeds, @a switch_handle handle must be released using ml_pipeline_switch_release_handle().
+ * @param[in] pipe The pipeline to be managed.
+ * @param[in] switch_name The name of switch (InputSelector/OutputSelector).
+ * @param[out] switch_type The type of the switch. If NULL, it is ignored.
+ * @param[out] switch_handle The switch handle.
+ * @return 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given p
