@@ -462,4 +462,39 @@ int ml_pipeline_switch_select (ml_pipeline_switch_h switch_handle, const char *p
  * // pipeline description
  * pipeline = g_strdup ("videotestsrc is-live=true ! videoconvert ! tensor_converter ! output-selector name=outs "
  *     "outs.src_0 ! tensor_sink name=sink0 async=false "
- * 
+ *     "outs.src_1 ! tensor_sink name=sink1 async=false");
+ *
+ * status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+ * if (status != ML_ERROR_NONE) {
+ *   // handle error case
+ *   goto error;
+ * }
+ *
+ * status = ml_pipeline_switch_get_handle (handle, "outs", &switch_type, &switch_handle);
+ * if (status != ML_ERROR_NONE) {
+ *   // handle error case
+ *   goto error;
+ * }
+ *
+ * status = ml_pipeline_switch_get_pad_list (switch_handle, &node_list);
+ * if (status != ML_ERROR_NONE) {
+ *   // handle error case
+ *   goto error;
+ * }
+ *
+ * if (node_list) {
+ *   gchar *name = NULL;
+ *   guint idx = 0;
+ *
+ *   while ((name = node_list[idx++]) != NULL) {
+ *     // node name is 'src_0' or 'src_1'
+ *
+ *     // release name
+ *     g_free (name);
+ *   }
+ *   // release list of switch pads
+ *   g_free (node_list);
+ * }
+ *
+ * error:
+ * ml_pipeline_switch_release_
