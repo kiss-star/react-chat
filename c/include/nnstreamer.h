@@ -368,4 +368,18 @@ typedef struct {
  * @param[in] src_handle The source handle returned by ml_pipeline_src_get_handle().
  * @param[in] cb The app-src callbacks for event handling.
  * @param[in] user_data The user's custom data given to callbacks.
- * @ret
+ * @return 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ * @retval #ML_ERROR_OUT_OF_MEMORY Failed to allocate required memory.
+ */
+int ml_pipeline_src_set_event_cb (ml_pipeline_src_h src_handle, ml_pipeline_src_callbacks_s *cb, void *user_data);
+
+/**
+ * @brief Gets a handle for the tensors information of given src node.
+ * @details If the media type is not other/tensor or other/tensors, @a info handle may not be correct. If want to use other media types, you MUST set the correct properties.
+ * @since_tizen 5.5
+ * @remarks If the function succeeds, @a info handle must be released using ml_tensors_info_destroy().
+ * @param[in] src_handle The source handle returned by ml_pipeline_src_get_handle().
+ * @param[out] info 
