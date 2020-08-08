@@ -409,4 +409,24 @@ int ml_pipeline_src_get_tensors_info (ml_pipeline_src_h src_handle, ml_tensors_i
  * @return 0 on success. Otherwise a negative error value.
  * @retval #ML_ERROR_NONE Successful.
  * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
- * @retval #ML_ERROR_INVALID_PARAMETER Given p
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ * @retval #ML_ERROR_OUT_OF_MEMORY Failed to allocate required memory.
+ */
+int ml_pipeline_switch_get_handle (ml_pipeline_h pipe, const char *switch_name, ml_pipeline_switch_e *switch_type, ml_pipeline_switch_h *switch_handle);
+
+/**
+ * @brief Releases the given switch handle.
+ * @since_tizen 5.5
+ * @param[in] switch_handle The handle to be released.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_pipeline_switch_release_handle (ml_pipeline_switch_h switch_handle);
+
+/**
+ * @brief Controls the switch with the given handle to select input/output nodes(pads).
+ * @since_tizen 5.5
+ * @param[in] switch_handle The switch handle returned by ml_pipeline_switch_get_handle().
+ * @para
