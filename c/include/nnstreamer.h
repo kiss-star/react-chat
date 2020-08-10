@@ -535,4 +535,22 @@ int ml_pipeline_valve_release_handle (ml_pipeline_valve_h valve_handle);
  * @brief Controls the valve with the given handle.
  * @since_tizen 5.5
  * @param[in] valve_handle The valve handle returned by ml_pipeline_valve_get_handle().
- * @par
+ * @param[in] open @c true to open(let the flow pass), @c false to close (drop & stop the flow).
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_pipeline_valve_set_open (ml_pipeline_valve_h valve_handle, bool open);
+
+/********************************************************
+ ** NNStreamer Element Property Control in Pipeline    **
+ ********************************************************/
+
+/**
+ * @brief Gets an element handle in NNStreamer pipelines to control its properties.
+ * @since_tizen 6.0
+ * @remarks If the function succeeds, @a elem_h handle must be released using ml_pipeline_element_release_handle().
+ * @param[in] pipe The pipeline to be managed.
+ * @param[in] element_name The name of element to control.
+ * @param[out] elem_h The element handl
