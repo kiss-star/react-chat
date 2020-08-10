@@ -515,3 +515,24 @@ int ml_pipeline_switch_get_pad_list (ml_pipeline_switch_h switch_handle, char **
  * @return @c 0 on success. Otherwise a negative error value.
  * @retval #ML_ERROR_NONE Successful.
  * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ * @retval #ML_ERROR_OUT_OF_MEMORY Failed to allocate required memory.
+ */
+int ml_pipeline_valve_get_handle (ml_pipeline_h pipe, const char *valve_name, ml_pipeline_valve_h *valve_handle);
+
+/**
+ * @brief Releases the given valve handle.
+ * @since_tizen 5.5
+ * @param[in] valve_handle The handle to be released.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_pipeline_valve_release_handle (ml_pipeline_valve_h valve_handle);
+
+/**
+ * @brief Controls the valve with the given handle.
+ * @since_tizen 5.5
+ * @param[in] valve_handle The valve handle returned by ml_pipeline_valve_get_handle().
+ * @par
