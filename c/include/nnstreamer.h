@@ -553,4 +553,29 @@ int ml_pipeline_valve_set_open (ml_pipeline_valve_h valve_handle, bool open);
  * @remarks If the function succeeds, @a elem_h handle must be released using ml_pipeline_element_release_handle().
  * @param[in] pipe The pipeline to be managed.
  * @param[in] element_name The name of element to control.
- * @param[out] elem_h The element handl
+ * @param[out] elem_h The element handle.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ * @retval #ML_ERROR_OUT_OF_MEMORY Failed to allocate required memory.
+ *
+ * Here is an example of the usage:
+ * @code
+ * ml_pipeline_h handle = nullptr;
+ * ml_pipeline_element_h demux_h = nullptr;
+ * gchar *pipeline;
+ * gchar *ret_tensorpick;
+ * int status;
+ *
+ * pipeline = g_strdup("videotestsrc ! video/x-raw,format=RGB,width=640,height=480 ! videorate max-rate=1 ! " \
+ *    "tensor_converter ! tensor_mux ! tensor_demux name=demux ! tensor_sink");
+ *
+ * // Construct a pipeline
+ * status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+ * if (status != ML_ERROR_NONE) {
+ *  // handle error case
+ *  goto error;
+ * }
+ *
+ * // Get the handle of tar
