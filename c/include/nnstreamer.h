@@ -647,4 +647,23 @@ int ml_pipeline_element_set_property_bool (ml_pipeline_element_h elem_h, const c
  * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
  * @retval #ML_ERROR_INVALID_PARAMETER Given property name does not exist or the type is not string.
  */
-int ml_pipeline_element_set_property_string (ml_pipeline_element_h elem_h, const char 
+int ml_pipeline_element_set_property_string (ml_pipeline_element_h elem_h, const char *property_name, const char *value);
+
+/**
+ * @brief Sets the integer value of element's property in NNStreamer pipelines.
+ * @since_tizen 6.0
+ * @param[in] elem_h The target element handle.
+ * @param[in] property_name The name of the property.
+ * @param[in] value The integer value to be set.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given property name does not exist or the type is not integer.
+ */
+int ml_pipeline_element_set_property_int32 (ml_pipeline_element_h elem_h, const char *property_name, const int32_t value);
+
+/**
+ * @brief Sets the integer 64bit value of element's property in NNStreamer pipelines.
+ * @since_tizen 6.0
+ * @param[in] elem_h The target element handle.
+ * @param[in] property_name The na
