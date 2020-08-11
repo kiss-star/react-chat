@@ -608,4 +608,26 @@ int ml_pipeline_valve_set_open (ml_pipeline_valve_h valve_handle, bool open);
  *  ml_pipeline_element_release_handle (demux_h);
  *  ml_pipeline_destroy (handle);
  * g_free(pipeline);
- * @e
+ * @endcode
+ */
+int ml_pipeline_element_get_handle (ml_pipeline_h pipe, const char *element_name, ml_pipeline_element_h *elem_h);
+
+/**
+ * @brief Releases the given element handle.
+ * @since_tizen 6.0
+ * @param[in] elem_h The handle to be released.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_pipeline_element_release_handle (ml_pipeline_element_h elem_h);
+
+/**
+ * @brief Sets the boolean value of element's property in NNStreamer pipelines.
+ * @since_tizen 6.0
+ * @param[in] elem_h The target element handle.
+ * @param[in] property_name The name of the property.
+ * @param[in] value The boolean value to be set.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successf
