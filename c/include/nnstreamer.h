@@ -630,4 +630,21 @@ int ml_pipeline_element_release_handle (ml_pipeline_element_h elem_h);
  * @param[in] property_name The name of the property.
  * @param[in] value The boolean value to be set.
  * @return @c 0 on success. Otherwise a negative error value.
- * @retval #ML_ERROR_NONE Successf
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given property name does not exist or the type is not boolean.
+ */
+int ml_pipeline_element_set_property_bool (ml_pipeline_element_h elem_h, const char *property_name, const int32_t value);
+
+/**
+ * @brief Sets the string value of element's property in NNStreamer pipelines.
+ * @since_tizen 6.0
+ * @param[in] elem_h The target element handle.
+ * @param[in] property_name The name of the property.
+ * @param[in] value The string value to be set.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given property name does not exist or the type is not string.
+ */
+int ml_pipeline_element_set_property_string (ml_pipeline_element_h elem_h, const char 
