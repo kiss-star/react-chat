@@ -578,4 +578,34 @@ int ml_pipeline_valve_set_open (ml_pipeline_valve_h valve_handle, bool open);
  *  goto error;
  * }
  *
- * // Get the handle of tar
+ * // Get the handle of target element
+ * status = ml_pipeline_element_get_handle (handle, "demux", &demux_h);
+ * if (status != ML_ERROR_NONE) {
+ *  // handle error case
+ *  goto error;
+ * }
+ *
+ * // Set the string value of given element's property
+ * status = ml_pipeline_element_set_property_string (demux_h, "tensorpick", "1,2");
+ * if (status != ML_ERROR_NONE) {
+ *  // handle error case
+ *  goto error;
+ * }
+ *
+ * // Get the string value of given element's property
+ * status = ml_pipeline_element_get_property_string (demux_h, "tensorpick", &ret_tensorpick);
+ * if (status != ML_ERROR_NONE) {
+ *  // handle error case
+ *  goto error;
+ * }
+ * // check the property value of given element
+ * if (!g_str_equal (ret_tensorpick, "1,2")) {
+ *  // handle error case
+ *  goto error;
+ * }
+ *
+ * error:
+ *  ml_pipeline_element_release_handle (demux_h);
+ *  ml_pipeline_destroy (handle);
+ * g_free(pipeline);
+ * @e
