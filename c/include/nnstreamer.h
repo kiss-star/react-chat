@@ -718,4 +718,18 @@ int ml_pipeline_element_set_property_double (ml_pipeline_element_h elem_h, const
 /**
  * @brief Sets the enumeration value of element's property in NNStreamer pipelines.
  * @since_tizen 6.0
- * @rema
+ * @remarks Enumeration value is set as an unsigned integer value and developers can get this information using gst-inspect tool.
+ * @param[in] elem_h The target element handle.
+ * @param[in] property_name The name of the property.
+ * @param[in] value The unsigned integer value to be set, which is corresponding to Enumeration value.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given property name does not exist or the type is not unsigned integer.
+ */
+int ml_pipeline_element_set_property_enum (ml_pipeline_element_h elem_h, const char *property_name, const uint32_t value);
+
+/**
+ * @brief Gets the boolean value of element's property in NNStreamer pipelines.
+ * @since_tizen 6.0
+ * @param[in] e
