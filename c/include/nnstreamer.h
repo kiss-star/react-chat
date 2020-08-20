@@ -748,4 +748,20 @@ int ml_pipeline_element_get_property_bool (ml_pipeline_element_h elem_h, const c
  * @param[in] elem_h The target element handle.
  * @param[in] property_name The name of the property.
  * @param[out] value The string value of given property. The caller is responsible for freeing the value using g_free().
- * @return @c 0 on success. Ot
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given property name does not exist or the third parameter is NULL.
+ */
+int ml_pipeline_element_get_property_string (ml_pipeline_element_h elem_h, const char *property_name, char **value);
+
+/**
+ * @brief Gets the integer value of element's property in NNStreamer pipelines.
+ * @since_tizen 6.0
+ * @param[in] elem_h The target element handle.
+ * @param[in] property_name The name of the property.
+ * @param[out] value The integer value of given property.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given property name does not exist 
