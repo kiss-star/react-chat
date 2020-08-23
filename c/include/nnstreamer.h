@@ -799,4 +799,20 @@ int ml_pipeline_element_get_property_uint32 (ml_pipeline_element_h elem_h, const
  * @since_tizen 6.0
  * @param[in] elem_h The target element handle.
  * @param[in] property_name The name of the property.
- * @param[out] value The unsigned integer 64bit value of given prope
+ * @param[out] value The unsigned integer 64bit value of given property.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given property name does not exist or the third parameter is NULL.
+ */
+int ml_pipeline_element_get_property_uint64 (ml_pipeline_element_h elem_h, const char *property_name, uint64_t *value);
+
+/**
+ * @brief Gets the floating point value of element's property in NNStreamer pipelines.
+ * @since_tizen 6.0
+ * @remarks This function supports all types of floating point values such as Double and Float.
+ * @param[in] elem_h The target element handle.
+ * @param[in] property_name The name of the property.
+ * @param[out] value The floating point value of given property.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @ret
