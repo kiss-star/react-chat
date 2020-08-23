@@ -815,4 +815,18 @@ int ml_pipeline_element_get_property_uint64 (ml_pipeline_element_h elem_h, const
  * @param[in] property_name The name of the property.
  * @param[out] value The floating point value of given property.
  * @return @c 0 on success. Otherwise a negative error value.
- * @ret
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given property name does not exist or the third parameter is NULL.
+ */
+int ml_pipeline_element_get_property_double (ml_pipeline_element_h elem_h, const char *property_name, double *value);
+
+/**
+ * @brief Gets the enumeration value of element's property in NNStreamer pipelines.
+ * @since_tizen 6.0
+ * @remarks Enumeration value is get as an unsigned integer value and developers can get this information using gst-inspect tool.
+ * @param[in] elem_h The target element handle.
+ * @param[in] property_name The name of the property.
+ * @param[out] value The unsigned integer value of given property, which is corresponding to Enumeration value.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @re
