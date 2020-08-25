@@ -844,3 +844,15 @@ int ml_pipeline_element_get_property_enum (ml_pipeline_element_h elem_h, const c
  * @since_tizen 6.5
  * @remarks If the function succeeds, @a if_custom handle must be released using ml_pipeline_tensor_if_custom_unregister().
  * @param[in] name The name of custom condition
+ * @param[in] cb The function to be called when the pipeline runs.
+ * @param[in] user_data Private data for the callback. This value is passed to the callback when it's invoked.
+ * @param[out] if_custom The tensor_if handler.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER The parameter is invalid.
+ * @retval #ML_ERROR_OUT_OF_MEMORY Failed to allocate required memory to register the custom callback.
+ * @retval #ML_ERROR_STREAMS_PIPE Failed to register the custom callback.
+ * @warning A custom condition of the tensor_if is registered to the process globally.
+ *          If the custom condition "X" is registered, this "X" may be referred in any pipelines of the current process.
+ *          So, be careful n
