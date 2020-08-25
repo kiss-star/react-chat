@@ -829,4 +829,18 @@ int ml_pipeline_element_get_property_double (ml_pipeline_element_h elem_h, const
  * @param[in] property_name The name of the property.
  * @param[out] value The unsigned integer value of given property, which is corresponding to Enumeration value.
  * @return @c 0 on success. Otherwise a negative error value.
- * @re
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given property name does not exist or the third parameter is NULL.
+ */
+int ml_pipeline_element_get_property_enum (ml_pipeline_element_h elem_h, const char *property_name, uint32_t *value);
+
+/****************************************************
+ ** NNStreamer Pipeline tensor_if Control          **
+ ****************************************************/
+/**
+ * @brief Registers a tensor_if custom callback.
+ * @details If the if-condition is complex and cannot be expressed with tensor_if expressions, you can define custom condition.
+ * @since_tizen 6.5
+ * @remarks If the function succeeds, @a if_custom handle must be released using ml_pipeline_tensor_if_custom_unregister().
+ * @param[in] name The name of custom condition
