@@ -855,4 +855,19 @@ int ml_pipeline_element_get_property_enum (ml_pipeline_element_h elem_h, const c
  * @retval #ML_ERROR_STREAMS_PIPE Failed to register the custom callback.
  * @warning A custom condition of the tensor_if is registered to the process globally.
  *          If the custom condition "X" is registered, this "X" may be referred in any pipelines of the current process.
- *          So, be careful n
+ *          So, be careful not to use the same condition name when using multiple pipelines.
+ *
+ * Here is an example of the usage:
+ * @code
+ * // Define callback for tensor_if custom condition.
+ * static int tensor_if_custom_cb (const ml_tensors_data_h data, const ml_tensors_info_h info, int *result, void *user_data)
+ * {
+ *   // Describe the conditions and pass the result.
+ *   // Result 0 refers to FALSE and a non-zero value refers to TRUE.
+ *   *result = 1;
+ *   // Return 0 if there is no error.
+ *   return 0;
+ * }
+ *
+ * // The pipeline description (input data with dimension 2:1:1:1 and type int8 will be passed to tensor_if custom condition. Depending on the result, proceed to true or false paths.)
+ * const char pipeline[] = "appsrc ! other/tensor,dimension=(string)2:1:1:1,type=(string)int8,framerate=(fraction)0/1 ! tensor_if name=tif compared-value=CUSTOM compared-value-optio
