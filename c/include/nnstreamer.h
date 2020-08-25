@@ -870,4 +870,30 @@ int ml_pipeline_element_get_property_enum (ml_pipeline_element_h elem_h, const c
  * }
  *
  * // The pipeline description (input data with dimension 2:1:1:1 and type int8 will be passed to tensor_if custom condition. Depending on the result, proceed to true or false paths.)
- * const char pipeline[] = "appsrc ! other/tensor,dimension=(string)2:1:1:1,type=(string)int8,framerate=(fraction)0/1 ! tensor_if name=tif compared-value=CUSTOM compared-value-optio
+ * const char pipeline[] = "appsrc ! other/tensor,dimension=(string)2:1:1:1,type=(string)int8,framerate=(fraction)0/1 ! tensor_if name=tif compared-value=CUSTOM compared-value-option=tif_custom_cb_name then=PASSTHROUGH else=PASSTHROUGH tif.src_0 ! tensor_sink name=true_condition async=false tif.src_1 ! tensor_sink name=false_condition async=false"
+ * int status;
+ * ml_pipeline_h pipe;
+ * ml_pipeline_if_h custom;
+ *
+ * // Register tensor_if custom with name 'tif_custom_cb_name'.
+ * status = ml_pipeline_tensor_if_custom_register ("tif_custom_cb_name", tensor_if_custom_cb, NULL, &custom);
+ * if (status != ML_ERROR_NONE) {
+ *   // Handle error case.
+ *   goto error;
+ * }
+ *
+ * // Construct the pipeline.
+ * status = ml_pipeline_construct (pipeline, NULL, NULL, &pipe);
+ * if (status != ML_ERROR_NONE) {
+ *   // Handle error case.
+ *   goto error;
+ * }
+ *
+ * // Start the pipeline and execute the tensor.
+ * ml_pipeline_start (pipe);
+ *
+ * error:
+ * // Destroy the pipeline and unregister tensor_if custom.
+ * ml_pipeline_stop (pipe);
+ * ml_pipeline_destroy (pipe);
+ * ml_pipe
