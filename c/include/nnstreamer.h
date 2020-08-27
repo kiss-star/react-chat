@@ -896,4 +896,24 @@ int ml_pipeline_element_get_property_enum (ml_pipeline_element_h elem_h, const c
  * // Destroy the pipeline and unregister tensor_if custom.
  * ml_pipeline_stop (pipe);
  * ml_pipeline_destroy (pipe);
- * ml_pipe
+ * ml_pipeline_tensor_if_custom_unregister (custom);
+ *
+ * @endcode
+ */
+int ml_pipeline_tensor_if_custom_register (const char *name, ml_pipeline_if_custom_cb cb, void *user_data, ml_pipeline_if_h *if_custom);
+
+/**
+ * @brief Unregisters the tensor_if custom callback.
+ * @details Use this function to release and unregister the tensor_if custom callback.
+ * @since_tizen 6.5
+ * @param[in] if_custom The tensor_if handle to be unregistered.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER The parameter is invalid.
+ * @retval #ML_ERROR_STREAMS_PIPE Failed to unregister the custom callback.
+ */
+int ml_pipeline_tensor_if_custom_unregister (ml_pipeline_if_h if_custom);
+
+/**
+ * @brief Checks the availability of the g
