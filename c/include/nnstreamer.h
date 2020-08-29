@@ -916,4 +916,20 @@ int ml_pipeline_tensor_if_custom_register (const char *name, ml_pipeline_if_cust
 int ml_pipeline_tensor_if_custom_unregister (ml_pipeline_if_h if_custom);
 
 /**
- * @brief Checks the availability of the g
+ * @brief Checks the availability of the given execution environments.
+ * @details If the function returns an error, @a available may not be changed.
+ * @since_tizen 5.5
+ * @param[in] nnfw Check if the nnfw is available in the system.
+ *               Set #ML_NNFW_TYPE_ANY to skip checking nnfw.
+ * @param[in] hw Check if the hardware is available in the system.
+ *               Set #ML_NNFW_HW_ANY to skip checking hardware.
+ * @param[out] available @c true if it's available, @c false if it's not available.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful and the environments are available.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int ml_check_nnfw_availability (ml_nnfw_type_e nnfw, ml_nnfw_hw_e hw, bool *available);
+
+/**
+ * @brief Checks the availability of t
