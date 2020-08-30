@@ -972,4 +972,18 @@ int ml_check_element_availability (const char *element_name, bool *available);
  * @since_tizen 6.0
  * @remarks If the function succeeds, @a custom handle must be released using ml_pipeline_custom_easy_filter_unregister().
  * @param[in] name The name of custom filter.
- * @param[in] in The handle of input tensors info
+ * @param[in] in The handle of input tensors information.
+ * @param[in] out The handle of output tensors information.
+ * @param[in] cb The function to be called when the pipeline runs.
+ * @param[in] user_data Private data for the callback. This value is passed to the callback when it's invoked.
+ * @param[out] custom The custom filter handler.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER The parameter is invalid, or duplicated name exists.
+ * @retval #ML_ERROR_OUT_OF_MEMORY Failed to allocate required memory to register the custom filter.
+ *
+ * Here is an example of the usage:
+ * @code
+ * // Define invoke callback.
+ * static int custom_filter_invoke_cb (const ml_tensors_data_h in, ml_tensors_data_h o
