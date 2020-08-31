@@ -1046,4 +1046,12 @@ int ml_pipeline_custom_easy_filter_register (const char *name, const ml_tensors_
  * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
  * @retval #ML_ERROR_INVALID_PARAMETER The parameter is invalid.
  */
-int m
+int ml_pipeline_custom_easy_filter_unregister (ml_custom_easy_filter_h custom);
+
+/**
+ * @}
+ */
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+#endif /* __TIZEN_MACHINELEARNING_NNSTREAMER_H__ */
