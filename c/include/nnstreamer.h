@@ -986,4 +986,20 @@ int ml_check_element_availability (const char *element_name, bool *available);
  * Here is an example of the usage:
  * @code
  * // Define invoke callback.
- * static int custom_filter_invoke_cb (const ml_tensors_data_h in, ml_tensors_data_h o
+ * static int custom_filter_invoke_cb (const ml_tensors_data_h in, ml_tensors_data_h out, void *user_data)
+ * {
+ *   // Get input tensors using data handle 'in', and fill output tensors using data handle 'out'.
+ * }
+ *
+ * // The pipeline description (input data with dimension 2:1:1:1 and type int8 will be passed to custom filter 'my-custom-filter', which converts data type to float32 and processes tensors.)
+ * const char pipeline[] = "appsrc ! other/tensor,dimension=(string)2:1:1:1,type=(string)int8,framerate=(fraction)0/1 ! tensor_filter framework=custom-easy model=my-custom-filter ! tensor_sink";
+ * int status;
+ * ml_pipeline_h pipe;
+ * ml_custom_easy_filter_h custom;
+ * ml_tensors_info_h in_info, out_info;
+ * ml_tensor_dimension dim = { 2, 1, 1, 1 };
+ *
+ * // Set input and output tensors information.
+ * ml_tensors_info_create (&in_info);
+ * ml_tensors_info_set_count (in_info, 1);
+ * ml_tensors_info_set_tenso
