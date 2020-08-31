@@ -1002,4 +1002,26 @@ int ml_check_element_availability (const char *element_name, bool *available);
  * // Set input and output tensors information.
  * ml_tensors_info_create (&in_info);
  * ml_tensors_info_set_count (in_info, 1);
- * ml_tensors_info_set_tenso
+ * ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_INT8);
+ * ml_tensors_info_set_tensor_dimension (in_info, 0, dim);
+ *
+ * ml_tensors_info_create (&out_info);
+ * ml_tensors_info_set_count (out_info, 1);
+ * ml_tensors_info_set_tensor_type (out_info, 0, ML_TENSOR_TYPE_FLOAT32);
+ * ml_tensors_info_set_tensor_dimension (out_info, 0, dim);
+ *
+ * // Register custom filter with name 'my-custom-filter' ('custom-easy' framework).
+ * status = ml_pipeline_custom_easy_filter_register ("my-custom-filter", in_info, out_info, custom_filter_invoke_cb, NULL, &custom);
+ * if (status != ML_ERROR_NONE) {
+ *   // Handle error case.
+ *   goto error;
+ * }
+ *
+ * // Construct the pipeline.
+ * status = ml_pipeline_construct (pipeline, NULL, NULL, &pipe);
+ * if (status != ML_ERROR_NONE) {
+ *   // Handle error case.
+ *   goto error;
+ * }
+ *
+ * // Start the pipeline and execute the tensor
