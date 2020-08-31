@@ -1024,4 +1024,26 @@ int ml_check_element_availability (const char *element_name, bool *available);
  *   goto error;
  * }
  *
- * // Start the pipeline and execute the tensor
+ * // Start the pipeline and execute the tensor.
+ * ml_pipeline_start (pipe);
+ *
+ * error:
+ * // Destroy the pipeline and unregister custom filter.
+ * ml_pipeline_stop (pipe);
+ * ml_pipeline_destroy (pipe);
+ * ml_pipeline_custom_easy_filter_unregister (custom);
+ * @endcode
+ */
+int ml_pipeline_custom_easy_filter_register (const char *name, const ml_tensors_info_h in, const ml_tensors_info_h out, ml_custom_easy_invoke_cb cb, void *user_data, ml_custom_easy_filter_h *custom);
+
+/**
+ * @brief Unregisters the custom filter.
+ * @details Use this function to release and unregister the custom filter.
+ * @since_tizen 6.0
+ * @param[in] custom The custom filter to be unregistered.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful.
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported.
+ * @retval #ML_ERROR_INVALID_PARAMETER The parameter is invalid.
+ */
+int m
