@@ -56,4 +56,30 @@ static gboolean
 gst_info_is_extended (const GstTensorsInfo * gst_info)
 {
   int i, j;
-  for (i = 0; i < 
+  for (i = 0; i < gst_info->num_tensors; i++) {
+    for (j = ML_TENSOR_RANK_LIMIT_PREV; j < NNS_TENSOR_RANK_LIMIT; j++) {
+      if (gst_info->info[i].dimension[j] != 1)
+        return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * @brief Allocates a tensors information handle from gst info.
+ */
+int
+_ml_tensors_info_create_from_gst (ml_tensors_info_h * ml_info,
+    GstTensorsInfo * gst_info)
+{
+  gboolean is_extended;
+
+  if (!ml_info)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, ml_info, is NULL. It should be a valid ml_tensors_info_h instance usually created by ml_tensors_info_create(). This could be an internal bug of ML API.");
+
+  if (!gst_info)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, gst_info, is NULL. It should be a valid GstTensorsInfo instance. This could be an internal bug of ML API.");
+
+  is_extended = gst_info_is_extended 
