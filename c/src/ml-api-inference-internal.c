@@ -132,4 +132,33 @@ _ml_tensors_info_copy_from_gst (ml_tensors_info_s * ml_info,
 
     /* Set dimension */
     for (j = 0; j < max_dim; j++) {
-      ml_
+      ml_info->info[i].dimension[j] = gst_info->info[i].dimension[j];
+    }
+
+    for (; j < ML_TENSOR_RANK_LIMIT; j++) {
+      ml_info->info[i].dimension[j] = 1;
+    }
+
+    if (!ml_info->is_extended) {
+      for (j = ML_TENSOR_RANK_LIMIT_PREV; j < ML_TENSOR_RANK_LIMIT; j++) {
+        ml_info->info[i].dimension[j] = 1;
+      }
+    }
+  }
+  return ML_ERROR_NONE;
+}
+
+/**
+ * @brief Copies tensor meta info from gst tensors info.
+ * @bug Thread safety required. Check its internal users first!
+ */
+int
+_ml_tensors_info_copy_from_ml (GstTensorsInfo * gst_info,
+    const ml_tensors_info_s * ml_info)
+{
+  guint i, j;
+  guint max_dim;
+
+  if (!ml_info)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parmater, ml_info, is NULL. It should be a valid ml_tensors_info_s instance, usually create
