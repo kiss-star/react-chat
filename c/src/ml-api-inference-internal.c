@@ -109,4 +109,27 @@ _ml_tensors_info_copy_from_gst (ml_tensors_info_s * ml_info,
 
   if (!ml_info)
     _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
-        "The parmater, ml_info, is NULL. It should be a valid ml_tensors_info_s i
+        "The parmater, ml_info, is NULL. It should be a valid ml_tensors_info_s instance, usually created by ml_tensors_info_create(). This is probably an internal bug of ML API.");
+  if (!gst_info)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parmater, gst_info, is NULL. It should be a valid GstTensorsInfo instance. This is probably an internal bug of ML API.");
+
+  _ml_tensors_info_initialize (ml_info);
+
+  max_dim = MIN (ML_TENSOR_RANK_LIMIT, NNS_TENSOR_RANK_LIMIT);
+
+  ml_info->num_tensors = gst_info->num_tensors;
+  ml_info->is_extended = gst_info_is_extended (gst_info);
+
+  for (i = 0; i < gst_info->num_tensors; i++) {
+    /* Copy name string */
+    if (gst_info->info[i].name) {
+      ml_info->info[i].name = g_strdup (gst_info->info[i].name);
+    }
+
+    ml_info->info[i].type =
+        convert_ml_tensor_type_from (gst_info->info[i].type);
+
+    /* Set dimension */
+    for (j = 0; j < max_dim; j++) {
+      ml_
