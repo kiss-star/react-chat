@@ -82,4 +82,31 @@ _ml_tensors_info_create_from_gst (ml_tensors_info_h * ml_info,
     _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
         "The parameter, gst_info, is NULL. It should be a valid GstTensorsInfo instance. This could be an internal bug of ML API.");
 
-  is_extended = gst_info_is_extended 
+  is_extended = gst_info_is_extended (gst_info);
+  if (is_extended)
+    _ml_error_report_return_continue_iferr (ml_tensors_info_create_extended
+        (ml_info),
+        "The call to ml_tensors_info_create_extended has failed with %d.",
+        _ERRNO);
+  else
+    _ml_error_report_return_continue_iferr (ml_tensors_info_create (ml_info),
+        "The call to ml_tensors_info_create has failed with %d.", _ERRNO);
+
+  _ml_tensors_info_copy_from_gst (*ml_info, gst_info);
+  return ML_ERROR_NONE;
+}
+
+/**
+ * @brief Copies tensor meta info from gst tensors info.
+ * @bug Thread safety required. Check its internal users first!
+ */
+int
+_ml_tensors_info_copy_from_gst (ml_tensors_info_s * ml_info,
+    const GstTensorsInfo * gst_info)
+{
+  guint i, j;
+  guint max_dim;
+
+  if (!ml_info)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parmater, ml_info, is NULL. It should be a valid ml_tensors_info_s i
