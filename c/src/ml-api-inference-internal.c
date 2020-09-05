@@ -186,4 +186,17 @@ _ml_tensors_info_copy_from_ml (GstTensorsInfo * gst_info,
       gst_info->info[i].dimension[j] = ml_info->info[i].dimension[j];
     }
 
-    for (; j < NN
+    for (; j < NNS_TENSOR_RANK_LIMIT; j++) {
+      gst_info->info[i].dimension[j] = 1;
+    }
+
+    if (!ml_info->is_extended) {
+      for (j = ML_TENSOR_RANK_LIMIT_PREV; j < NNS_TENSOR_RANK_LIMIT; j++) {
+        gst_info->info[i].dimension[j] = 1;
+      }
+    }
+  }
+  G_UNLOCK_UNLESS_NOLOCK (*ml_info);
+
+  return ML_ERROR_NONE;
+}
