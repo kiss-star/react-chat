@@ -93,4 +93,31 @@ typedef enum {
   ML_PIPELINE_ELEMENT_SINK = 0x1,
   ML_PIPELINE_ELEMENT_APP_SRC = 0x2,
   ML_PIPELINE_ELEMENT_APP_SINK = 0x3,
-  ML_PI
+  ML_PIPELINE_ELEMENT_VALVE = 0x4,
+  ML_PIPELINE_ELEMENT_SWITCH_INPUT = 0x8,
+  ML_PIPELINE_ELEMENT_SWITCH_OUTPUT = 0x9,
+  ML_PIPELINE_ELEMENT_COMMON = 0xB,
+} ml_pipeline_element_e;
+
+/**
+ * @brief Internal data structure for the pipeline state callback.
+ */
+typedef struct {
+  ml_pipeline_state_cb cb; /**< Callback to notify the change of pipeline state */
+  void *user_data; /**< The user data passed when calling the state change callback */
+} pipeline_state_cb_s;
+
+/**
+ * @brief Internal data structure for the resource.
+ */
+typedef struct {
+  gchar *type; /**< resource type */
+  gpointer handle; /**< pointer to resource handle */
+} pipeline_resource_s;
+
+/**
+ * @brief Internal private representation of pipeline handle.
+ * @details This should not be exposed to applications
+ */
+typedef struct _ml_pipeline {
+  GstElement *element;           
