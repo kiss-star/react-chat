@@ -120,4 +120,20 @@ typedef struct {
  * @details This should not be exposed to applications
  */
 typedef struct _ml_pipeline {
-  GstElement *element;           
+  GstElement *element;            /**< The pipeline itself (GstPipeline) */
+  GstBus *bus;                    /**< The bus of the pipeline */
+  gulong signal_msg;              /**< The message signal (connected to bus) */
+  GMutex lock;                    /**< Lock for pipeline operations */
+  gboolean isEOS;                 /**< The pipeline is EOS state */
+  ml_pipeline_state_e pipe_state; /**< The state of pipeline */
+  GHashTable *namednodes;         /**< hash table of "element"s. */
+  GHashTable *resources;          /**< hash table of resources to construct the pipeline */
+  GHashTable *pipe_elm_type;      /**< hash table for type of pipeline element */
+  pipeline_state_cb_s state_cb;   /**< Callback to notify the change of pipeline state */
+} ml_pipeline;
+
+/**
+ * @brief An element that may be controlled individually in a pipeline.
+ */
+typedef struct _ml_pipeline_element {
+  GstElement *element; 
