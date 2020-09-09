@@ -136,4 +136,31 @@ typedef struct _ml_pipeline {
  * @brief An element that may be controlled individually in a pipeline.
  */
 typedef struct _ml_pipeline_element {
-  GstElement *element; 
+  GstElement *element; /**< The Sink/Src/Valve/Switch element */
+  ml_pipeline *pipe; /**< The main pipeline */
+  char *name;
+  ml_pipeline_element_e type;
+  GstPad *src;
+  GstPad *sink; /**< Unref this at destroy */
+  ml_tensors_info_s tensors_info;
+  size_t size;
+
+  GList *handles;
+  int maxid; /**< to allocate id for each handle */
+  gulong handle_id;
+
+  GMutex lock; /**< Lock for internal values */
+  gboolean is_media_stream;
+  gboolean is_flexible_tensor;
+
+  ml_handle_destroy_cb custom_destroy;
+  gpointer custom_data;
+} ml_pipeline_element;
+
+/**
+ * @brief Internal private representation sink callback function for GstTensorSink and GstAppSink
+ * @details This represents a single instance of callback registration. This should not be exposed to applications.
+ */
+typedef struct {
+  ml_pipeline_sink_cb sink_cb;
+  ml_pipeline_src_callb
