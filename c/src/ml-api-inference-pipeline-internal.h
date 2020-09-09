@@ -54,4 +54,43 @@ typedef enum { MM_RESOURCE_MANAGER_RES_TYPE_MAX } mm_resource_manager_res_type_e
 
 #else /* __TIZEN */
 
-#define convert_tizen_element(...) ML_ERRO
+#define convert_tizen_element(...) ML_ERROR_NONE
+#define get_tizen_resource(...) ML_ERROR_NONE
+#define release_tizen_resource(...)
+
+#endif  /* __TIZEN__ */
+
+/**
+ * @brief Internal private representation of custom filter handle.
+ */
+typedef struct {
+  char *name;
+  unsigned int ref_count;
+  GMutex lock;
+  ml_tensors_info_h in_info;
+  ml_tensors_info_h out_info;
+  ml_custom_easy_invoke_cb cb;
+  void *pdata;
+} ml_custom_filter_s;
+
+/**
+ * @brief Internal private representation of tensor_if custom condition.
+ * @since_tizen 6.5
+ */
+typedef struct {
+  char *name;
+  unsigned int ref_count;
+  GMutex lock;
+  ml_pipeline_if_custom_cb cb;
+  void *pdata;
+} ml_if_custom_s;
+
+/**
+ * @brief Possible controls on elements of a pipeline.
+ */
+typedef enum {
+  ML_PIPELINE_ELEMENT_UNKNOWN = 0x0,
+  ML_PIPELINE_ELEMENT_SINK = 0x1,
+  ML_PIPELINE_ELEMENT_APP_SRC = 0x2,
+  ML_PIPELINE_ELEMENT_APP_SINK = 0x3,
+  ML_PI
