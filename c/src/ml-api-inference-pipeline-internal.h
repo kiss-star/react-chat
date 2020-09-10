@@ -189,4 +189,20 @@ typedef struct _ml_pipeline_common_elem {
 int _ml_initialize_gstreamer (void);
 
 /**
- * @brief Checks the availabili
+ * @brief Checks the availability of the plugin.
+ */
+int _ml_check_plugin_availability (const char *plugin_name, const char *element_name);
+
+/**
+ * @brief Gets the element of pipeline itself (GstElement).
+ * @details With the returned reference, you can use GStreamer functions to handle the pipeline.
+ *          Note that caller should release the returned reference using gst_object_unref().
+ * @return The reference of pipeline itself. Null if the pipeline is not constructed or closed.
+ */
+GstElement* _ml_pipeline_get_gst_pipeline (ml_pipeline_h pipe);
+
+/**
+ * @brief Gets the element in pipeline (GstElement).
+ * @details With the returned reference, you can use GStreamer functions to handle the element in pipeline.
+ *          Note that caller should release the returned reference using gst_object_unref().
+ * @return The reference of gst-element in pipeline. Null if the pipeline is not 
