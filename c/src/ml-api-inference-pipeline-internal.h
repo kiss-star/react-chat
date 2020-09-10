@@ -205,4 +205,30 @@ GstElement* _ml_pipeline_get_gst_pipeline (ml_pipeline_h pipe);
  * @brief Gets the element in pipeline (GstElement).
  * @details With the returned reference, you can use GStreamer functions to handle the element in pipeline.
  *          Note that caller should release the returned reference using gst_object_unref().
- * @return The reference of gst-element in pipeline. Null if the pipeline is not 
+ * @return The reference of gst-element in pipeline. Null if the pipeline is not constructed or closed.
+ */
+GstElement* _ml_pipeline_get_gst_element (ml_pipeline_element_h handle);
+
+#if defined (__TIZEN__)
+/****** TIZEN PRIVILEGE CHECK BEGINS ******/
+/**
+ * @brief Releases the resource handle of Tizen.
+ */
+void _ml_tizen_release_resource (gpointer handle, const gchar * res_type);
+
+/**
+ * @brief Gets the resource handle of Tizen.
+ */
+int _ml_tizen_get_resource (ml_pipeline_h pipe, const gchar * res_type);
+
+/**
+ * @brief Converts predefined element for Tizen.
+ */
+int _ml_tizen_convert_element (ml_pipeline_h pipe, gchar ** result, gboolean is_internal);
+/****** TIZEN PRIVILEGE CHECK ENDS ******/
+#endif /* __TIZEN */
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+#endif /* __ML_API_INF_PIPELINE_INTERNAL_H__ */
