@@ -163,4 +163,30 @@ typedef struct _ml_pipeline_element {
  */
 typedef struct {
   ml_pipeline_sink_cb sink_cb;
-  ml_pipeline_src_callb
+  ml_pipeline_src_callbacks_s src_cb;
+  void *pdata;
+} callback_info_s;
+
+/**
+ * @brief Internal private representation of common element handle (All GstElement except AppSink and TensorSink)
+ * @details This represents a single instance of registration. This should not be exposed to applications.
+ */
+typedef struct _ml_pipeline_common_elem {
+  ml_pipeline *pipe;
+  ml_pipeline_element *element;
+  guint32 id;
+  callback_info_s *callback_info;   /**< Callback function information. If element is not GstTensorSink or GstAppSink, then it should be NULL. */
+} ml_pipeline_common_elem;
+
+/**
+ * @brief Macro to check the availability of given element.
+ */
+#define _ml_element_is_available(e) ({bool a; (ml_check_element_availability ((e), &a) == ML_ERROR_NONE && a);})
+
+/**
+ * @brief Initializes the GStreamer library. This is internal function.
+ */
+int _ml_initialize_gstreamer (void);
+
+/**
+ * @brief Checks the availabili
