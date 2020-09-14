@@ -940,3 +940,853 @@ iterate_element (ml_pipeline * pipe_h, GstElement * pipeline,
           }
 
           g_value_reset (&item);
+          break;
+        case GST_ITERATOR_RESYNC:
+        case GST_ITERATOR_ERROR:
+          _ml_logw (_ml_detail
+              ("There is an error or a resync-event while inspecting a pipeline. However, we can still execute the pipeline."));
+          /* fallthrough */
+        case GST_ITERATOR_DONE:
+          done = TRUE;
+      }
+    }
+
+    g_value_unset (&item);
+    /** @todo CRITICAL check the validity of elem=item registered in e */
+    gst_iterator_free (it);
+  }
+
+  g_mutex_unlock (&pipe_h->lock);
+  return status;
+}
+
+/**
+ * @brief Internal function to create the hash table for managing internal resources
+ */
+static void
+create_internal_hash (ml_pipeline * pipe_h)
+{
+  pipe_h->namednodes =
+      g_hash_table_new_full (g_str_hash, g_str_equal, g_free, cleanup_node);
+  pipe_h->resources =
+      g_hash_table_new_full (g_str_hash, g_str_equal, g_free, cleanup_resource);
+
+  pipe_h->pipe_elm_type =
+      g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+  g_hash_table_insert (pipe_h->pipe_elm_type, g_strdup ("tensor_sink"),
+      GINT_TO_POINTER (ML_PIPELINE_ELEMENT_SINK));
+  g_hash_table_insert (pipe_h->pipe_elm_type, g_strdup ("appsrc"),
+      GINT_TO_POINTER (ML_PIPELINE_ELEMENT_APP_SRC));
+  g_hash_table_insert (pipe_h->pipe_elm_type, g_strdup ("appsink"),
+      GINT_TO_POINTER (ML_PIPELINE_ELEMENT_APP_SINK));
+  g_hash_table_insert (pipe_h->pipe_elm_type, g_strdup ("valve"),
+      GINT_TO_POINTER (ML_PIPELINE_ELEMENT_VALVE));
+  g_hash_table_insert (pipe_h->pipe_elm_type, g_strdup ("input-selector"),
+      GINT_TO_POINTER (ML_PIPELINE_ELEMENT_SWITCH_INPUT));
+  g_hash_table_insert (pipe_h->pipe_elm_type, g_strdup ("output-selector"),
+      GINT_TO_POINTER (ML_PIPELINE_ELEMENT_SWITCH_OUTPUT));
+  g_hash_table_insert (pipe_h->pipe_elm_type, g_strdup ("tensor_if"),
+      GINT_TO_POINTER (ML_PIPELINE_ELEMENT_COMMON));
+  g_hash_table_insert (pipe_h->pipe_elm_type, g_strdup ("tensor_filter"),
+      GINT_TO_POINTER (ML_PIPELINE_ELEMENT_COMMON));
+}
+
+/**
+ * @brief Internal function to construct the pipeline.
+ * If is_internal is true, this will ignore the permission in Tizen.
+ */
+static int
+construct_pipeline_internal (const char *pipeline_description,
+    ml_pipeline_state_cb cb, void *user_data, ml_pipeline_h * pipe,
+    gboolean is_internal)
+{
+  GError *err = NULL;
+  GstElement *pipeline;
+  gchar *description = NULL;
+  int status = ML_ERROR_NONE;
+
+  ml_pipeline *pipe_h;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (!pipe)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "ml_pipeline_construct error: parameter pipe is NULL. It should be a valid ml_pipeline_h pointer. E.g., ml_pipeline_h pipe; ml_pipeline_construct (..., &pip);");
+
+  if (!pipeline_description)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "ml_pipeline_construct error: parameter pipeline_description is NULL. It should be a valid string of Gstreamer/NNStreamer pipeline description.");
+
+  /* init null */
+  *pipe = NULL;
+
+  _ml_error_report_return_continue_iferr (_ml_initialize_gstreamer (),
+      "ml_pipeline_construct error: it has failed to initialize gstreamer(). Please check if you have a valid GStreamer library installed in your system.");
+
+  /* prepare pipeline handle */
+  pipe_h = g_new0 (ml_pipeline, 1);
+  if (pipe_h == NULL)
+    _ml_error_report_return (ML_ERROR_OUT_OF_MEMORY,
+        "ml_pipeline_construct error: failed to allocate memory for pipeline handle. Out of memory?");
+
+  g_mutex_init (&pipe_h->lock);
+
+  pipe_h->isEOS = FALSE;
+  pipe_h->pipe_state = ML_PIPELINE_STATE_UNKNOWN;
+
+  create_internal_hash (pipe_h);
+
+  /* convert predefined element and launch the pipeline */
+  status =
+      convert_element ((ml_pipeline_h) pipe_h, pipeline_description,
+      &description, is_internal);
+  if (status != ML_ERROR_NONE) {
+    _ml_error_report_continue
+        ("ml_pipeline_construct error: failed while converting pipeline description for GStreamer w/ convert_element() function, which has returned %d",
+        status);
+    goto failed;
+  }
+
+  pipeline = gst_parse_launch (description, &err);
+  g_free (description);
+
+  if (pipeline == NULL || err) {
+    _ml_error_report
+        ("ml_pipeline_construct error: gst_parse_launch cannot parse and launch the given pipeline = [%s]. The error message from gst_parse_launch is '%s'.",
+        pipeline_description, (err) ? err->message : "unknown reason");
+    g_clear_error (&err);
+
+    if (pipeline)
+      gst_object_unref (pipeline);
+
+    status = ML_ERROR_STREAMS_PIPE;
+    goto failed;
+  }
+
+  g_assert (GST_IS_PIPELINE (pipeline));
+  pipe_h->element = pipeline;
+
+  /* bus and message callback */
+  pipe_h->bus = gst_element_get_bus (pipeline);
+  g_assert (pipe_h->bus);
+
+  gst_bus_enable_sync_message_emission (pipe_h->bus);
+  pipe_h->signal_msg = g_signal_connect (pipe_h->bus, "sync-message",
+      G_CALLBACK (cb_bus_sync_message), pipe_h);
+
+  /* state change callback */
+  pipe_h->state_cb.cb = cb;
+  pipe_h->state_cb.user_data = user_data;
+
+  /* iterate elements and prepare element handle */
+  status = iterate_element (pipe_h, pipeline, is_internal);
+  if (status != ML_ERROR_NONE) {
+    _ml_error_report_continue ("ml_pipeline_construct error: ...");
+    goto failed;
+  }
+
+  /* finally set pipeline state to PAUSED */
+  status = ml_pipeline_stop ((ml_pipeline_h) pipe_h);
+
+  if (status == ML_ERROR_NONE) {
+    /**
+     * Let's wait until the pipeline state is changed to paused.
+     * Otherwise, the following APIs like 'set_property' may incur
+     * unintended behaviors. But, don't need to return any error
+     * even if this state change is not finished within the timeout,
+     * just replying on the caller.
+     */
+    gst_element_get_state (pipeline, NULL, NULL, 10 * GST_MSECOND);
+  } else {
+    _ml_error_report_continue
+        ("ml_pipeline_construct error: ml_pipeline_stop has failed with %d return. The pipeline should be able to be stopped when it is constructed.",
+        status);
+  }
+
+failed:
+  if (status != ML_ERROR_NONE) {
+    /* failed to construct the pipeline */
+    ml_pipeline_destroy ((ml_pipeline_h) pipe_h);
+  } else {
+    *pipe = pipe_h;
+  }
+
+  return status;
+}
+
+/**
+ * @brief Construct the pipeline (more info in nnstreamer.h)
+ */
+int
+ml_pipeline_construct (const char *pipeline_description,
+    ml_pipeline_state_cb cb, void *user_data, ml_pipeline_h * pipe)
+{
+  /* not an internal pipeline construction */
+  return construct_pipeline_internal (pipeline_description, cb, user_data, pipe,
+      FALSE);
+}
+
+#if defined (__TIZEN__)
+/**
+ * @brief Construct the pipeline (Tizen internal, see nnstreamer-tizen-internal.h)
+ */
+int
+ml_pipeline_construct_internal (const char *pipeline_description,
+    ml_pipeline_state_cb cb, void *user_data, ml_pipeline_h * pipe)
+{
+  /* Tizen internal pipeline construction */
+  return construct_pipeline_internal (pipeline_description, cb, user_data, pipe,
+      TRUE);
+}
+#endif /* __TIZEN__ */
+
+/**
+ * @brief Destroy the pipeline (more info in nnstreamer.h)
+ */
+int
+ml_pipeline_destroy (ml_pipeline_h pipe)
+{
+  ml_pipeline *p = pipe;
+  GstStateChangeReturn scret;
+  GstState state;
+  guint check_paused_cnt = 0;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (p == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, pipe, is NULL. It should be a valid ml_pipeline_h handle instance, usually created by ml_pipeline_construct().");
+
+  g_mutex_lock (&p->lock);
+
+  /* Before changing the state, remove all callbacks. */
+  p->state_cb.cb = NULL;
+
+  /* Destroy registered callback handles and resources */
+  g_hash_table_destroy (p->namednodes);
+  g_hash_table_destroy (p->resources);
+  g_hash_table_destroy (p->pipe_elm_type);
+  p->namednodes = p->resources = p->pipe_elm_type = NULL;
+
+  if (p->element) {
+    /* Pause the pipeline if it's playing */
+    scret = gst_element_get_state (p->element, &state, NULL, 10 * GST_MSECOND); /* 10ms */
+    if (scret != GST_STATE_CHANGE_FAILURE && state == GST_STATE_PLAYING) {
+      scret = gst_element_set_state (p->element, GST_STATE_PAUSED);
+      if (scret == GST_STATE_CHANGE_FAILURE) {
+        g_mutex_unlock (&p->lock);
+        _ml_error_report_return (ML_ERROR_STREAMS_PIPE,
+            "gst_element_get_state() has failed to wait until state changed from PLAYING to PAUSED and returned GST_STATE_CHANGE_FAILURE. For the detail, please check the GStreamer log messages (or dlog messages in Tizen). It is possible that there is a filter or neural network that is taking too much time to finish.");
+      }
+    }
+
+    g_mutex_unlock (&p->lock);
+    while (p->pipe_state == ML_PIPELINE_STATE_PLAYING) {
+      check_paused_cnt++;
+      /** check PAUSED every 1ms */
+      g_usleep (1000);
+      if (check_paused_cnt >= WAIT_PAUSED_TIME_LIMIT) {
+        _ml_error_report
+            ("Timeout while waiting for a state change to 'PAUSED' from a 'sync-message' signal from the pipeline. It is possible that there is a filter or neural network that is taking too much time to finish.");
+        break;
+      }
+    }
+    g_mutex_lock (&p->lock);
+
+    /* Stop (NULL State) the pipeline */
+    scret = gst_element_set_state (p->element, GST_STATE_NULL);
+    if (scret != GST_STATE_CHANGE_SUCCESS) {
+      g_mutex_unlock (&p->lock);
+      _ml_error_report_return (ML_ERROR_STREAMS_PIPE,
+          "gst_element_set_state to stop the pipeline has failed after trying to stop the pipeline with PAUSE and waiting for stopping. For the detail, please check the GStreamer log messages. It is possible that there is a filter of neural network that is taking too much time to finish.");
+    }
+
+    if (p->bus) {
+      g_signal_handler_disconnect (p->bus, p->signal_msg);
+      gst_object_unref (p->bus);
+    }
+
+    gst_object_unref (p->element);
+    p->element = NULL;
+  }
+
+  g_mutex_unlock (&p->lock);
+  g_mutex_clear (&p->lock);
+
+  g_free (p);
+  return ML_ERROR_NONE;
+}
+
+/**
+ * @brief Get the pipeline state (more info in nnstreamer.h)
+ */
+int
+ml_pipeline_get_state (ml_pipeline_h pipe, ml_pipeline_state_e * state)
+{
+  ml_pipeline *p = pipe;
+  GstState _state;
+  GstStateChangeReturn scret;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (p == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, pipe, is NULL. It should be a valid ml_pipeline_h handle, which is usually created by ml_pipeline_construct ().");
+  if (state == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, state, is NULL. It should be a valid pointer of ml_pipeline_state_e. E.g., ml_pipeline_state_e state; ml_pipeline_get_state(pipe, &state);");
+
+  *state = ML_PIPELINE_STATE_UNKNOWN;
+
+  g_mutex_lock (&p->lock);
+  scret = gst_element_get_state (p->element, &_state, NULL, GST_MSECOND);       /* Do it within 1ms! */
+  g_mutex_unlock (&p->lock);
+
+  if (scret == GST_STATE_CHANGE_FAILURE)
+    _ml_error_report_return (ML_ERROR_STREAMS_PIPE,
+        "Failed to get the state of the pipeline. For the detail, please check the GStreamer log messages.");
+
+  *state = (ml_pipeline_state_e) _state;
+  return ML_ERROR_NONE;
+}
+
+/****************************************************
+ ** NNStreamer Pipeline Start/Stop Control         **
+ ****************************************************/
+/**
+ * @brief Start/Resume the pipeline! (more info in nnstreamer.h)
+ */
+int
+ml_pipeline_start (ml_pipeline_h pipe)
+{
+  ml_pipeline *p = pipe;
+  GstStateChangeReturn scret;
+  int status = ML_ERROR_NONE;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (p == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, pipe, is NULL. It should be a valid ml_pipeline_h handle, which is usually created by ml_pipeline_construct ().");
+
+  g_mutex_lock (&p->lock);
+
+  /* check the resources when starting the pipeline */
+  if (g_hash_table_size (p->resources)) {
+    GHashTableIter iter;
+    gpointer key, value;
+
+    /* iterate all handle and acquire res if released */
+    g_hash_table_iter_init (&iter, p->resources);
+    while (g_hash_table_iter_next (&iter, &key, &value)) {
+      if (g_str_has_prefix (key, "tizen")) {
+        status = get_tizen_resource (pipe, key);
+        if (status != ML_ERROR_NONE) {
+          _ml_error_report_continue
+              ("Internal API _ml_tizen_get_resource () has failed: Tizen mm resource manager has failed to acquire the resource of '%s'",
+              (gchar *) key);
+          goto done;
+        }
+      }
+    }
+  }
+
+  scret = gst_element_set_state (p->element, GST_STATE_PLAYING);
+  if (scret == GST_STATE_CHANGE_FAILURE) {
+    _ml_error_report
+        ("Failed to set the state of the pipeline to PLAYING. For the detail, please check the GStreamer log messages.");
+    status = ML_ERROR_STREAMS_PIPE;
+  }
+
+done:
+  g_mutex_unlock (&p->lock);
+  return status;
+}
+
+/**
+ * @brief Pause the pipeline! (more info in nnstreamer.h)
+ */
+int
+ml_pipeline_stop (ml_pipeline_h pipe)
+{
+  ml_pipeline *p = pipe;
+  GstStateChangeReturn scret;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (p == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, pipe, is NULL. It should be a valid ml_pipeline_h instance, which is usually created by ml_pipeline_construct().");
+
+  g_mutex_lock (&p->lock);
+  scret = gst_element_set_state (p->element, GST_STATE_PAUSED);
+  g_mutex_unlock (&p->lock);
+
+  if (scret == GST_STATE_CHANGE_FAILURE)
+    _ml_error_report_return (ML_ERROR_STREAMS_PIPE,
+        "Failed to set the state of the pipeline to PAUSED. For the detail, please check the GStreamer log messages.");
+
+  return ML_ERROR_NONE;
+}
+
+/**
+ * @brief Clears all data and resets the running-time of the pipeline (more info in nnstreamer.h)
+ */
+int
+ml_pipeline_flush (ml_pipeline_h pipe, bool start)
+{
+  ml_pipeline *p = pipe;
+  int status = ML_ERROR_NONE;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (p == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, pipe, is NULL. It should be a valid ml_pipeline_h instance, which is usually created by ml_pipeline_construct().");
+
+  _ml_error_report_return_continue_iferr (ml_pipeline_stop (pipe),
+      "Failed to stop the pipeline with ml_pipeline_stop (). It has returned %d.",
+      _ERRNO);
+
+  _ml_logi ("The pipeline is stopped, clear all data from the pipeline.");
+
+  /* send flush event to pipeline */
+  g_mutex_lock (&p->lock);
+  if (!gst_element_send_event (p->element, gst_event_new_flush_start ())) {
+    _ml_logw ("Error occurs while sending flush_start event.");
+  }
+
+  if (!gst_element_send_event (p->element, gst_event_new_flush_stop (TRUE))) {
+    _ml_logw ("Error occurs while sending flush_stop event.");
+  }
+  g_mutex_unlock (&p->lock);
+
+  if (start && status == ML_ERROR_NONE)
+    status = ml_pipeline_start (pipe);
+
+  return status;
+}
+
+/****************************************************
+ ** NNStreamer Pipeline Sink/Src Control           **
+ ****************************************************/
+/**
+ * @brief Register a callback for sink (more info in nnstreamer.h)
+ */
+int
+ml_pipeline_sink_register (ml_pipeline_h pipe, const char *sink_name,
+    ml_pipeline_sink_cb cb, void *user_data, ml_pipeline_sink_h * h)
+{
+  ml_pipeline_element *elem;
+  ml_pipeline *p = pipe;
+  ml_pipeline_common_elem *sink;
+  int ret = ML_ERROR_NONE;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (h == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The argument, h (ml_pipeline_sink_h), is NULL. It should be a valid pointer to a new ml_pipeline_sink_h instance. E.g., ml_pipeline_sink_h h; ml_pipeline_sink_register (...., &h);");
+
+  /* init null */
+  *h = NULL;
+
+  if (pipe == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The argument, pipe (ml_pipeline_h), is NULL. It should be a valid ml_pipeline_h instance, usually created by ml_pipeline_construct.");
+
+  if (sink_name == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The argument, sink_name (const char *), is NULL. It should be a valid string naming the sink handle (h).");
+
+  if (cb == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The argument, cb (ml_pipeline_sink_cb), is NULL. It should be a call-back function called for data-sink events.");
+
+  g_mutex_lock (&p->lock);
+  elem = g_hash_table_lookup (p->namednodes, sink_name);
+
+  if (elem == NULL) {
+    _ml_error_report
+        ("There is no element named [%s](sink_name) in the pipeline. Please check your pipeline description.",
+        sink_name);
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto unlock_return;
+  }
+
+  if (elem->type != ML_PIPELINE_ELEMENT_SINK &&
+      elem->type != ML_PIPELINE_ELEMENT_APP_SINK) {
+    _ml_error_report
+        ("The element [%s](sink_name) in the pipeline is not a sink element. Please supply the name of tensor_sink or appsink.",
+        sink_name);
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto unlock_return;
+  }
+
+  if (elem->handle_id > 0) {
+    /* no need to connect signal to sink element */
+    _ml_logw ("Sink callback is already registered.");
+  } else {
+    /* set callback for new data */
+    if (elem->type == ML_PIPELINE_ELEMENT_SINK) {
+      /* tensor_sink */
+      g_object_set (G_OBJECT (elem->element), "emit-signal", (gboolean) TRUE,
+          NULL);
+      elem->handle_id =
+          g_signal_connect (elem->element, "new-data",
+          G_CALLBACK (cb_sink_event), elem);
+    } else {
+      /* appsink */
+      g_object_set (G_OBJECT (elem->element), "emit-signals", (gboolean) TRUE,
+          NULL);
+      elem->handle_id =
+          g_signal_connect (elem->element, "new-sample",
+          G_CALLBACK (cb_appsink_new_sample), elem);
+    }
+
+    if (elem->handle_id == 0) {
+      _ml_error_report
+          ("Failed to connect a signal to the element [%s](sink_name). g_signal_connect has returned NULL.",
+          sink_name);
+      ret = ML_ERROR_STREAMS_PIPE;
+      goto unlock_return;
+    }
+  }
+
+  sink = g_new0 (ml_pipeline_common_elem, 1);
+  if (sink == NULL) {
+    _ml_error_report
+        ("Failed to allocate memory for the sink handle of %s. Out of memory?",
+        sink_name);
+    ret = ML_ERROR_OUT_OF_MEMORY;
+    goto unlock_return;
+  }
+
+  sink->callback_info = g_new0 (callback_info_s, 1);
+  if (sink->callback_info == NULL) {
+    g_free (sink);
+    _ml_error_report
+        ("Failed to allocate memory for the sink handle of %s. Out of memory?",
+        sink_name);
+    ret = ML_ERROR_OUT_OF_MEMORY;
+    goto unlock_return;
+  }
+
+  sink->pipe = p;
+  sink->element = elem;
+  sink->callback_info->sink_cb = cb;
+  sink->callback_info->pdata = user_data;
+  *h = sink;
+
+  g_mutex_lock (&elem->lock);
+
+  elem->maxid++;
+  sink->id = elem->maxid;
+  elem->handles = g_list_append (elem->handles, sink);
+
+  g_mutex_unlock (&elem->lock);
+
+unlock_return:
+  g_mutex_unlock (&p->lock);
+  return ret;
+}
+
+/**
+ * @brief Unregister a callback for sink (more info in nnstreamer.h)
+ */
+int
+ml_pipeline_sink_unregister (ml_pipeline_sink_h h)
+{
+  handle_init (sink, h);
+
+  if (elem->handle_id > 0) {
+    g_signal_handler_disconnect (elem->element, elem->handle_id);
+    elem->handle_id = 0;
+  }
+
+  elem->handles = g_list_remove (elem->handles, sink);
+  free_element_handle (sink);
+
+  handle_exit (h);
+}
+
+/**
+ * @brief Parse tensors info of src element.
+ */
+static int
+ml_pipeline_src_parse_tensors_info (ml_pipeline_element * elem)
+{
+  GstCaps *caps = NULL;
+  guint i;
+  gboolean found = FALSE, flexible = FALSE;
+  ml_tensors_info_s *_info = &elem->tensors_info;
+
+  if (elem->src == NULL) {
+    elem->src = gst_element_get_static_pad (elem->element, "src");
+    elem->size = 0;
+  }
+
+  if (elem->src == NULL) {
+    _ml_error_report
+        ("Failed to get the src pad of the element[%s]. The designated source element does not have available src pad? For the detail, please check the GStreamer log messages.",
+        elem->name);
+    return ML_ERROR_STREAMS_PIPE;
+  }
+
+  /* If caps is given, use it. e.g. Use cap "image/png" when the pipeline is */
+  /* given as "appsrc caps=image/png ! pngdec ! ... " */
+  caps = gst_pad_get_current_caps (elem->src);
+  if (!caps)
+    caps = gst_pad_get_allowed_caps (elem->src);
+
+  if (!caps) {
+    _ml_logw
+        ("Cannot find caps. The pipeline is not yet negotiated for src element [%s].",
+        elem->name);
+    gst_object_unref (elem->src);
+    elem->src = NULL;
+    return ML_ERROR_TRY_AGAIN;
+  }
+
+  found = get_tensors_info_from_caps (caps, _info, &flexible);
+
+  if (found) {
+    elem->is_flexible_tensor = flexible;
+    if (!flexible) {
+      for (i = 0; i < _info->num_tensors; i++) {
+        elem->size +=
+            _ml_tensor_info_get_size (&_info->info[i], _info->is_extended);
+      }
+    }
+  } else {
+    if (gst_caps_is_fixed (caps)) {
+      GstStructure *st = gst_caps_get_structure (caps, 0);
+      elem->is_media_stream = !gst_structure_is_tensor_stream (st);
+    }
+  }
+
+  gst_caps_unref (caps);
+  return ML_ERROR_NONE;
+}
+
+/**
+ * @brief Get a handle to operate a src (more info in nnstreamer.h)
+ */
+int
+ml_pipeline_src_get_handle (ml_pipeline_h pipe, const char *src_name,
+    ml_pipeline_src_h * h)
+{
+  ml_pipeline *p = pipe;
+  ml_pipeline_element *elem;
+  ml_pipeline_common_elem *src;
+  int ret = ML_ERROR_NONE;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (h == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, h (ml_pipeline_src_h), is NULL. It should be a valid pointer to a new (or to be cleared) instance. E.g., ml_pipeline_src_h h; ml_pipeline_src_get_handle (..., &h);");
+
+  /* init null */
+  *h = NULL;
+
+  if (pipe == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, pipe (ml_pipeline_h), is NULL. It should be a valid ml_pipeline_h instance, which is usually created by ml_pipeline_construct().");
+
+  if (src_name == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, src_name (const char *), is NULL. This string is the name of source element (appsrc) you want to push data stream from your application threads.");
+
+  g_mutex_lock (&p->lock);
+
+  elem = g_hash_table_lookup (p->namednodes, src_name);
+
+  if (elem == NULL) {
+    _ml_error_report
+        ("Cannot find the name, '%s': there is no element named [%s] in the given pipeline.",
+        src_name, src_name);
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto unlock_return;
+  }
+
+  if (elem->type != ML_PIPELINE_ELEMENT_APP_SRC) {
+    _ml_error_report
+        ("The element designated by '%s' is not a source element (appsrc). Please provide a name of source element for ml_pipeline_src_get_handle API.",
+        src_name);
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto unlock_return;
+  }
+
+  src = *h = g_new0 (ml_pipeline_common_elem, 1);
+  if (src == NULL) {
+    _ml_error_report
+        ("Failed to allocate the src handle for %s. Out of memory?", src_name);
+    ret = ML_ERROR_OUT_OF_MEMORY;
+    goto unlock_return;
+  }
+
+  src->pipe = p;
+  src->element = elem;
+
+  g_mutex_lock (&elem->lock);
+
+  elem->maxid++;
+  src->id = elem->maxid;
+  elem->handles = g_list_append (elem->handles, src);
+
+  ml_pipeline_src_parse_tensors_info (elem);
+  g_mutex_unlock (&elem->lock);
+
+unlock_return:
+  g_mutex_unlock (&p->lock);
+
+  return ret;
+}
+
+/**
+ * @brief Close a src node (more info in nnstreamer.h)
+ */
+int
+ml_pipeline_src_release_handle (ml_pipeline_src_h h)
+{
+  handle_init (src, h);
+
+  elem->handles = g_list_remove (elem->handles, src);
+  free_element_handle (src);
+
+  handle_exit (h);
+}
+
+/**
+ * @brief Push a data frame to a src (more info in nnstreamer.h)
+ */
+int
+ml_pipeline_src_input_data (ml_pipeline_src_h h, ml_tensors_data_h data,
+    ml_pipeline_buf_policy_e policy)
+{
+  GstBuffer *buffer;
+  GstMemory *mem, *tmp;
+  gpointer mem_data;
+  gsize mem_size;
+  GstFlowReturn gret;
+  GstTensorsInfo gst_info;
+  ml_tensors_data_s *_data;
+  unsigned int i;
+
+  handle_init (src, h);
+
+  _data = (ml_tensors_data_s *) data;
+  if (!_data) {
+    _ml_error_report
+        ("The given parameter, data (ml_tensors_data_h), is NULL. It should be a valid ml_tensor_data_h instance, which is usually created by ml_tensors_data_create().");
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto unlock_return;
+  }
+  G_LOCK_UNLESS_NOLOCK (*_data);
+
+  if (_data->num_tensors < 1 || _data->num_tensors > ML_TENSOR_SIZE_LIMIT) {
+    _ml_error_report
+        ("The number of tensors of the given data (ml_tensors_data_h) is invalid. The number of tensors of data is %u. It should be between 1 and %u.",
+        _data->num_tensors, ML_TENSOR_SIZE_LIMIT);
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto dont_destroy_data;
+  }
+
+  ret = ml_pipeline_src_parse_tensors_info (elem);
+
+  if (ret != ML_ERROR_NONE) {
+    if (ret == ML_ERROR_TRY_AGAIN)
+      _ml_error_report_continue
+          ("The pipeline is not ready to accept input streams. The input is ignored.");
+    else
+      _ml_error_report_continue
+          ("The pipeline is either not ready to accept input streams, yet, or does not have appropriate source elements to accept input streams.");
+    goto dont_destroy_data;
+  }
+
+  if (!elem->is_media_stream && !elem->is_flexible_tensor) {
+    if (elem->tensors_info.num_tensors != _data->num_tensors) {
+      _ml_error_report
+          ("The src push of [%s] cannot be handled because the number of tensors in a frame mismatches. %u != %u",
+          elem->name, elem->tensors_info.num_tensors, _data->num_tensors);
+
+      ret = ML_ERROR_INVALID_PARAMETER;
+      goto dont_destroy_data;
+    }
+
+    for (i = 0; i < elem->tensors_info.num_tensors; i++) {
+      size_t sz = _ml_tensor_info_get_size (&elem->tensors_info.info[i],
+          elem->tensors_info.is_extended);
+
+      if (sz != _data->tensors[i].size) {
+        _ml_error_report
+            ("The given input tensor size (%d'th, %zu bytes) mismatches the source pad (%zu bytes)",
+            i, _data->tensors[i].size, sz);
+
+        ret = ML_ERROR_INVALID_PARAMETER;
+        goto dont_destroy_data;
+      }
+    }
+  }
+
+  /* Create buffer to be pushed from buf[] */
+  buffer = gst_buffer_new ();
+  _ml_tensors_info_copy_from_ml (&gst_info, _data->info);
+
+  for (i = 0; i < _data->num_tensors; i++) {
+    mem_data = _data->tensors[i].tensor;
+    mem_size = _data->tensors[i].size;
+
+    mem = tmp = gst_memory_new_wrapped (GST_MEMORY_FLAG_READONLY,
+        mem_data, mem_size, 0, mem_size, mem_data,
+        (policy == ML_PIPELINE_BUF_POLICY_AUTO_FREE) ? g_free : NULL);
+
+    /* flex tensor, append header. */
+    if (elem->is_flexible_tensor) {
+      GstTensorMetaInfo meta;
+
+      gst_tensor_info_convert_to_meta (&gst_info.info[i], &meta);
+
+      mem = gst_tensor_meta_info_append_header (&meta, tmp);
+      gst_memory_unref (tmp);
+    }
+
+    gst_buffer_append_memory (buffer, mem);
+    /** @todo Verify that gst_buffer_append lists tensors/gstmem in the correct order */
+  }
+
+  gst_tensors_info_free (&gst_info);
+
+  /* Unlock if it's not auto-free. We do not know when it'll be freed. */
+  if (policy != ML_PIPELINE_BUF_POLICY_AUTO_FREE)
+    G_UNLOCK_UNLESS_NOLOCK (*_data);
+
+  /* Push the data! */
+  gret = gst_app_src_push_buffer (GST_APP_SRC (elem->element), buffer);
+
+  /* Free data ptr if buffer policy is auto-free */
+  if (policy == ML_PIPELINE_BUF_POLICY_AUTO_FREE) {
+    G_UNLOCK_UNLESS_NOLOCK (*_data);
+    _ml_tensors_data_destroy_internal (_data, FALSE);
+    _data = NULL;
+  }
+
+  if (gret == GST_FLOW_FLUSHING) {
+    _ml_logw
+        ("The pipeline is not in PAUSED/PLAYING. The input may be ignored.");
+    ret = ML_ERROR_TRY_AGAIN;
+  } else if (gret == GST_FLOW_EOS) {
+    _ml_logw ("THe pipeline is in EOS state. The input is ignored.");
+    ret = ML_ERROR_STREAMS_PIPE;
+  }
+
+  goto unlock_return;
+
+dont_destroy_data:
+  G_UNLOCK_UNLESS_NOLOCK (*_data);
+
+  handle_exit (h);
+}
+
+/**
