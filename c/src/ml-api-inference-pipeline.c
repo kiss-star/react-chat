@@ -2618,3 +2618,603 @@ ml_pipeline_element_get_property_bool (ml_pipeline_element_h elem_h,
  * @brief Gets the string value of element's property in NNStreamer pipelines.
  */
 int
+ml_pipeline_element_get_property_string (ml_pipeline_element_h elem_h,
+    const char *property_name, char **value)
+{
+  return ml_pipeline_element_get_property (elem_h, property_name,
+      G_TYPE_STRING, (gpointer) value);
+}
+
+/**
+ * @brief Gets the integer value of element's property in NNStreamer pipelines.
+ */
+int
+ml_pipeline_element_get_property_int32 (ml_pipeline_element_h elem_h,
+    const char *property_name, int32_t * value)
+{
+  return ml_pipeline_element_get_property (elem_h, property_name,
+      G_TYPE_INT, (gpointer) value);
+}
+
+/**
+ * @brief Gets the integer 64bit value of element's property in NNStreamer pipelines.
+ */
+int
+ml_pipeline_element_get_property_int64 (ml_pipeline_element_h elem_h,
+    const char *property_name, int64_t * value)
+{
+  return ml_pipeline_element_get_property (elem_h, property_name,
+      G_TYPE_INT64, (gpointer) value);
+}
+
+/**
+ * @brief Gets the unsigned integer value of element's property in NNStreamer pipelines.
+ */
+int
+ml_pipeline_element_get_property_uint32 (ml_pipeline_element_h elem_h,
+    const char *property_name, uint32_t * value)
+{
+  return ml_pipeline_element_get_property (elem_h, property_name,
+      G_TYPE_UINT, (gpointer) value);
+}
+
+/**
+ * @brief Gets the unsigned integer 64bit value of element's property in NNStreamer pipelines.
+ */
+int
+ml_pipeline_element_get_property_uint64 (ml_pipeline_element_h elem_h,
+    const char *property_name, uint64_t * value)
+{
+  return ml_pipeline_element_get_property (elem_h, property_name,
+      G_TYPE_UINT64, (gpointer) value);
+}
+
+/**
+ * @brief Gets the floating point value of element's property in NNStreamer pipelines.
+ */
+int
+ml_pipeline_element_get_property_double (ml_pipeline_element_h elem_h,
+    const char *property_name, double *value)
+{
+  return ml_pipeline_element_get_property (elem_h, property_name,
+      G_TYPE_DOUBLE, (gpointer) value);
+}
+
+/**
+ * @brief Gets the enumeration value of element's property in NNStreamer pipelines.
+ */
+int
+ml_pipeline_element_get_property_enum (ml_pipeline_element_h elem_h,
+    const char *property_name, uint32_t * value)
+{
+  return ml_pipeline_element_get_property (elem_h, property_name,
+      G_TYPE_ENUM, (gpointer) value);
+}
+
+/**
+ * @brief Gets the element of pipeline itself (GstElement).
+ */
+GstElement *
+_ml_pipeline_get_gst_pipeline (ml_pipeline_h pipe)
+{
+  ml_pipeline *p = (ml_pipeline *) pipe;
+  GstElement *element = NULL;
+
+  if (p) {
+    g_mutex_lock (&p->lock);
+
+    element = p->element;
+    if (element)
+      gst_object_ref (element);
+
+    g_mutex_unlock (&p->lock);
+  }
+
+  return element;
+}
+
+/**
+ * @brief Gets the element in pipeline (GstElement).
+ */
+GstElement *
+_ml_pipeline_get_gst_element (ml_pipeline_element_h handle)
+{
+  ml_pipeline_common_elem *e = (ml_pipeline_common_elem *) handle;
+  GstElement *element = NULL;
+
+  if (e && e->element) {
+    ml_pipeline_element *elem = e->element;
+
+    g_mutex_lock (&elem->lock);
+
+    element = elem->element;
+    if (element)
+      gst_object_ref (element);
+
+    g_mutex_unlock (&elem->lock);
+  }
+
+  return element;
+}
+
+/**
+ * @brief Increases ref count of custom-easy filter.
+ */
+static void
+ml_pipeline_custom_filter_ref (ml_custom_easy_filter_h custom)
+{
+  ml_custom_filter_s *c = (ml_custom_filter_s *) custom;
+
+  if (c) {
+    g_mutex_lock (&c->lock);
+    c->ref_count++;
+    g_mutex_unlock (&c->lock);
+  }
+}
+
+/**
+ * @brief Decreases ref count of custom-easy filter.
+ */
+static void
+ml_pipeline_custom_filter_unref (ml_custom_easy_filter_h custom)
+{
+  ml_custom_filter_s *c = (ml_custom_filter_s *) custom;
+
+  if (!c)
+    return;
+
+  g_mutex_lock (&c->lock);
+  if (c->ref_count > 0)
+    c->ref_count--;
+  g_mutex_unlock (&c->lock);
+}
+
+/**
+ * @brief Releases custom filter handle.
+ */
+static void
+ml_pipeline_custom_free_handle (ml_custom_filter_s * custom)
+{
+  if (custom) {
+    g_mutex_lock (&custom->lock);
+
+    g_free (custom->name);
+    ml_tensors_info_destroy (custom->in_info);
+    ml_tensors_info_destroy (custom->out_info);
+
+    g_mutex_unlock (&custom->lock);
+    g_mutex_clear (&custom->lock);
+
+    g_free (custom);
+  }
+}
+
+/**
+ * @brief Invoke callback for custom-easy filter.
+ */
+static int
+ml_pipeline_custom_invoke (void *data, const GstTensorFilterProperties * prop,
+    const GstTensorMemory * in, GstTensorMemory * out)
+{
+  int status;
+  ml_custom_filter_s *c;
+  ml_tensors_data_h in_data, out_data;
+  ml_tensors_data_s *_data;
+  guint i;
+
+  in_data = out_data = NULL;
+  c = (ml_custom_filter_s *) data;
+
+  /* internal error? */
+  if (!c || !c->cb)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "Internal error of callback function, ml_pipeline_custom_invoke. Its internal data structure is broken.");
+
+  g_mutex_lock (&c->lock);
+
+  /* prepare invoke */
+  status = _ml_tensors_data_create_no_alloc (c->in_info, &in_data);
+  if (status != ML_ERROR_NONE) {
+    _ml_error_report_continue ("_ml_tensors_data_create_no_alloc has failed.");
+    goto done;
+  }
+
+  _data = (ml_tensors_data_s *) in_data;
+  for (i = 0; i < _data->num_tensors; i++)
+    _data->tensors[i].tensor = in[i].data;
+
+  status = _ml_tensors_data_create_no_alloc (c->out_info, &out_data);
+  if (status != ML_ERROR_NONE) {
+    _ml_error_report_continue ("_ml_tensors_data_create_no_alloc has failed.");
+    goto done;
+  }
+
+  _data = (ml_tensors_data_s *) out_data;
+  for (i = 0; i < _data->num_tensors; i++)
+    _data->tensors[i].tensor = out[i].data;
+
+  /* call invoke callback */
+  status = c->cb (in_data, out_data, c->pdata);
+
+done:
+  g_mutex_unlock (&c->lock);
+  /* NOTE: DO NOT free tensor data */
+  g_free (in_data);
+  g_free (out_data);
+
+  return status;
+}
+
+/**
+ * @brief Registers a custom filter.
+ */
+int
+ml_pipeline_custom_easy_filter_register (const char *name,
+    const ml_tensors_info_h in, const ml_tensors_info_h out,
+    ml_custom_easy_invoke_cb cb, void *user_data,
+    ml_custom_easy_filter_h * custom)
+{
+  int status = ML_ERROR_NONE;
+  ml_custom_filter_s *c;
+  GstTensorsInfo in_info, out_info;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (!name)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, name (const char *), is NULL. It should be a valid string of the filter name.");
+  if (!cb)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, cb (ml_custom_easy_invoke_cb), is NULL. It should be a valid call-back struct containing function pointer and its related data.");
+  if (!custom)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, custom (ml_custom_easy_filter_h *), is NULL. It should be a valid pointer of ml_custom_easy_filter. E.g., ml_custom_easy_filter_h custom; ml_pipeline_custom_easy_filter_register (..., &custom);");
+
+  /* init null */
+  *custom = NULL;
+
+  if (!ml_tensors_info_is_valid (in))
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, in (const ml_tensors_info_h), is not valid. ml_tensors_info_is_valid(in) has returned FALSE. Please check if its cloned/fetched from a valid object or if you have configured it properly.");
+  if (!ml_tensors_info_is_valid (out))
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, out (const ml_tensors_info_h), is not valid. ml_tensors_info_is_valid(in) has returned FALSE. Please check if its cloned/fetched from a valid object or if you have configured it properly.");
+
+  /* create and init custom handle */
+  if ((c = g_new0 (ml_custom_filter_s, 1)) == NULL)
+    _ml_error_report_return (ML_ERROR_OUT_OF_MEMORY,
+        "Cannot allocate memory. Out of memory?");
+
+  g_mutex_init (&c->lock);
+
+  /** no need to acquire c->lock as its created locally */
+  c->name = g_strdup (name);
+  c->ref_count = 0;
+  c->cb = cb;
+  c->pdata = user_data;
+  ml_tensors_info_create_extended (&c->in_info);
+  ml_tensors_info_create_extended (&c->out_info);
+
+  status = ml_tensors_info_clone (c->in_info, in);
+  if (status != ML_ERROR_NONE) {
+    _ml_error_report_continue
+        ("ml_tensors_info_clone has failed with %d. Cannot fetch input tensor-info (metadata).",
+        status);
+    goto exit;
+  }
+
+  status = ml_tensors_info_clone (c->out_info, out);
+  if (status != ML_ERROR_NONE) {
+    _ml_error_report_continue
+        ("ml_tensors_info_clone has filed with %d. Cannot fetch output tensor-info (metadata).",
+        status);
+    goto exit;
+  }
+
+  /* register custom filter */
+  _ml_tensors_info_copy_from_ml (&in_info, c->in_info);
+  _ml_tensors_info_copy_from_ml (&out_info, c->out_info);
+
+  status = NNS_custom_easy_register (name, ml_pipeline_custom_invoke, c,
+      &in_info, &out_info);
+  if (status != 0) {
+    char buf[255] = { 0 };
+    if (status == -EINVAL) {
+      status = ML_ERROR_INVALID_PARAMETER;
+      strncpy (buf, "invalid parameters are given.", 254);
+    } else if (status == -ENOMEM) {
+      status = ML_ERROR_OUT_OF_MEMORY;
+      strncpy (buf, "out of memory. cannot allocate.", 254);
+    } else {
+      status = ML_ERROR_UNKNOWN;
+      strncpy (buf, "unknown error.", 254);
+    }
+    _ml_error_report
+        ("Failed to register custom filter %s with NNStreamer API, NNS_custom_easy_register(). It has returned %d, which means '%s'.",
+        name, status, buf);
+  }
+
+exit:
+  if (status == ML_ERROR_NONE) {
+    pipe_custom_add_data (PIPE_CUSTOM_TYPE_FILTER, name, c);
+    *custom = c;
+  } else {
+    ml_pipeline_custom_free_handle (c);
+  }
+
+  return status;
+}
+
+/**
+ * @brief Unregisters the custom filter.
+ */
+int
+ml_pipeline_custom_easy_filter_unregister (ml_custom_easy_filter_h custom)
+{
+  ml_custom_filter_s *c;
+  int status = ML_ERROR_NONE;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (!custom)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, custom (ml_custom_easy_filter_h), is NULL. It should be a valid ml_custom_easy_filter_h instance, usually created by ml_pipeline_custom_easy_filter_register().");
+
+  c = (ml_custom_filter_s *) custom;
+  g_mutex_lock (&c->lock);
+
+  if (c->ref_count > 0) {
+    _ml_error_report
+        ("Failed to unregister custom filter %s, it is used in the pipeline. Its reference counter value is %u.",
+        c->name, c->ref_count);
+    status = ML_ERROR_INVALID_PARAMETER;
+    goto done;
+  }
+
+  status = NNS_custom_easy_unregister (c->name);
+  if (status != 0) {
+    _ml_error_report
+        ("Failed to unregister custom filter %s. It is possible that this is already unregistered or not registered.",
+        c->name);
+    status = ML_ERROR_INVALID_PARAMETER;
+    goto done;
+  }
+
+done:
+  g_mutex_unlock (&c->lock);
+
+  if (status == ML_ERROR_NONE) {
+    pipe_custom_remove_data (PIPE_CUSTOM_TYPE_FILTER, c->name);
+    ml_pipeline_custom_free_handle (c);
+  }
+
+  return status;
+}
+
+/**
+ * @brief Increases ref count of tensor_if custom condition.
+ */
+static void
+ml_pipeline_if_custom_ref (ml_pipeline_if_h custom)
+{
+  ml_if_custom_s *c = (ml_if_custom_s *) custom;
+
+  if (c) {
+    g_mutex_lock (&c->lock);
+    c->ref_count++;
+    g_mutex_unlock (&c->lock);
+  }
+}
+
+/**
+ * @brief Decreases ref count of tensor_if custom condition.
+ */
+static void
+ml_pipeline_if_custom_unref (ml_pipeline_if_h custom)
+{
+  ml_if_custom_s *c = (ml_if_custom_s *) custom;
+
+  if (c) {
+    g_mutex_lock (&c->lock);
+    if (c->ref_count > 0)
+      c->ref_count--;
+    g_mutex_unlock (&c->lock);
+  }
+}
+
+/**
+ * @brief Callback for tensor_if custom condition.
+ */
+static gboolean
+ml_pipeline_if_custom (const GstTensorsInfo * info,
+    const GstTensorMemory * input, void *data, gboolean * result)
+{
+  int status = 0;
+  guint i;
+  ml_if_custom_s *c;
+  ml_tensors_data_h in_data;
+  ml_tensors_data_s *_data;
+  ml_tensors_info_h ml_info = NULL;
+  GstTensorsInfo in_info = *info;
+  gboolean ret = FALSE;
+
+  c = (ml_if_custom_s *) data;
+  in_data = NULL;
+
+  /* internal error? */
+  if (!c || !c->cb)
+    _ml_error_report_return (FALSE,
+        "Internal error: the parameter, data, is not valid. App thread might have touched internal data structure.");
+
+  status = _ml_tensors_info_create_from_gst (&ml_info, &in_info);
+  if (status != ML_ERROR_NONE)
+    _ml_error_report_return_continue (status,
+        "Cannot create tensors-info from the parameter, info (const GstTensorsInfo). _ml_tensors_info_create_from_gst has returned %d.",
+        status);
+  status = _ml_tensors_data_create_no_alloc (ml_info, &in_data);
+  if (status != ML_ERROR_NONE) {
+    _ml_error_report_continue
+        ("Cannot create data entry from the given metadata, info (const GstTensorMemory, although we could create tensor-info from info. _ml_tensors_data_create_no_alloc() has returned %d.",
+        status);
+    goto done;
+  }
+
+  _data = (ml_tensors_data_s *) in_data;
+  for (i = 0; i < _data->num_tensors; i++)
+    _data->tensors[i].tensor = input[i].data;
+
+  /* call invoke callback */
+  g_mutex_lock (&c->lock);
+  status = c->cb (in_data, ml_info, result, c->pdata);
+  g_mutex_unlock (&c->lock);
+
+  if (status == 0)
+    ret = TRUE;
+  else
+    _ml_error_report
+        ("The callback function of if-statement has returned error: %d.", ret);
+
+done:
+  if (ml_info)
+    ml_tensors_info_destroy (ml_info);
+  g_free (in_data);
+
+  return ret;
+}
+
+/**
+ * @brief Releases tensor_if custom condition.
+ */
+static void
+ml_pipeline_if_custom_free (ml_if_custom_s * custom)
+{
+  if (custom) {
+    g_mutex_lock (&custom->lock);
+
+    g_free (custom->name);
+
+    g_mutex_unlock (&custom->lock);
+    g_mutex_clear (&custom->lock);
+
+    g_free (custom);
+  }
+}
+
+/**
+ * @brief Registers the tensor_if custom callback.
+ */
+int
+ml_pipeline_tensor_if_custom_register (const char *name,
+    ml_pipeline_if_custom_cb cb, void *user_data, ml_pipeline_if_h * if_custom)
+{
+  int status = ML_ERROR_NONE;
+  ml_if_custom_s *c;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (!name)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, name (const char *), is NULL. It should be a valid string of the tensor_if element in your pipeline.");
+  if (!cb)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, cb (ml_pipeline_if_custom_cb callback function pointer), is NULL. It should be a valid function pointer that determines if the 'if' statement is TRUE or FALSE from the given tensor data frame.");
+  if (!if_custom)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, if_custom (ml_pipeline_if_h *), is NULL. It should be a valid pointer to the pipeline-if handle instance. E.g., ml_pipeline_if_h h; ml_pipeline_tensor_if_custom_register (..., &h);");
+
+  /* init null */
+  *if_custom = NULL;
+
+  /* create and init custom handle */
+  if ((c = g_try_new0 (ml_if_custom_s, 1)) == NULL)
+    _ml_error_report_return (ML_ERROR_OUT_OF_MEMORY,
+        "Cannot allocate memory. Out of memory?");
+
+  g_mutex_init (&c->lock);
+
+  g_mutex_lock (&c->lock);
+  c->name = g_strdup (name);
+  c->ref_count = 0;
+  c->cb = cb;
+  c->pdata = user_data;
+
+  status = nnstreamer_if_custom_register (name, ml_pipeline_if_custom, c);
+  if (status != 0) {
+    if (status == -ENOMEM) {
+      _ml_error_report
+          ("Failed to register tensor_if custom condition %s because nnstreamer_if_custom_register has failed to allocate memory. Out of memory?",
+          name);
+      status = ML_ERROR_OUT_OF_MEMORY;
+    } else if (status == -EINVAL) {
+      _ml_error_report
+          ("Failed to register tensor_if custom condition %s because nnstreamer_if_custom_register has reported that an invalid parameter is given to the API call. Please check if the given name is 0-length or duplicated (already registered), memory is full, or the name is not allowed ('any', 'auto' are not allowed).",
+          name);
+      status = ML_ERROR_INVALID_PARAMETER;
+    } else {
+      _ml_error_report
+          ("Failed to register tensor_if custom condition %s because nnstreamer_if_custom_register has returned unknown error.",
+          name);
+      status = ML_ERROR_UNKNOWN;
+    }
+  }
+  g_mutex_unlock (&c->lock);
+
+  if (status == ML_ERROR_NONE) {
+    pipe_custom_add_data (PIPE_CUSTOM_TYPE_IF, name, c);
+    *if_custom = c;
+  } else {
+    ml_pipeline_if_custom_free (c);
+  }
+
+  return status;
+}
+
+/**
+ * @brief Unregisters the tensor_if custom callback.
+ */
+int
+ml_pipeline_tensor_if_custom_unregister (ml_pipeline_if_h if_custom)
+{
+  ml_if_custom_s *c;
+  int status = ML_ERROR_NONE;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (!if_custom)
+    return ML_ERROR_INVALID_PARAMETER;
+
+  c = (ml_if_custom_s *) if_custom;
+  g_mutex_lock (&c->lock);
+
+  if (c->ref_count > 0) {
+    _ml_error_report
+        ("Failed to unregister custom condition %s, it is used in the pipeline.",
+        c->name);
+    status = ML_ERROR_INVALID_PARAMETER;
+    goto done;
+  }
+
+  status = nnstreamer_if_custom_unregister (c->name);
+  if (status != 0) {
+    if (status == -EINVAL)
+      _ml_error_report
+          ("Failed to unregister tensor_if custom condition %s. It appears that it is already unregistered or not yet registered.",
+          c->name);
+    else
+      _ml_error_report
+          ("Failed to unregister tensor_if custom condition %s with unknown reason. Internal error?",
+          c->name);
+    status = ML_ERROR_STREAMS_PIPE;
+    goto done;
+  }
+
+done:
+  g_mutex_unlock (&c->lock);
+
+  if (status == ML_ERROR_NONE) {
+    pipe_custom_remove_data (PIPE_CUSTOM_TYPE_IF, c->name);
+    ml_pipeline_if_custom_free (c);
+  }
+
+  return status;
+}
