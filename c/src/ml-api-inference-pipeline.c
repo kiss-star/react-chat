@@ -1790,3 +1790,831 @@ dont_destroy_data:
 }
 
 /**
+ * @brief Internal function to fetch ml_pipeline_src_callbacks_s pointer
+ */
+static ml_pipeline_src_callbacks_s *
+get_app_src_callback (ml_pipeline_common_elem * src_h, void **data)
+{
+  ml_pipeline_src_callbacks_s *src_cb = NULL;
+  ml_pipeline_element *elem;
+
+  elem = src_h->element;
+  g_mutex_lock (&elem->lock);
+  if (src_h->callback_info) {
+    src_cb = &src_h->callback_info->src_cb;
+    *data = src_h->callback_info->pdata;
+  }
+  g_mutex_unlock (&elem->lock);
+
+  return src_cb;
+}
+
+/**
+ * @brief Internal function for appsrc callback - need_data.
+ */
+static void
+_pipe_src_cb_need_data (GstAppSrc * src, guint length, gpointer user_data)
+{
+  ml_pipeline_common_elem *src_h;
+  ml_pipeline_src_callbacks_s *src_cb = NULL;
+  void *pdata = NULL;
+
+  src_h = (ml_pipeline_common_elem *) user_data;
+  if (!src_h)
+    return;
+
+  src_cb = get_app_src_callback (src_h, &pdata);
+  if (src_cb && src_cb->need_data)
+    src_cb->need_data (src_h, length, pdata);
+}
+
+/**
+ * @brief Internal function for appsrc callback - enough_data.
+ */
+static void
+_pipe_src_cb_enough_data (GstAppSrc * src, gpointer user_data)
+{
+  ml_pipeline_common_elem *src_h;
+  ml_pipeline_src_callbacks_s *src_cb = NULL;
+  void *pdata = NULL;
+
+  src_h = (ml_pipeline_common_elem *) user_data;
+  if (!src_h)
+    return;
+
+  src_cb = get_app_src_callback (src_h, &pdata);
+  if (src_cb && src_cb->enough_data)
+    src_cb->enough_data (src_h, pdata);
+}
+
+/**
+ * @brief Internal function for appsrc callback - seek_data.
+ */
+static gboolean
+_pipe_src_cb_seek_data (GstAppSrc * src, guint64 offset, gpointer user_data)
+{
+  ml_pipeline_common_elem *src_h;
+  ml_pipeline_src_callbacks_s *src_cb = NULL;
+  void *pdata = NULL;
+
+  src_h = (ml_pipeline_common_elem *) user_data;
+  if (!src_h)
+    return TRUE;
+
+  src_cb = get_app_src_callback (src_h, &pdata);
+  if (src_cb && src_cb->seek_data)
+    src_cb->seek_data (src_h, offset, pdata);
+
+  return TRUE;
+}
+
+/**
+ * @brief Register callbacks for src events (more info in nnstreamer.h)
+ */
+int
+ml_pipeline_src_set_event_cb (ml_pipeline_src_h src_handle,
+    ml_pipeline_src_callbacks_s * cb, void *user_data)
+{
+  GstAppSrcCallbacks appsrc_cb = { 0, };
+
+  handle_init (src, src_handle);
+
+  if (cb == NULL) {
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto unlock_return;
+  }
+
+  if (src->callback_info == NULL)
+    src->callback_info = g_new0 (callback_info_s, 1);
+  if (src->callback_info == NULL) {
+    _ml_error_report
+        ("Failed to allocate memory of the callback info for %s. Out of memory?",
+        elem->name);
+    ret = ML_ERROR_OUT_OF_MEMORY;
+    goto unlock_return;
+  }
+
+  src->callback_info->src_cb = *cb;
+  src->callback_info->pdata = user_data;
+
+  appsrc_cb.need_data = _pipe_src_cb_need_data;
+  appsrc_cb.enough_data = _pipe_src_cb_enough_data;
+  appsrc_cb.seek_data = _pipe_src_cb_seek_data;
+
+  gst_app_src_set_callbacks (GST_APP_SRC (elem->element), &appsrc_cb,
+      src_handle, NULL);
+
+  handle_exit (src_handle);
+}
+
+/**
+ * @brief Gets a handle for the tensors metadata of given src node.
+ */
+int
+ml_pipeline_src_get_tensors_info (ml_pipeline_src_h h, ml_tensors_info_h * info)
+{
+  handle_init (src, h);
+
+  if (info == NULL) {
+    _ml_error_report
+        ("The parameter, info (ml_tensors_info_h *), is NULL. It should be a valid pointer to a ml_tensors_info_h instance, which is usually created by ml_tensors_info_create().");
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto unlock_return;
+  }
+
+  ret = ml_pipeline_src_parse_tensors_info (elem);
+
+  if (ret == ML_ERROR_NONE) {
+    ml_tensors_info_create_extended (info);
+    ml_tensors_info_clone (*info, &elem->tensors_info);
+  } else {
+    _ml_error_report_continue
+        ("ml_pipeline_src_parse_tensors_info () has returned error; it cannot fetch input tensor info (metadata of input stream) for the given ml_pipeline_src_h handle (h). ml_pipeline_src_get_tensors_info () cannot continue.");
+  }
+
+  handle_exit (h);
+}
+
+/****************************************************
+ ** NNStreamer Pipeline Switch/Valve Control       **
+ ****************************************************/
+
+/**
+ * @brief Get a handle to operate a selector (more info in nnstreamer.h)
+ */
+int
+ml_pipeline_switch_get_handle (ml_pipeline_h pipe, const char *switch_name,
+    ml_pipeline_switch_e * type, ml_pipeline_switch_h * h)
+{
+  ml_pipeline_element *elem;
+  ml_pipeline *p = pipe;
+  ml_pipeline_common_elem *swtc;
+  int ret = ML_ERROR_NONE;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (h == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, h (ml_pipeline_switch_h *), is NULL. It should be a new or to-be-cleared instance of ml_pipeline_switch_h. E.g., ml_pipeline_switch_h h; ml_pipeline_switch_get_handle (..., &h);");
+
+  /* init null */
+  *h = NULL;
+
+  if (pipe == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, pipe (ml_pipeline_h), is NULL. It should be a valid ml_pipeline_h pipeline instance, which is usually created by ml_pipeline_construct().");
+
+  if (switch_name == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, switch_name, is NULL. It should be a valid string of the corresponding name of a switch element.");
+
+  g_mutex_lock (&p->lock);
+  elem = g_hash_table_lookup (p->namednodes, switch_name);
+
+  if (elem == NULL) {
+    _ml_error_report
+        ("The parameter, switch_name (%s), is invalid. An element with the name, '%s', cannot be found in the supplied pipeline (pipe)",
+        switch_name, switch_name);
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto unlock_return;
+  }
+
+  if (elem->type == ML_PIPELINE_ELEMENT_SWITCH_INPUT) {
+    if (type)
+      *type = ML_PIPELINE_SWITCH_INPUT_SELECTOR;
+  } else if (elem->type == ML_PIPELINE_ELEMENT_SWITCH_OUTPUT) {
+    if (type)
+      *type = ML_PIPELINE_SWITCH_OUTPUT_SELECTOR;
+  } else {
+    _ml_error_report
+        ("An element with the given name, '%s', is found; however, it is not a 'switch' element. A switch-handle cannot be fetched from a non-switch element. It should be either input-selector or output-selector.",
+        switch_name);
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto unlock_return;
+  }
+
+  swtc = *h = g_new0 (ml_pipeline_common_elem, 1);
+  if (swtc == NULL) {
+    _ml_error_report
+        ("Failed to allocate memory of the switch handle, %s. Out of memory?",
+        switch_name);
+    ret = ML_ERROR_OUT_OF_MEMORY;
+    goto unlock_return;
+  }
+
+  swtc->pipe = p;
+  swtc->element = elem;
+
+  g_mutex_lock (&elem->lock);
+
+  elem->maxid++;
+  swtc->id = elem->maxid;
+  elem->handles = g_list_append (elem->handles, swtc);
+
+  g_mutex_unlock (&elem->lock);
+
+unlock_return:
+  g_mutex_unlock (&p->lock);
+  return ret;
+}
+
+/**
+ * @brief Close the given switch handle (more info in nnstreamer.h)
+ */
+int
+ml_pipeline_switch_release_handle (ml_pipeline_switch_h h)
+{
+  handle_init (swtc, h);
+
+  elem->handles = g_list_remove (elem->handles, swtc);
+  free_element_handle (swtc);
+
+  handle_exit (h);
+}
+
+/**
+ * @brief Control the switch (more info in nnstreamer.h)
+ */
+int
+ml_pipeline_switch_select (ml_pipeline_switch_h h, const char *pad_name)
+{
+  GstPad *active_pad, *new_pad;
+  gchar *active_name;
+
+  handle_init (swtc, h);
+
+  if (pad_name == NULL) {
+    _ml_error_report
+        ("The parameter, pad_name (const char *), is NULL. It should be a valid name of a pad (GSTPAD) in the given switch, h.");
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto unlock_return;
+  }
+
+  g_object_get (G_OBJECT (elem->element), "active-pad", &active_pad, NULL);
+  active_name = gst_pad_get_name (active_pad);
+
+  if (g_strcmp0 (pad_name, active_name) == 0) {
+    _ml_logi ("Switch is called, but there is no effective changes: %s->%s.",
+        active_name, pad_name);
+    g_free (active_name);
+    gst_object_unref (active_pad);
+
+    goto unlock_return;
+  }
+
+  g_free (active_name);
+  gst_object_unref (active_pad);
+
+  new_pad = gst_element_get_static_pad (elem->element, pad_name);
+  if (new_pad == NULL) {
+    /* Not Found! */
+    _ml_error_report
+        ("Cannot find the pad, [%s], from the switch, [%s]. Please check the pad name. You may use ml_pipeline_switch_pad_list() to fetch the valid pad names.",
+        pad_name, elem->name);
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto unlock_return;
+  }
+
+  g_object_set (G_OBJECT (elem->element), "active-pad", new_pad, NULL);
+  gst_object_unref (new_pad);
+
+  _ml_logi ("Switched to [%s] successfully at switch [%s].", pad_name,
+      elem->name);
+
+  handle_exit (h);
+}
+
+/**
+ * @brief Gets the pad names of a switch.
+ */
+int
+ml_pipeline_switch_get_pad_list (ml_pipeline_switch_h h, char ***list)
+{
+  GstIterator *it;
+  GValue item = G_VALUE_INIT;
+  gboolean done = FALSE;
+  GList *dllist = NULL;
+  GstPad *pad;
+  int counter = 0;
+
+  handle_init (swtc, h);
+
+  if (list == NULL) {
+    _ml_error_report
+        ("The parameter, list (char ***), is NULL. It should be a valid pointer to store a list of strings. E.g., char **list; ml_pipeline_switch_get_pad_list (h, &list);");
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto unlock_return;
+  }
+
+  /* init null */
+  *list = NULL;
+
+  if (elem->type == ML_PIPELINE_ELEMENT_SWITCH_INPUT)
+    it = gst_element_iterate_sink_pads (elem->element);
+  else if (elem->type == ML_PIPELINE_ELEMENT_SWITCH_OUTPUT)
+    it = gst_element_iterate_src_pads (elem->element);
+  else {
+    _ml_error_report
+        ("The element, [%s], is supposed to be input/output switch, but it is not. Internal data structure is broken.",
+        elem->name);
+    ret = ML_ERROR_STREAMS_PIPE;
+    goto unlock_return;
+  }
+
+  while (!done) {
+    switch (gst_iterator_next (it, &item)) {
+      case GST_ITERATOR_OK:
+        pad = GST_PAD (g_value_get_object (&item));
+        dllist = g_list_append (dllist, gst_pad_get_name (pad));
+        counter++;
+        g_value_reset (&item);
+        break;
+      case GST_ITERATOR_RESYNC:
+        g_list_free_full (dllist, g_free);      /* This frees all strings as well */
+        dllist = NULL;
+        counter = 0;
+        gst_iterator_resync (it);
+        break;
+      case GST_ITERATOR_ERROR:
+        _ml_error_report
+            ("Cannot access the list of pad properly of a switch, [%s]. Internal data structure is broken?",
+            elem->name);
+        ret = ML_ERROR_STREAMS_PIPE;
+        break;
+      case GST_ITERATOR_DONE:
+        done = TRUE;
+        break;
+    }
+  }
+
+  gst_iterator_free (it);
+
+  /* There has been no error with that "while" loop. */
+  if (ret == ML_ERROR_NONE) {
+    int i = 0;
+    GList *l;
+
+    *list = g_malloc0 (sizeof (char *) * (counter + 1));
+    if (*list == NULL) {
+      _ml_error_report
+          ("Failed to allocate memory for pad list (parameter list). Out of memory?");
+      ret = ML_ERROR_OUT_OF_MEMORY;
+      g_list_free_full (dllist, g_free);
+      goto unlock_return;
+    }
+
+    for (l = dllist; l != NULL; l = l->next) {
+      (*list)[i] = l->data;     /* Allocated by gst_pad_get_name(). Caller has to free it */
+      i++;
+
+      if (i > counter) {
+        g_list_free_full (dllist, g_free);      /* This frees all strings as well */
+        g_free (*list);
+        *list = NULL;
+
+        _ml_error_report
+            ("Internal data inconsistency. This could be a bug in nnstreamer. Switch [%s].",
+            elem->name);
+        ret = ML_ERROR_STREAMS_PIPE;
+        goto unlock_return;
+      }
+    }
+  }
+  g_list_free (dllist);         /* This does not free the strings.. fortunately. */
+
+  handle_exit (h);
+}
+
+/**
+ * @brief Get a handle to operate a Valve (more info in nnstreamer.h)
+ */
+int
+ml_pipeline_valve_get_handle (ml_pipeline_h pipe, const char *valve_name,
+    ml_pipeline_valve_h * h)
+{
+  ml_pipeline_element *elem;
+  ml_pipeline *p = pipe;
+  ml_pipeline_common_elem *valve;
+  int ret = ML_ERROR_NONE;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (h == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, h (ml_pipeline_valve_h), is NULL. It should be a valid pointer of ml_pipeline_valve_h. E.g., ml_pipeline_valve_h h; ml_pipeline_valve_get_handle (..., &h);");
+
+  /* init null */
+  *h = NULL;
+
+  if (pipe == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, pipe (ml_pipeline_h), is NULL. It should be a valid ml_pipeline_h instance, which is usually created by ml_pipeline_construct().");
+
+  if (valve_name == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, valve_name (const char *), is NULL. It should be a valid string of the valve name.");
+
+  g_mutex_lock (&p->lock);
+  elem = g_hash_table_lookup (p->namednodes, valve_name);
+
+  if (elem == NULL) {
+    _ml_error_report
+        ("Cannot find the valve with the given name, '%s', in the pipeline. There is no element in the pipeline with such a name. Please check if you have a value with the appropriate name.",
+        valve_name);
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto unlock_return;
+  }
+
+  if (elem->type != ML_PIPELINE_ELEMENT_VALVE) {
+    _ml_error_report
+        ("Cannot find the value with the given name, '%s', in the pipeline. There is an element with such a name; however, the element is not a valve. Please correct the names of element in the pipeline.",
+        valve_name);
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto unlock_return;
+  }
+
+  valve = *h = g_new0 (ml_pipeline_common_elem, 1);
+  if (valve == NULL) {
+    _ml_error_report
+        ("Cannot allocate memory for valve handle of %s. Out of memory?",
+        valve_name);
+    ret = ML_ERROR_OUT_OF_MEMORY;
+    goto unlock_return;
+  }
+
+  valve->pipe = p;
+  valve->element = elem;
+
+  g_mutex_lock (&elem->lock);
+
+  elem->maxid++;
+  valve->id = elem->maxid;
+  elem->handles = g_list_append (elem->handles, valve);
+
+  g_mutex_unlock (&elem->lock);
+
+unlock_return:
+  g_mutex_unlock (&p->lock);
+  return ret;
+}
+
+/**
+ * @brief Close the given valve handle (more info in nnstreamer.h)
+ */
+int
+ml_pipeline_valve_release_handle (ml_pipeline_valve_h h)
+{
+  handle_init (valve, h);
+
+  elem->handles = g_list_remove (elem->handles, valve);
+  free_element_handle (valve);
+
+  handle_exit (h);
+}
+
+/**
+ * @brief Control the valve with the given handle (more info in nnstreamer.h)
+ */
+int
+ml_pipeline_valve_set_open (ml_pipeline_valve_h h, bool open)
+{
+  gboolean drop = FALSE;
+  handle_init (valve, h);
+
+  g_object_get (G_OBJECT (elem->element), "drop", &drop, NULL);
+
+  if ((open != false) != (drop != FALSE)) {
+    /* Nothing to do */
+    _ml_logi ("Valve is called, but there is no effective changes");
+    goto unlock_return;
+  }
+
+  drop = (open) ? FALSE : TRUE;
+  g_object_set (G_OBJECT (elem->element), "drop", drop, NULL);
+
+  handle_exit (h);
+}
+
+/********************************************************
+ ** NNStreamer Element Property Control in Pipeline    **
+ ********************************************************/
+/**
+ * @brief Gets an element handle in NNStreamer pipelines to control its properties.
+ */
+int
+ml_pipeline_element_get_handle (ml_pipeline_h pipe, const char *element_name,
+    ml_pipeline_element_h * elem_h)
+{
+  int ret = ML_ERROR_NONE;
+  ml_pipeline_element *elem;
+  ml_pipeline_common_elem *common_elem;
+  ml_pipeline *p = pipe;
+
+  /* Check input parameter */
+  if (pipe == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, pipe (ml_pipeline_h), is NULL. It should be a valid ml_pipeline_h instance, which is usually created by ml_pipeline_construct().");
+
+  if (element_name == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, element_name (const char *), is NULL. It should be a valid string of the element name to be searched.");
+
+  if (elem_h == NULL)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, elem_h (ml_pipeline_element_h), is NULL. It should be a valid pointer of ml_pipeline_element_h. E.g., ml_pipeline_element_h eh; ml_pipeline_element_get_handle (..., &eh);");
+  *elem_h = NULL;
+
+  g_mutex_lock (&p->lock);
+
+  /* 1. Search element in lookup table first */
+  elem = g_hash_table_lookup (p->namednodes, element_name);
+  if (elem == NULL) {
+    /* 2. Search element in pipeline itself */
+    GstElement *gst_elem;
+
+    gst_elem = gst_bin_get_by_name (GST_BIN (p->element), element_name);
+    if (gst_elem == NULL) {
+      _ml_error_report
+          ("Cannot find the element with the given name, '%s', in the pipeline. There is no element in the pipeline with such a name. Please check if you have an element with the appropriate name.",
+          element_name);
+      ret = ML_ERROR_INVALID_PARAMETER;
+      goto unlock_return;
+    }
+
+    /* Caching for next search */
+    elem = construct_element (gst_elem, pipe, element_name,
+        ML_PIPELINE_ELEMENT_COMMON);
+    if (elem == NULL) {
+      _ml_error_report
+          ("Cannot allocate memory for element handle of %s. Out of memory?",
+          element_name);
+      ret = ML_ERROR_OUT_OF_MEMORY;
+      goto unlock_return;
+    }
+    g_hash_table_insert (p->namednodes, g_strdup (element_name), elem);
+  }
+
+  /* Type checking */
+  if (elem->type == ML_PIPELINE_ELEMENT_UNKNOWN) {
+    _ml_error_report
+        ("There is an element named [%s] in the pipeline, but its type is unknown. It is possible that the app thread has touched ML-API's internal data structure.",
+        element_name);
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto unlock_return;
+  }
+
+  common_elem = *elem_h = g_new0 (ml_pipeline_common_elem, 1);
+  if (common_elem == NULL) {
+    _ml_error_report
+        ("Failed to allocate the internal handler for %s. Out of memory?",
+        element_name);
+    ret = ML_ERROR_OUT_OF_MEMORY;
+    goto unlock_return;
+  }
+
+  common_elem->pipe = p;
+  common_elem->element = elem;
+
+  g_mutex_lock (&elem->lock);
+  elem->maxid++;
+  common_elem->id = elem->maxid;
+  elem->handles = g_list_append (elem->handles, common_elem);
+  g_mutex_unlock (&elem->lock);
+
+unlock_return:
+  g_mutex_unlock (&p->lock);
+  return ret;
+}
+
+/**
+ * @brief Releases the given element handle.
+ */
+int
+ml_pipeline_element_release_handle (ml_pipeline_element_h elem_h)
+{
+  handle_init (common_elem, elem_h);
+
+  elem->handles = g_list_remove (elem->handles, common_elem);
+  free_element_handle (common_elem);
+
+  handle_exit (elem_h);
+}
+
+/**
+ * @brief Check property existence and its type.
+ */
+static bool
+ml_pipeline_element_check_property (GObjectClass * class,
+    const char *property_name, const GType type)
+{
+  GParamSpec *pspec = NULL;
+
+  /* Check property existence */
+  pspec = g_object_class_find_property (class, property_name);
+  if (pspec == NULL) {
+    _ml_logw ("The property name [%s] does not exist.", property_name);
+    return FALSE;
+  }
+
+  /* Compare property's type with given type */
+  if (!((pspec->value_type == type) ||
+          (type == G_TYPE_ENUM && G_TYPE_IS_ENUM (pspec->value_type)) ||
+          (type == G_TYPE_INT64 && pspec->value_type == G_TYPE_LONG) ||
+          (type == G_TYPE_UINT64 && pspec->value_type == G_TYPE_ULONG) ||
+          (type == G_TYPE_INT && G_TYPE_IS_ENUM (pspec->value_type)) ||
+          (type == G_TYPE_UINT && G_TYPE_IS_ENUM (pspec->value_type)) ||
+          (type == G_TYPE_DOUBLE && pspec->value_type == G_TYPE_FLOAT))) {
+    _ml_logw ("The type of property name [%s] is '%s'", property_name,
+        g_type_name (pspec->value_type));
+    return FALSE;
+  }
+  return TRUE;
+}
+
+/**
+ * @brief Sets the value of given element's property in NNStreamer pipelines.
+ */
+static int
+ml_pipeline_element_set_property (ml_pipeline_element_h elem_h,
+    const char *property_name, gpointer value, GType type)
+{
+  handle_init (common_elem, elem_h);
+
+  /* Check the input parameter */
+  if (property_name == NULL) {
+    _ml_error_report
+        ("The parameter, property_name (const char *), is NULL. It should be a valid string of property name.");
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto unlock_return;
+  }
+
+  /* Check property existence & its type */
+  if (!ml_pipeline_element_check_property (G_OBJECT_GET_CLASS (elem->element),
+          property_name, type)) {
+    _ml_error_report
+        ("The property ('%s') of the element, '%s', cannot be checked. It looks like this property does not exist in this element.",
+        property_name, elem->name);
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto unlock_return;
+  }
+
+  /* Set property */
+  if (type == G_TYPE_DOUBLE || type == G_TYPE_FLOAT) {
+    g_object_set (G_OBJECT (elem->element), property_name,
+        *(double *) value, NULL);
+  } else if (type == G_TYPE_INT64) {
+    g_object_set (G_OBJECT (elem->element), property_name,
+        *(int64_t *) value, NULL);
+  } else if (type == G_TYPE_UINT64) {
+    g_object_set (G_OBJECT (elem->element), property_name,
+        *(uint64_t *) value, NULL);
+  } else {
+    g_object_set (G_OBJECT (elem->element), property_name, value, NULL);
+  }
+
+  handle_exit (elem_h);
+}
+
+/**
+ * @brief Gets the value of given element's property in NNStreamer pipelines.
+ */
+static int
+ml_pipeline_element_get_property (ml_pipeline_element_h elem_h,
+    const char *property_name, GType type, gpointer pvalue)
+{
+  handle_init (common_elem, elem_h);
+
+  /* Check the input parameter */
+  if (property_name == NULL) {
+    _ml_error_report
+        ("The parameter, property_name (const char *), is NULL. It should be a valid string of the property name of an element.");
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto unlock_return;
+  }
+
+  if (pvalue == NULL) {
+    _ml_error_report
+        ("The parameter, pvalue (gpointer / a pointer of a value), is NULL. It should be a valid gpointer (a pointer of a value). E.g., char *str; ... ml_pipeline_get_property_string (... &str); ... int32_t val; ... ml_pipeline_get_property_int32 (..., &val);");
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto unlock_return;
+  }
+
+  /* Check property existence & its type */
+  if (!ml_pipeline_element_check_property (G_OBJECT_GET_CLASS (elem->element),
+          property_name, type)) {
+    _ml_error_report
+        ("Cannot check the property ('%s') or the element ('%s'). Please check if you have the corresponding element in the pipeline.",
+        property_name, elem->name);
+    ret = ML_ERROR_INVALID_PARAMETER;
+    goto unlock_return;
+  }
+
+  /* Get property */
+  g_object_get (G_OBJECT (elem->element), property_name, pvalue, NULL);
+
+  handle_exit (elem_h);
+}
+
+/**
+ * @brief Sets the boolean value of element's property in NNStreamer pipelines.
+ */
+int
+ml_pipeline_element_set_property_bool (ml_pipeline_element_h elem_h,
+    const char *property_name, const int32_t value)
+{
+  return ml_pipeline_element_set_property (elem_h, property_name,
+      GINT_TO_POINTER (value), G_TYPE_BOOLEAN);
+}
+
+/**
+ * @brief Sets the string value of element's property in NNStreamer pipelines.
+ */
+int
+ml_pipeline_element_set_property_string (ml_pipeline_element_h elem_h,
+    const char *property_name, const char *value)
+{
+  return ml_pipeline_element_set_property (elem_h, property_name,
+      (gpointer) value, G_TYPE_STRING);
+}
+
+/**
+ * @brief Sets the integer value of element's property in NNStreamer pipelines.
+ */
+int
+ml_pipeline_element_set_property_int32 (ml_pipeline_element_h elem_h,
+    const char *property_name, const int32_t value)
+{
+  return ml_pipeline_element_set_property (elem_h, property_name,
+      GINT_TO_POINTER (value), G_TYPE_INT);
+}
+
+/**
+ * @brief Sets the integer 64bit value of element's property in NNStreamer pipelines.
+ */
+int
+ml_pipeline_element_set_property_int64 (ml_pipeline_element_h elem_h,
+    const char *property_name, const int64_t value)
+{
+  return ml_pipeline_element_set_property (elem_h, property_name,
+      (gpointer) (&value), G_TYPE_INT64);
+}
+
+/**
+ * @brief Sets the unsigned integer value of element's property in NNStreamer pipelines.
+ */
+int
+ml_pipeline_element_set_property_uint32 (ml_pipeline_element_h elem_h,
+    const char *property_name, const uint32_t value)
+{
+  return ml_pipeline_element_set_property (elem_h, property_name,
+      GUINT_TO_POINTER (value), G_TYPE_UINT);
+}
+
+/**
+ * @brief Sets the unsigned integer 64bit value of element's property in NNStreamer pipelines.
+ */
+int
+ml_pipeline_element_set_property_uint64 (ml_pipeline_element_h elem_h,
+    const char *property_name, const uint64_t value)
+{
+  return ml_pipeline_element_set_property (elem_h, property_name,
+      (gpointer) (&value), G_TYPE_UINT64);
+}
+
+/**
+ * @brief Sets the floating point value of element's property in NNStreamer pipelines.
+ */
+int
+ml_pipeline_element_set_property_double (ml_pipeline_element_h elem_h,
+    const char *property_name, const double value)
+{
+  return ml_pipeline_element_set_property (elem_h, property_name,
+      (gpointer) (&value), G_TYPE_DOUBLE);
+}
+
+/**
+ * @brief Sets the enumeration value of element's property in NNStreamer pipelines.
+ */
+int
+ml_pipeline_element_set_property_enum (ml_pipeline_element_h elem_h,
+    const char *property_name, const uint32_t value)
+{
+  return ml_pipeline_element_set_property (elem_h, property_name,
+      GUINT_TO_POINTER (value), G_TYPE_ENUM);
+}
+
+/**
+ * @brief Gets the boolean value of element's property in NNStreamer pipelines.
+ */
+int
+ml_pipeline_element_get_property_bool (ml_pipeline_element_h elem_h,
+    const char *property_name, int32_t * value)
+{
+  return ml_pipeline_element_get_property (elem_h, property_name,
+      G_TYPE_BOOLEAN, (gpointer) value);
+}
+
+/**
+ * @brief Gets the string value of element's property in NNStreamer pipelines.
+ */
+int
