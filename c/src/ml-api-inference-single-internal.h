@@ -59,4 +59,5 @@ char* _ml_nnfw_to_str_prop (ml_nnfw_hw_e hw);
 
 #ifdef __cplusplus
 }
-#endif /* __cp
+#endif /* __cplusplus */
+#endif /* __ML_API_INF_SINGLE_INTERNAL_H__ */
