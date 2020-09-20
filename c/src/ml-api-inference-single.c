@@ -20,4 +20,28 @@
 #include <tensor_filter_single.h>
 
 #include "ml-api-inference-internal.h"
-#incl
+#include "ml-api-internal.h"
+#include "ml-api-inference-single-internal.h"
+
+#define ML_SINGLE_MAGIC 0xfeedfeed
+
+/**
+ * @brief Default time to wait for an output in milliseconds (0 will wait for the output).
+ */
+#define SINGLE_DEFAULT_TIMEOUT 0
+
+/**
+ * @brief Global lock for single shot API
+ * @detail This lock ensures that ml_single_close is thread safe. All other API
+ *         functions use the mutex from the single handle. However for close,
+ *         single handle mutex cannot be used as single handle is destroyed at
+ *         close
+ * @note This mutex is automatically initialized as it is statically declared
+ */
+G_LOCK_DEFINE_STATIC (magic);
+
+/**
+ * @brief Get valid handle after magic verification
+ * @note handle's mutex (single_h->mutex) is acquired after this
+ * @param[out] single_h The handle properly casted: (ml_single *).
+ * @param[in] single Th
