@@ -44,4 +44,27 @@ G_LOCK_DEFINE_STATIC (magic);
  * @brief Get valid handle after magic verification
  * @note handle's mutex (single_h->mutex) is acquired after this
  * @param[out] single_h The handle properly casted: (ml_single *).
- * @param[in] single Th
+ * @param[in] single The handle to be validated: (void *).
+ * @param[in] reset Set TRUE if the handle is to be reset (magic = 0).
+ */
+#define ML_SINGLE_GET_VALID_HANDLE_LOCKED(single_h, single, reset) do { \
+  G_LOCK (magic); \
+  single_h = (ml_single *) single; \
+  if (G_UNLIKELY(single_h->magic != ML_SINGLE_MAGIC)) { \
+    _ml_error_report \
+        ("The given param, %s (ml_single_h), is invalid. It is not a single_h instance or the user thread has modified it.", \
+        #single); \
+    G_UNLOCK (magic); \
+    return ML_ERROR_INVALID_PARAMETER; \
+  } \
+  if (G_UNLIKELY(reset)) \
+    single_h->magic = 0; \
+  g_mutex_lock (&single_h->mutex); \
+  G_UNLOCK (magic); \
+} while (0)
+
+/**
+ * @brief This is for the symmetricity with ML_SINGLE_GET_VALID_HANDLE_LOCKED
+ * @param[in] single_h The casted handle (ml_single *).
+ */
+#define ML_SINGLE_HANDLE_UNLOCK(s
