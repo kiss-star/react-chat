@@ -67,4 +67,30 @@ G_LOCK_DEFINE_STATIC (magic);
  * @brief This is for the symmetricity with ML_SINGLE_GET_VALID_HANDLE_LOCKED
  * @param[in] single_h The casted handle (ml_single *).
  */
-#define ML_SINGLE_HANDLE_UNLOCK(s
+#define ML_SINGLE_HANDLE_UNLOCK(single_h) g_mutex_unlock (&single_h->mutex);
+
+/** define string names for input/output */
+#define INPUT_STR "input"
+#define OUTPUT_STR "output"
+#define TYPE_STR "type"
+#define NAME_STR "name"
+
+/** concat string from #define */
+#define CONCAT_MACRO_STR(STR1,STR2) STR1 STR2
+
+/** States for invoke thread */
+typedef enum
+{
+  IDLE = 0,           /**< ready to accept next input */
+  RUNNING,            /**< running an input, cannot accept more input */
+  JOIN_REQUESTED      /**< should join the thread, will exit soon */
+} thread_state;
+
+/**
+ * @brief The name of sub-plugin for defined neural net frameworks.
+ * @note The sub-plugin for Android is not declared (e.g., snap)
+ */
+static const char *ml_nnfw_subplugin_name[] = {
+  [ML_NNFW_TYPE_ANY] = "any",   /* DO NOT use this name ('any') to get the sub-plugin */
+  [ML_NNFW_TYPE_CUSTOM_FILTER] = "custom",
+  [ML_NNFW_TYPE_TENSORFLOW_LI
