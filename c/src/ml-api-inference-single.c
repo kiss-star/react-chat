@@ -93,4 +93,28 @@ typedef enum
 static const char *ml_nnfw_subplugin_name[] = {
   [ML_NNFW_TYPE_ANY] = "any",   /* DO NOT use this name ('any') to get the sub-plugin */
   [ML_NNFW_TYPE_CUSTOM_FILTER] = "custom",
-  [ML_NNFW_TYPE_TENSORFLOW_LI
+  [ML_NNFW_TYPE_TENSORFLOW_LITE] = "tensorflow-lite",
+  [ML_NNFW_TYPE_TENSORFLOW] = "tensorflow",
+  [ML_NNFW_TYPE_NNFW] = "nnfw",
+  [ML_NNFW_TYPE_MVNC] = "movidius-ncsdk2",
+  [ML_NNFW_TYPE_OPENVINO] = "openvino",
+  [ML_NNFW_TYPE_VIVANTE] = "vivante",
+  [ML_NNFW_TYPE_EDGE_TPU] = "edgetpu",
+  [ML_NNFW_TYPE_ARMNN] = "armnn",
+  [ML_NNFW_TYPE_SNPE] = "snpe",
+  [ML_NNFW_TYPE_PYTORCH] = "pytorch",
+  [ML_NNFW_TYPE_NNTR_INF] = "nntrainer",
+  [ML_NNFW_TYPE_VD_AIFW] = "vd_aifw",
+  [ML_NNFW_TYPE_TRIX_ENGINE] = "trix-engine",
+  [ML_NNFW_TYPE_MXNET] = "mxnet",
+  [ML_NNFW_TYPE_TVM] = "tvm",
+  NULL
+};
+
+/** ML single api data structure for handle */
+typedef struct
+{
+  GTensorFilterSingleClass *klass;    /**< tensor filter class structure*/
+  GTensorFilterSingle *filter;        /**< tensor filter element */
+  ml_tensors_info_s in_info;          /**< info about input */
+  ml_tensors_info_s out_info;         /
