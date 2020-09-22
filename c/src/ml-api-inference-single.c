@@ -117,4 +117,16 @@ typedef struct
   GTensorFilterSingleClass *klass;    /**< tensor filter class structure*/
   GTensorFilterSingle *filter;        /**< tensor filter element */
   ml_tensors_info_s in_info;          /**< info about input */
-  ml_tensors_info_s out_info;         /
+  ml_tensors_info_s out_info;         /**< info about output */
+  ml_nnfw_type_e nnfw;                /**< nnfw type for this filter */
+  guint magic;                        /**< code to verify valid handle */
+
+  GThread *thread;                    /**< thread for invoking */
+  GMutex mutex;                       /**< mutex for synchronization */
+  GCond cond;                         /**< condition for synchronization */
+  ml_tensors_data_h input;            /**< input received from user */
+  ml_tensors_data_h output;           /**< output to be sent back to user */
+  guint timeout;                      /**< timeout for invoking */
+  thread_state state;                 /**< current state of the thread */
+  gboolean free_output;               /**< true if output tensors are allocated in single-shot */
+  int status;                         /**< status of processin
