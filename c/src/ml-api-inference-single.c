@@ -129,4 +129,26 @@ typedef struct
   guint timeout;                      /**< timeout for invoking */
   thread_state state;                 /**< current state of the thread */
   gboolean free_output;               /**< true if output tensors are allocated in single-shot */
-  int status;                         /**< status of processin
+  int status;                         /**< status of processing */
+  gboolean invoking;                  /**< invoke running flag */
+  ml_tensors_data_s in_tensors;    /**< input tensor wrapper for processing */
+  ml_tensors_data_s out_tensors;   /**< output tensor wrapper for processing */
+
+  /** @todo Use only ml_tensor_info_s dimension instead of saving ranks value */
+  guint input_ranks[ML_TENSOR_SIZE_LIMIT];   /**< the rank list of input tensors, it is calculated based on the dimension string. */
+  guint output_ranks[ML_TENSOR_SIZE_LIMIT];  /**< the rank list of output tensors, it is calculated based on the dimension string. */
+
+  GList *destroy_data_list;         /**< data to be freed by filter */
+} ml_single;
+
+/**
+ * @brief Internal function to get the nnfw type.
+ */
+ml_nnfw_type_e
+_ml_get_nnfw_type_by_subplugin_name (const char *name)
+{
+  ml_nnfw_type_e nnfw_type = ML_NNFW_TYPE_ANY;
+  int idx = -1;
+
+  if (name == NULL)
+    return ML_NNFW_TYPE_
