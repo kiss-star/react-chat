@@ -151,4 +151,42 @@ _ml_get_nnfw_type_by_subplugin_name (const char *name)
   int idx = -1;
 
   if (name == NULL)
-    return ML_NNFW_TYPE_
+    return ML_NNFW_TYPE_ANY;
+
+  idx = find_key_strv (ml_nnfw_subplugin_name, name);
+  if (idx < 0) {
+    /* check sub-plugin for android */
+    if (g_ascii_strcasecmp (name, "snap") == 0)
+      nnfw_type = ML_NNFW_TYPE_SNAP;
+    else
+      _ml_error_report ("Cannot find nnfw, %s is an invalid name.",
+          _STR_NULL (name));
+  } else {
+    nnfw_type = (ml_nnfw_type_e) idx;
+  }
+
+  return nnfw_type;
+}
+
+/**
+ * @brief Internal function to get the sub-plugin name.
+ */
+const char *
+_ml_get_nnfw_subplugin_name (ml_nnfw_type_e nnfw)
+{
+  /* check sub-plugin for android */
+  if (nnfw == ML_NNFW_TYPE_SNAP)
+    return "snap";
+
+  return ml_nnfw_subplugin_name[nnfw];
+}
+
+/**
+ * @brief Convert c-api based hw to internal representation
+ */
+accl_hw
+_ml_nnfw_to_accl_hw (const ml_nnfw_hw_e hw)
+{
+  switch (hw) {
+    case ML_NNFW_HW_ANY:
+      return ACCL
