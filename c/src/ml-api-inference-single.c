@@ -189,4 +189,40 @@ _ml_nnfw_to_accl_hw (const ml_nnfw_hw_e hw)
 {
   switch (hw) {
     case ML_NNFW_HW_ANY:
-      return ACCL
+      return ACCL_DEFAULT;
+    case ML_NNFW_HW_AUTO:
+      return ACCL_AUTO;
+    case ML_NNFW_HW_CPU:
+      return ACCL_CPU;
+#if defined (__aarch64__) || defined (__arm__)
+    case ML_NNFW_HW_CPU_NEON:
+      return ACCL_CPU_NEON;
+#else
+    case ML_NNFW_HW_CPU_SIMD:
+      return ACCL_CPU_SIMD;
+#endif
+    case ML_NNFW_HW_GPU:
+      return ACCL_GPU;
+    case ML_NNFW_HW_NPU:
+      return ACCL_NPU;
+    case ML_NNFW_HW_NPU_MOVIDIUS:
+      return ACCL_NPU_MOVIDIUS;
+    case ML_NNFW_HW_NPU_EDGE_TPU:
+      return ACCL_NPU_EDGE_TPU;
+    case ML_NNFW_HW_NPU_VIVANTE:
+      return ACCL_NPU_VIVANTE;
+    case ML_NNFW_HW_NPU_SLSI:
+      return ACCL_NPU_SLSI;
+    case ML_NNFW_HW_NPU_SR:
+      /** @todo how to get srcn npu */
+      return ACCL_NPU_SR;
+    default:
+      return ACCL_AUTO;
+  }
+}
+
+/**
+ * @brief Checks the availability of the given execution environments with custom option.
+ */
+int
+ml_che
