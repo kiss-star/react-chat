@@ -225,4 +225,26 @@ _ml_nnfw_to_accl_hw (const ml_nnfw_hw_e hw)
  * @brief Checks the availability of the given execution environments with custom option.
  */
 int
-ml_che
+ml_check_nnfw_availability_full (ml_nnfw_type_e nnfw, ml_nnfw_hw_e hw,
+    const char *custom, bool *available)
+{
+  const char *fw_name = NULL;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (!available)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, available (bool *), is NULL. It should be a valid pointer of bool. E.g., bool a; ml_check_nnfw_availability_full (..., &a);");
+
+  /* init false */
+  *available = false;
+
+  if (nnfw == ML_NNFW_TYPE_ANY)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, nnfw (ml_nnfw_type_e), is ML_NNFW_TYPE_ANY. It should specify the framework to be probed for the hardware availability.");
+
+  fw_name = _ml_get_nnfw_subplugin_name (nnfw);
+
+  if (fw_name) {
+    if (nnstreamer_filter_find (fw_name) != NULL) {
+      accl_hw accl = _ml_nnfw_to_accl_hw (hw);
