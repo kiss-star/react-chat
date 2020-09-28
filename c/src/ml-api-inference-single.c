@@ -248,3 +248,39 @@ ml_check_nnfw_availability_full (ml_nnfw_type_e nnfw, ml_nnfw_hw_e hw,
   if (fw_name) {
     if (nnstreamer_filter_find (fw_name) != NULL) {
       accl_hw accl = _ml_nnfw_to_accl_hw (hw);
+
+      if (gst_tensor_filter_check_hw_availability (fw_name, accl, custom)) {
+        *available = true;
+      } else {
+        _ml_logi ("%s is supported but not with the specified hardware.",
+            fw_name);
+      }
+    } else {
+      _ml_logi ("%s is not supported.", fw_name);
+    }
+  } else {
+    _ml_logw ("Cannot get the name of sub-plugin for given nnfw.");
+  }
+
+  return ML_ERROR_NONE;
+}
+
+/**
+ * @brief Checks the availability of the given execution environments.
+ */
+int
+ml_check_nnfw_availability (ml_nnfw_type_e nnfw, ml_nnfw_hw_e hw,
+    bool *available)
+{
+  return ml_check_nnfw_availability_full (nnfw, hw, NULL, available);
+}
+
+/**
+ * @brief setup input and output tensor memory to pass to the tensor_filter.
+ * @note this tensor memory wrapper will be reused for each invoke.
+ */
+static void
+__setup_in_out_tensors (ml_single * single_h)
+{
+  int i;
+  ml_tensors_data_s *in_tens
