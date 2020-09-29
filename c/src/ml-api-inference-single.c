@@ -283,4 +283,26 @@ static void
 __setup_in_out_tensors (ml_single * single_h)
 {
   int i;
-  ml_tensors_data_s *in_tens
+  ml_tensors_data_s *in_tensors = &single_h->in_tensors;
+  ml_tensors_data_s *out_tensors = &single_h->out_tensors;
+
+  /** Setup input buffer */
+  _ml_tensors_info_free (in_tensors->info);
+  ml_tensors_info_clone (in_tensors->info, &single_h->in_info);
+
+  in_tensors->num_tensors = single_h->in_info.num_tensors;
+  for (i = 0; i < single_h->in_info.num_tensors; i++) {
+    /** memory will be allocated by tensor_filter_single */
+    in_tensors->tensors[i].tensor = NULL;
+    in_tensors->tensors[i].size =
+        _ml_tensor_info_get_size (&single_h->in_info.info[i],
+        single_h->in_info.is_extended);
+  }
+
+  /** Setup output buffer */
+  _ml_tensors_info_free (out_tensors->info);
+  ml_tensors_info_clone (out_tensors->info, &single_h->out_info);
+
+  out_tensors->num_tensors = single_h->out_info.num_tensors;
+  for (i = 0; i < single_h->out_info.num_tensors; i++) {
+    /** memory will be allocated
