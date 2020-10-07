@@ -305,4 +305,39 @@ __setup_in_out_tensors (ml_single * single_h)
 
   out_tensors->num_tensors = single_h->out_info.num_tensors;
   for (i = 0; i < single_h->out_info.num_tensors; i++) {
-    /** memory will be allocated
+    /** memory will be allocated by tensor_filter_single */
+    out_tensors->tensors[i].tensor = NULL;
+    out_tensors->tensors[i].size =
+        _ml_tensor_info_get_size (&single_h->out_info.info[i],
+        single_h->out_info.is_extended);
+  }
+}
+
+/**
+ * @brief To call the framework to destroy the allocated output data
+ */
+static inline void
+__destroy_notify (gpointer data_h, gpointer single_data)
+{
+  ml_single *single_h;
+  ml_tensors_data_s *data;
+
+  data = (ml_tensors_data_s *) data_h;
+  single_h = (ml_single *) single_data;
+
+  if (G_LIKELY (single_h->filter)) {
+    if (single_h->klass->allocate_in_invoke (single_h->filter)) {
+      single_h->klass->destroy_notify (single_h->filter,
+          (GstTensorMemory *) data->tensors);
+    }
+  }
+
+  /* reset callback function */
+  data->destroy = NULL;
+}
+
+/**
+ * @brief Wrapper function for __destroy_notify
+ */
+static int
+ml_single_destroy_notify_cb (void *handle, void *user_da
