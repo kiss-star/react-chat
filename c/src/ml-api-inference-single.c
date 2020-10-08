@@ -354,4 +354,30 @@ ml_single_destroy_notify_cb (void *handle, void *user_data)
     _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
         "Failed to destroy data buffer. Callback function argument from _ml_tensors_data_destroy_internal is invalid. The given 'handle' is NULL. It appears to be an internal error of ML-API or the user thread has touched private data structure.");
 
-  ML_SINGLE_GET_VA
+  ML_SINGLE_GET_VALID_HANDLE_LOCKED (single_h, single, 0);
+
+  if (G_UNLIKELY (!single_h->filter)) {
+    status = ML_ERROR_INVALID_PARAMETER;
+    _ml_error_report
+        ("Failed to destroy the data buffer. The handle instance (single_h) is invalid. It appears to be an internal error of ML-API of the user thread has touched private data structure.");
+    goto exit;
+  }
+
+  single_h->destroy_data_list =
+      g_list_remove (single_h->destroy_data_list, data);
+  __destroy_notify (data, single_h);
+
+exit:
+  ML_SINGLE_HANDLE_UNLOCK (single_h);
+
+  return status;
+}
+
+/**
+ * @brief setup the destroy notify for the allocated output data.
+ * @note this stores the data entry in the single list.
+ * @note this has not overhead if the allocation of output is not performed by
+ * the framework but by tensor filter element.
+ */
+static void
+set_destroy_notify (ml_single * singl
