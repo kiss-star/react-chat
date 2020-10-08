@@ -340,4 +340,18 @@ __destroy_notify (gpointer data_h, gpointer single_data)
  * @brief Wrapper function for __destroy_notify
  */
 static int
-ml_single_destroy_notify_cb (void *handle, void *user_da
+ml_single_destroy_notify_cb (void *handle, void *user_data)
+{
+  ml_tensors_data_h data = (ml_tensors_data_h) handle;
+  ml_single_h single = (ml_single_h) user_data;
+  ml_single *single_h;
+  int status = ML_ERROR_NONE;
+
+  if (G_UNLIKELY (!single))
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "Failed to destroy data buffer. Callback function argument from _ml_tensors_data_destroy_internal is invalid. The given 'user_data' is NULL. It appears to be an internal error of ML-API or the user thread has touched private data structure.");
+  if (G_UNLIKELY (!data))
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "Failed to destroy data buffer. Callback function argument from _ml_tensors_data_destroy_internal is invalid. The given 'handle' is NULL. It appears to be an internal error of ML-API or the user thread has touched private data structure.");
+
+  ML_SINGLE_GET_VA
