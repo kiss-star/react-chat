@@ -380,4 +380,34 @@ exit:
  * the framework but by tensor filter element.
  */
 static void
-set_destroy_notify (ml_single * singl
+set_destroy_notify (ml_single * single_h, ml_tensors_data_s * data,
+    gboolean add)
+{
+  if (single_h->klass->allocate_in_invoke (single_h->filter)) {
+    data->destroy = ml_single_destroy_notify_cb;
+    data->user_data = single_h;
+    add = TRUE;
+  }
+
+  if (add) {
+    single_h->destroy_data_list = g_list_append (single_h->destroy_data_list,
+        (gpointer) data);
+  }
+}
+
+/**
+ * @brief Internal function to call subplugin's invoke
+ */
+static inline int
+__invoke (ml_single * single_h, ml_tensors_data_h in, ml_tensors_data_h out)
+{
+  ml_tensors_data_s *in_data, *out_data;
+  int status = ML_ERROR_NONE;
+  GstTensorMemory *in_tensors, *out_tensors;
+
+  in_data = (ml_tensors_data_s *) in;
+  out_data = (ml_tensors_data_s *) out;
+
+  /* Prevent error case when input or output is null in invoke thread. */
+  if (!in_data || !out_data) {
+    _ml_error_report ("Failed to invoke a model, invalid data hand
