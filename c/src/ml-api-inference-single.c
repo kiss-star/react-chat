@@ -431,4 +431,34 @@ __invoke (ml_single * single_h, ml_tensors_data_h in, ml_tensors_data_h out)
 }
 
 /**
- * @brief Internal func
+ * @brief Internal function to post-process given output.
+ */
+static inline void
+__process_output (ml_single * single_h, ml_tensors_data_h output)
+{
+  ml_tensors_data_s *out_data;
+
+  if (!single_h->free_output) {
+    /* Do nothing. The output handle is not allocated in single-shot process. */
+    return;
+  }
+
+  if (g_list_find (single_h->destroy_data_list, output)) {
+    /**
+     * Caller of the invoke thread has returned back with timeout.
+     * So, free the memory allocated by the invoke as their is no receiver.
+     */
+    single_h->destroy_data_list =
+        g_list_remove (single_h->destroy_data_list, output);
+    ml_tensors_data_destroy (output);
+  } else {
+    out_data = (ml_tensors_data_s *) output;
+    set_destroy_notify (single_h, out_data, FALSE);
+  }
+}
+
+/**
+ * @brief Initializes the rank information with default value.
+ */
+static int
+_ml_tensors_rank_initializ
