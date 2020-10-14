@@ -461,4 +461,44 @@ __process_output (ml_single * single_h, ml_tensors_data_h output)
  * @brief Initializes the rank information with default value.
  */
 static int
-_ml_tensors_rank_initializ
+_ml_tensors_rank_initialize (guint * rank)
+{
+  guint i;
+
+  if (!rank)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, rank, is NULL. Provide a valid pointer.");
+
+  for (i = 0; i < ML_TENSOR_SIZE_LIMIT; i++) {
+    rank[i] = 0;
+  }
+
+  return ML_ERROR_NONE;
+}
+
+/**
+ * @brief Sets the rank information with given value.
+ */
+static int
+_ml_tensors_set_rank (guint * rank, guint val)
+{
+  guint i;
+
+  if (!rank)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, rank, is NULL. Provide a valid pointer.");
+
+  for (i = 0; i < ML_TENSOR_SIZE_LIMIT; i++) {
+    rank[i] = val;
+  }
+
+  return ML_ERROR_NONE;
+}
+
+/**
+ * @brief thread to execute calls to invoke
+ *
+ * @details The thread behavior is detailed as below:
+ *          - Starting with IDLE state, the thread waits for an input or change
+ *          in state externally.
+ *          - If s
