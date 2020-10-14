@@ -501,4 +501,30 @@ _ml_tensors_set_rank (guint * rank, guint val)
  * @details The thread behavior is detailed as below:
  *          - Starting with IDLE state, the thread waits for an input or change
  *          in state externally.
- *          - If s
+ *          - If state is not RUNNING, exit this thread, else process the
+ *          request.
+ *          - Process input, call invoke, process output. Any error in this
+ *          state sets the status to be used by ml_single_invoke().
+ *          - State is set back to IDLE and thread moves back to start.
+ *
+ *          State changes performed by this function when:
+ *          RUNNING -> IDLE - processing is finished.
+ *          JOIN_REQUESTED -> IDLE - close is requested.
+ *
+ * @note Error while processing an input is provided back to requesting
+ *       function, and further processing of invoke_thread is not affected.
+ */
+static void *
+invoke_thread (void *arg)
+{
+  ml_single *single_h;
+  ml_tensors_data_h input, output;
+
+  single_h = (ml_single *) arg;
+
+  g_mutex_lock (&single_h->mutex);
+
+  while (single_h->state <= RUNNING) {
+    int status = ML_ERROR_NONE;
+
+    /** wait for
