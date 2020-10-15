@@ -527,4 +527,32 @@ invoke_thread (void *arg)
   while (single_h->state <= RUNNING) {
     int status = ML_ERROR_NONE;
 
-    /** wait for
+    /** wait for data */
+    while (single_h->state != RUNNING) {
+      g_cond_wait (&single_h->cond, &single_h->mutex);
+      if (single_h->state >= JOIN_REQUESTED)
+        goto exit;
+    }
+
+    input = single_h->input;
+    output = single_h->output;
+    /* Set null to prevent double-free. */
+    single_h->input = NULL;
+
+    single_h->invoking = TRUE;
+    g_mutex_unlock (&single_h->mutex);
+    status = __invoke (single_h, input, output);
+    g_mutex_lock (&single_h->mutex);
+    /* Clear input data after invoke is done. */
+    ml_tensors_data_destroy (input);
+    single_h->invoking = FALSE;
+
+    if (status != ML_ERROR_NONE) {
+      if (single_h->free_output) {
+        single_h->destroy_data_list =
+            g_list_remove (single_h->destroy_data_list, output);
+        ml_tensors_data_destroy (output);
+      }
+
+      goto wait_for_next;
+    }
