@@ -556,3 +556,29 @@ invoke_thread (void *arg)
 
       goto wait_for_next;
     }
+
+    __process_output (single_h, output);
+
+    /** loop over to wait for the next element */
+  wait_for_next:
+    single_h->status = status;
+    if (single_h->state == RUNNING)
+      single_h->state = IDLE;
+    g_cond_broadcast (&single_h->cond);
+  }
+
+exit:
+  /* Do not set IDLE if JOIN_REQUESTED */
+  if (single_h->state == RUNNING)
+    single_h->state = IDLE;
+  g_mutex_unlock (&single_h->mutex);
+  return NULL;
+}
+
+/**
+ * @brief Sets the information (tensor dimension, type, name and so on) of required input data for the given model, and get updated output data information.
+ * @details Note that a model/framework may not support setting such information.
+ * @since_tizen 6.0
+ * @param[in] single The model handle.
+ * @param[in] in_info The handle of input tensors information.
+ * @param[out] out_info The handle of 
