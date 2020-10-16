@@ -596,3 +596,15 @@ ml_single_update_info (ml_single_h single,
     _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
         "The parameter, single (ml_single_h), is NULL. It should be a valid ml_single_h instance, usually created by ml_single_open().");
   if (!in_info)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, in_info (const ml_tensors_info_h), is NULL. It should be a valid instance of ml_tensors_info_h, usually created by ml_tensors_info_create() and configured by the application.");
+  if (!out_info)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, out_info (ml_tensors_info_h *), is NULL. It should be a valid pointer to an instance ml_tensors_info_h, usually created by ml_tensors_info_h(). Note that out_info is supposed to be overwritten by this API call.");
+
+  /* init null */
+  *out_info = NULL;
+
+  _ml_error_report_return_continue_iferr (ml_single_set_input_info (single,
+          in_info),
+      "Configuring the neural network model with the given input information has failed with %d error code. The given input information ('in_info' pa
