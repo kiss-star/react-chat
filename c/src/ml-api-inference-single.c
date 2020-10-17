@@ -607,4 +607,33 @@ ml_single_update_info (ml_single_h single,
 
   _ml_error_report_return_continue_iferr (ml_single_set_input_info (single,
           in_info),
-      "Configuring the neural network model with the given input information has failed with %d error code. The given input information ('in_info' pa
+      "Configuring the neural network model with the given input information has failed with %d error code. The given input information ('in_info' parameter) might be invalid or the given neural network cannot accept it as its input data.",
+      _ERRNO);
+
+  __setup_in_out_tensors (single);
+  _ml_error_report_return_continue_iferr (ml_single_get_output_info (single,
+          out_info),
+      "Fetching output info after configuring input information has failed with %d error code.",
+      _ERRNO);
+
+  return ML_ERROR_NONE;
+}
+
+/**
+ * @brief Internal function to get the gst info from tensor-filter.
+ */
+static void
+ml_single_get_gst_info (ml_single * single_h, gboolean is_input,
+    GstTensorsInfo * gst_info)
+{
+  const gchar *prop_prefix, *prop_name, *prop_type;
+  gchar *val;
+  guint num;
+
+  if (is_input) {
+    prop_prefix = INPUT_STR;
+    prop_type = CONCAT_MACRO_STR (INPUT_STR, TYPE_STR);
+    prop_name = CONCAT_MACRO_STR (INPUT_STR, NAME_STR);
+  } else {
+    prop_prefix = OUTPUT_STR;
+    prop_type = CONCAT_MACRO_STR (OUTPU
