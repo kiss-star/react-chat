@@ -636,4 +636,33 @@ ml_single_get_gst_info (ml_single * single_h, gboolean is_input,
     prop_name = CONCAT_MACRO_STR (INPUT_STR, NAME_STR);
   } else {
     prop_prefix = OUTPUT_STR;
-    prop_type = CONCAT_MACRO_STR (OUTPU
+    prop_type = CONCAT_MACRO_STR (OUTPUT_STR, TYPE_STR);
+    prop_name = CONCAT_MACRO_STR (OUTPUT_STR, NAME_STR);
+  }
+
+  gst_tensors_info_init (gst_info);
+
+  /* get dimensions */
+  g_object_get (single_h->filter, prop_prefix, &val, NULL);
+  num = gst_tensors_info_parse_dimensions_string (gst_info, val);
+  g_free (val);
+
+  /* set the number of tensors */
+  gst_info->num_tensors = num;
+
+  /* get types */
+  g_object_get (single_h->filter, prop_type, &val, NULL);
+  num = gst_tensors_info_parse_types_string (gst_info, val);
+  g_free (val);
+
+  if (gst_info->num_tensors != num) {
+    _ml_logw ("The number of tensor type is mismatched in filter.");
+  }
+
+  /* get names */
+  g_object_get (single_h->filter, prop_name, &val, NULL);
+  num = gst_tensors_info_parse_names_string (gst_info, val);
+  g_free (val);
+
+  if (gst_info->num_tensors != num) {
+    _ml_logw ("The number of tensor name is mismatched in
