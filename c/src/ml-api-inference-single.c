@@ -665,4 +665,30 @@ ml_single_get_gst_info (ml_single * single_h, gboolean is_input,
   g_free (val);
 
   if (gst_info->num_tensors != num) {
-    _ml_logw ("The number of tensor name is mismatched in
+    _ml_logw ("The number of tensor name is mismatched in filter.");
+  }
+}
+
+/**
+ * @brief Internal function to set the gst info in tensor-filter.
+ */
+static int
+ml_single_set_gst_info (ml_single * single_h, const ml_tensors_info_h info)
+{
+  GstTensorsInfo gst_in_info, gst_out_info;
+  int status = ML_ERROR_NONE;
+  int ret = -EINVAL;
+
+  _ml_error_report_return_continue_iferr
+      (_ml_tensors_info_copy_from_ml (&gst_in_info, info),
+      "Cannot fetch tensor-info from the given info parameter. Error code: %d",
+      _ERRNO);
+
+  ret = single_h->klass->set_input_info (single_h->filter, &gst_in_info,
+      &gst_out_info);
+  if (ret == 0) {
+    _ml_error_report_return_continue_iferr
+        (_ml_tensors_info_copy_from_gst (&single_h->in_info, &gst_in_info),
+        "Fetching input information from the given single_h instance has failed with %d",
+        _ERRNO);
+    _ml_error_report_return_continue
