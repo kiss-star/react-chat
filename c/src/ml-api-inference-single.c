@@ -691,4 +691,34 @@ ml_single_set_gst_info (ml_single * single_h, const ml_tensors_info_h info)
         (_ml_tensors_info_copy_from_gst (&single_h->in_info, &gst_in_info),
         "Fetching input information from the given single_h instance has failed with %d",
         _ERRNO);
-    _ml_error_report_return_continue
+    _ml_error_report_return_continue_iferr (_ml_tensors_info_copy_from_gst
+        (&single_h->out_info, &gst_out_info),
+        "Fetching output information from the given single_h instance has failed with %d",
+        _ERRNO);
+    __setup_in_out_tensors (single_h);
+  } else if (ret == -ENOENT) {
+    status = ML_ERROR_NOT_SUPPORTED;
+  } else {
+    status = ML_ERROR_INVALID_PARAMETER;
+  }
+
+  return status;
+}
+
+/**
+ * @brief Set the info for input/output tensors
+ */
+static int
+ml_single_set_inout_tensors_info (GObject * object,
+    const gboolean is_input, ml_tensors_info_s * tensors_info)
+{
+  int status = ML_ERROR_NONE;
+  GstTensorsInfo info;
+  gchar *str_dim, *str_type, *str_name;
+  const gchar *str_type_name, *str_name_name;
+  const gchar *prefix;
+
+  if (is_input) {
+    prefix = INPUT_STR;
+    str_type_name = CONCAT_MACRO_STR (INPUT_STR, TYPE_STR);
+    str_name_name = CONCAT
