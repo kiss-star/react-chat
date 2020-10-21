@@ -721,4 +721,27 @@ ml_single_set_inout_tensors_info (GObject * object,
   if (is_input) {
     prefix = INPUT_STR;
     str_type_name = CONCAT_MACRO_STR (INPUT_STR, TYPE_STR);
-    str_name_name = CONCAT
+    str_name_name = CONCAT_MACRO_STR (INPUT_STR, NAME_STR);
+  } else {
+    prefix = OUTPUT_STR;
+    str_type_name = CONCAT_MACRO_STR (OUTPUT_STR, TYPE_STR);
+    str_name_name = CONCAT_MACRO_STR (OUTPUT_STR, NAME_STR);
+  }
+
+  _ml_error_report_return_continue_iferr
+      (_ml_tensors_info_copy_from_ml (&info, tensors_info),
+      "Cannot fetch tensor-info from the given information. Error code: %d",
+      _ERRNO);
+
+  /* Set input option */
+  str_dim = gst_tensors_info_get_dimensions_string (&info);
+  str_type = gst_tensors_info_get_types_string (&info);
+  str_name = gst_tensors_info_get_names_string (&info);
+
+  if (!str_dim || !str_type || !str_name) {
+    if (!str_dim)
+      _ml_error_report
+          ("Cannot fetch specific tensor-info from the given information: cannot fetch tensor dimension information.");
+    if (!str_type)
+      _ml_error_report
+ 
