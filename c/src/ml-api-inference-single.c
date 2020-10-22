@@ -769,4 +769,34 @@ ml_single_set_inout_tensors_info (GObject * object,
  */
 static gboolean
 ml_single_set_info_in_handle (ml_single_h single, gboolean is_input,
-    ml_
+    ml_tensors_info_s * tensors_info)
+{
+  int status;
+  ml_single *single_h;
+  ml_tensors_info_s *dest;
+  gboolean configured = FALSE;
+  gboolean is_valid = FALSE;
+  GObject *filter_obj;
+
+  single_h = (ml_single *) single;
+  filter_obj = G_OBJECT (single_h->filter);
+
+  if (is_input) {
+    dest = &single_h->in_info;
+    configured = single_h->klass->input_configured (single_h->filter);
+  } else {
+    dest = &single_h->out_info;
+    configured = single_h->klass->output_configured (single_h->filter);
+  }
+
+  if (configured) {
+    /* get configured info and compare with input info */
+    GstTensorsInfo gst_info;
+    ml_tensors_info_h info = NULL;
+
+    ml_single_get_gst_info (single_h, is_input, &gst_info);
+    _ml_tensors_info_create_from_gst (&info, &gst_info);
+
+    gst_tensors_info_free (&gst_info);
+
+    if (tensors_info && !ml_tensors_info_is_equal (tens
