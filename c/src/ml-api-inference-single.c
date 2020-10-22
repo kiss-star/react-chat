@@ -744,4 +744,29 @@ ml_single_set_inout_tensors_info (GObject * object,
           ("Cannot fetch specific tensor-info from the given information: cannot fetch tensor dimension information.");
     if (!str_type)
       _ml_error_report
- 
+          ("Cannot fetch specific tensor-info from the given information: cannot fetch tensor type information.");
+    if (!str_name)
+      _ml_error_report
+          ("Cannot fetch specific tensor-info from the given information: cannot fetch tensor name information. Even if tensor names are not defined, this should be able to fetch a list of empty strings.");
+
+    status = ML_ERROR_INVALID_PARAMETER;
+  } else {
+    g_object_set (object, prefix, str_dim, str_type_name, str_type,
+        str_name_name, str_name, NULL);
+  }
+
+  g_free (str_dim);
+  g_free (str_type);
+  g_free (str_name);
+
+  gst_tensors_info_free (&info);
+
+  return status;
+}
+
+/**
+ * @brief Internal static function to set tensors info in the handle.
+ */
+static gboolean
+ml_single_set_info_in_handle (ml_single_h single, gboolean is_input,
+    ml_
