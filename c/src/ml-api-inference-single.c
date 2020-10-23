@@ -832,4 +832,34 @@ done:
  * @brief Internal function to create and initialize the single handle.
  */
 static ml_single *
-ml_single_create_handle (m
+ml_single_create_handle (ml_nnfw_type_e nnfw)
+{
+  ml_single *single_h;
+  GError *error;
+
+  single_h = g_new0 (ml_single, 1);
+  if (single_h == NULL)
+    _ml_error_report_return (NULL,
+        "Failed to allocate memory for the single_h handle. Out of memory?");
+
+  single_h->filter = g_object_new (G_TYPE_TENSOR_FILTER_SINGLE, NULL);
+  if (single_h->filter == NULL) {
+    _ml_error_report
+        ("Failed to create a new instance for filter. Out of memory?");
+    g_free (single_h);
+    return NULL;
+  }
+
+  single_h->magic = ML_SINGLE_MAGIC;
+  single_h->timeout = SINGLE_DEFAULT_TIMEOUT;
+  single_h->nnfw = nnfw;
+  single_h->state = IDLE;
+  single_h->thread = NULL;
+  single_h->input = NULL;
+  single_h->output = NULL;
+  single_h->destroy_data_list = NULL;
+  single_h->invoking = FALSE;
+
+  _ml_tensors_info_initialize (&single_h->in_info);
+  _ml_tensors_info_initialize (&single_h->out_info);
+  _ml_tensors_rank_init
