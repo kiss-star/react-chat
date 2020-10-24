@@ -862,4 +862,32 @@ ml_single_create_handle (ml_nnfw_type_e nnfw)
 
   _ml_tensors_info_initialize (&single_h->in_info);
   _ml_tensors_info_initialize (&single_h->out_info);
-  _ml_tensors_rank_init
+  _ml_tensors_rank_initialize (single_h->input_ranks);
+  _ml_tensors_rank_initialize (single_h->output_ranks);
+  g_mutex_init (&single_h->mutex);
+  g_cond_init (&single_h->cond);
+
+  single_h->klass = g_type_class_ref (G_TYPE_TENSOR_FILTER_SINGLE);
+  if (single_h->klass == NULL) {
+    _ml_error_report
+        ("Failed to get class of the tensor-filter of single API. This binary is not compiled properly or required libraries are not loaded.");
+    ml_single_close (single_h);
+    return NULL;
+  }
+
+  single_h->thread =
+      g_thread_try_new (NULL, invoke_thread, (gpointer) single_h, &error);
+  if (single_h->thread == NULL) {
+    _ml_error_report
+        ("Failed to create the invoke thread of single API, g_thread_try_new has reported an error: %s.",
+        error->message);
+    g_clear_error (&error);
+    ml_single_close (single_h);
+    return NULL;
+  }
+
+  return single_h;
+}
+
+/**
+ * @brief Validate arguments for o
