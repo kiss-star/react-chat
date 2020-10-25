@@ -890,4 +890,22 @@ ml_single_create_handle (ml_nnfw_type_e nnfw)
 }
 
 /**
- * @brief Validate arguments for o
+ * @brief Validate arguments for open
+ */
+static int
+_ml_single_open_custom_validate_arguments (ml_single_h * single,
+    ml_single_preset * info)
+{
+  if (!single)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, 'single' (ml_single_h *), is NULL. It should be a valid pointer to an instance of ml_single_h.");
+  if (!info)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, 'info' (ml_single_preset *), is NULL. It should be a valid pointer to a valid instance of ml_single_preset.");
+
+  /* Validate input tensor info. */
+  if (info->input_info && !ml_tensors_info_is_valid (info->input_info))
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, 'info' (ml_single_preset *), is not valid. It has 'input_info' entry that cannot be validated. ml_tensors_info_is_valid(info->input_info) has failed while info->input_info exists.");
+
+  /* 
