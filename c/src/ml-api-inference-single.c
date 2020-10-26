@@ -908,4 +908,22 @@ _ml_single_open_custom_validate_arguments (ml_single_h * single,
     _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
         "The parameter, 'info' (ml_single_preset *), is not valid. It has 'input_info' entry that cannot be validated. ml_tensors_info_is_valid(info->input_info) has failed while info->input_info exists.");
 
-  /* 
+  /* Validate output tensor info. */
+  if (info->output_info && !ml_tensors_info_is_valid (info->output_info))
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, 'info' (ml_single_preset *), is not valid. It has 'output_info' entry that cannot be validated. ml_tensors_info_is_valid(info->output_info) has failed while info->output_info exists.");
+
+  if (!info->models)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, 'info' (ml_single_preset *), is not valid. Its models entry if NULL (info->models is NULL).");
+
+  return ML_ERROR_NONE;
+}
+
+/**
+ * @brief Internal function to convert accelerator as tensor_filter property format.
+ * @note returned value must be freed by the caller
+ * @note More details on format can be found in gst_tensor_filter_install_properties() in tensor_filter_common.c.
+ */
+char *
+_ml_
