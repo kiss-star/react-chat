@@ -926,4 +926,37 @@ _ml_single_open_custom_validate_arguments (ml_single_h * single,
  * @note More details on format can be found in gst_tensor_filter_install_properties() in tensor_filter_common.c.
  */
 char *
-_ml_
+_ml_nnfw_to_str_prop (const ml_nnfw_hw_e hw)
+{
+  const gchar *hw_name;
+  const gchar *use_accl = "true:";
+  gchar *str_prop = NULL;
+
+  hw_name = get_accl_hw_str (_ml_nnfw_to_accl_hw (hw));
+  str_prop = g_strdup_printf ("%s%s", use_accl, hw_name);
+
+  return str_prop;
+}
+
+/**
+ * @brief Opens an ML model with the custom options and returns the instance as a handle.
+ */
+int
+ml_single_open_custom (ml_single_h * single, ml_single_preset * info)
+{
+  ml_single *single_h;
+  GObject *filter_obj;
+  int status = ML_ERROR_NONE;
+  ml_tensors_info_s *in_tensors_info, *out_tensors_info;
+  ml_nnfw_type_e nnfw;
+  ml_nnfw_hw_e hw;
+  const gchar *fw_name;
+  gchar **list_models;
+  guint num_models;
+  char *hw_name;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  /* Validate the params */
+  _ml_error_report_return_continue_iferr
+      (_ml_single_open_custom_
