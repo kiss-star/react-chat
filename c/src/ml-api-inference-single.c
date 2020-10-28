@@ -959,4 +959,32 @@ ml_single_open_custom (ml_single_h * single, ml_single_preset * info)
 
   /* Validate the params */
   _ml_error_report_return_continue_iferr
-      (_ml_single_open_custom_
+      (_ml_single_open_custom_validate_arguments (single, info),
+      "The parameter, 'info' (ml_single_preset *), cannot be validated. Please provide valid information for this object.");
+
+  /* init null */
+  *single = NULL;
+
+  in_tensors_info = (ml_tensors_info_s *) info->input_info;
+  out_tensors_info = (ml_tensors_info_s *) info->output_info;
+  nnfw = info->nnfw;
+  hw = info->hw;
+  fw_name = _ml_get_nnfw_subplugin_name (nnfw);
+
+  /**
+   * 1. Determine nnfw and validate model file
+   */
+  list_models = g_strsplit (info->models, ",", -1);
+  num_models = g_strv_length (list_models);
+
+  status = _ml_validate_model_file ((const char **) list_models, num_models,
+      &nnfw);
+  if (status != ML_ERROR_NONE) {
+    _ml_error_report_continue
+        ("Cannot validate the model (1st model: %s. # models: %d). Error code: %d",
+        list_models[0], num_models, status);
+    g_strfreev (list_models);
+    return status;
+  }
+
+  g
