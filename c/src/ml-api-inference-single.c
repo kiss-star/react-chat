@@ -987,4 +987,26 @@ ml_single_open_custom (ml_single_h * single, ml_single_preset * info)
     return status;
   }
 
-  g
+  g_strfreev (list_models);
+
+  /**
+   * 2. Determine hw
+   * (Supposed CPU only) Support others later.
+   */
+  if (!_ml_nnfw_is_available (nnfw, hw)) {
+    _ml_error_report_return (ML_ERROR_NOT_SUPPORTED,
+        "The given nnfw, '%s', is not supported. There is no corresponding tensor-filter subplugin available or the given hardware requirement is not supported for the given nnfw.",
+        fw_name);
+  }
+
+                                        /** Create ml_single object */
+  if ((single_h = ml_single_create_handle (nnfw)) == NULL) {
+    _ml_error_report_return_continue (ML_ERROR_OUT_OF_MEMORY,
+        "Cannot create handle for the given nnfw, %s", fw_name);
+  }
+
+  filter_obj = G_OBJECT (single_h->filter);
+
+  /**
+   * 3. Construct a direct connection with the nnfw.
+   * Note that we do not construct a pipeline since 2
