@@ -1029,4 +1029,28 @@ ml_single_open_custom (ml_single_h * single, ml_single_preset * info)
           out_tensors_info);
       if (status != ML_ERROR_NONE) {
         _ml_error_report_continue
-            ("Output tensors info is given; however, failed to set output tensors info. Error code
+            ("Output tensors info is given; however, failed to set output tensors info. Error code: %d",
+            status);
+        goto error;
+      }
+    } else {
+      _ml_error_report
+          ("To run the given nnfw, '%s', with a neural network model, both input and output information should be provided.",
+          fw_name);
+      status = ML_ERROR_INVALID_PARAMETER;
+      goto error;
+    }
+  } else if (nnfw == ML_NNFW_TYPE_ARMNN) {
+    /* set input and output tensors information, if available */
+    if (in_tensors_info) {
+      status =
+          ml_single_set_inout_tensors_info (filter_obj, TRUE, in_tensors_info);
+      if (status != ML_ERROR_NONE) {
+        _ml_error_report_continue
+            ("With nnfw '%s', input tensors info is optional. However, the user has provided an invalid input tensors info. Error code: %d",
+            fw_name, status);
+        goto error;
+      }
+    }
+    if (out_tensors_info) {
+   
