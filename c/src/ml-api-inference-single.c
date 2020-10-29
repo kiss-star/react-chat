@@ -1009,4 +1009,24 @@ ml_single_open_custom (ml_single_h * single, ml_single_preset * info)
 
   /**
    * 3. Construct a direct connection with the nnfw.
-   * Note that we do not construct a pipeline since 2
+   * Note that we do not construct a pipeline since 2019.12.
+   */
+  if (nnfw == ML_NNFW_TYPE_TENSORFLOW || nnfw == ML_NNFW_TYPE_SNAP ||
+      nnfw == ML_NNFW_TYPE_PYTORCH || nnfw == ML_NNFW_TYPE_TRIX_ENGINE) {
+    /* set input and output tensors information */
+    if (in_tensors_info && out_tensors_info) {
+      status =
+          ml_single_set_inout_tensors_info (filter_obj, TRUE, in_tensors_info);
+      if (status != ML_ERROR_NONE) {
+        _ml_error_report_continue
+            ("Input tensors info is given; however, failed to set input tensors info. Error code: %d",
+            status);
+        goto error;
+      }
+
+      status =
+          ml_single_set_inout_tensors_info (filter_obj, FALSE,
+          out_tensors_info);
+      if (status != ML_ERROR_NONE) {
+        _ml_error_report_continue
+            ("Output tensors info is given; however, failed to set output tensors info. Error code
