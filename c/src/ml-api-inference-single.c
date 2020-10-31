@@ -1053,4 +1053,28 @@ ml_single_open_custom (ml_single_h * single, ml_single_preset * info)
       }
     }
     if (out_tensors_info) {
-   
+      status =
+          ml_single_set_inout_tensors_info (filter_obj, FALSE,
+          out_tensors_info);
+      if (status != ML_ERROR_NONE) {
+        _ml_error_report_continue
+            ("With nnfw '%s', output tensors info is optional. However, the user has provided an invalid output tensors info. Error code: %d",
+            fw_name, status);
+        goto error;
+      }
+    }
+  }
+
+  /* set accelerator, framework, model files and custom option */
+  if (info->fw_name) {
+    fw_name = (const char *) info->fw_name;
+  } else {
+    fw_name = _ml_get_nnfw_subplugin_name (nnfw);       /* retry for "auto" */
+  }
+  hw_name = _ml_nnfw_to_str_prop (hw);
+  g_object_set (filter_obj, "framework", fw_name, "accelerator", hw_name,
+      "model", info->models, NULL);
+  g_free (hw_name);
+
+  if (info->custom_option) {
+    g_object_set (filter_obj, "custom", info->custom_option, NULL);
