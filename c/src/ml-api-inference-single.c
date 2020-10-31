@@ -1078,3 +1078,27 @@ ml_single_open_custom (ml_single_h * single, ml_single_preset * info)
 
   if (info->custom_option) {
     g_object_set (filter_obj, "custom", info->custom_option, NULL);
+  }
+
+  /* 4. Start the nnfw to get inout configurations if needed */
+  if (!single_h->klass->start (single_h->filter)) {
+    _ml_error_report
+        ("Failed to start NNFW, '%s', to get inout configurations. Subplugin class method has failed to start.",
+        fw_name);
+    status = ML_ERROR_STREAMS_PIPE;
+    goto error;
+  }
+
+  if (nnfw == ML_NNFW_TYPE_NNTR_INF) {
+    if (!in_tensors_info || !out_tensors_info) {
+      if (!in_tensors_info) {
+        ml_tensors_info_h in_info;
+        status = ml_tensors_info_create (&in_info);
+        if (status != ML_ERROR_NONE) {
+          _ml_error_report_continue
+              ("NNTrainer-inference-single cannot create tensors-info handle (ml_tensors_info_h) with ml_tensors_info_create. Error Code: %d",
+              status);
+          goto error;
+        }
+
+        /* ml_single_set_input_info() can't be done as it checks num_t
