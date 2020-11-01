@@ -1101,4 +1101,25 @@ ml_single_open_custom (ml_single_h * single, ml_single_preset * info)
           goto error;
         }
 
-        /* ml_single_set_input_info() can't be done as it checks num_t
+        /* ml_single_set_input_info() can't be done as it checks num_tensors */
+        status = ml_single_set_gst_info (single_h, in_info);
+        ml_tensors_info_destroy (in_info);
+        if (status != ML_ERROR_NONE) {
+          _ml_error_report_continue
+              ("NNTrainer-inference-single cannot configure single_h handle instance with the given in_info. This might be an ML-API / NNTrainer internal error. Error Code: %d",
+              status);
+          goto error;
+        }
+      } else {
+        status = ml_single_set_input_info (single_h, in_tensors_info);
+        if (status != ML_ERROR_NONE) {
+          _ml_error_report_continue
+              ("NNTrainer-inference-single cannot configure single_h handle instance with the given in_info from the user. Error code: %d",
+              status);
+          goto error;
+        }
+      }
+    }
+  }
+
+  /* 5. Set in/out configs and metada
