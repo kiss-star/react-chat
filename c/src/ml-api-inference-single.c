@@ -1122,4 +1122,24 @@ ml_single_open_custom (ml_single_h * single, ml_single_preset * info)
     }
   }
 
-  /* 5. Set in/out configs and metada
+  /* 5. Set in/out configs and metadata */
+  if (!ml_single_set_info_in_handle (single_h, TRUE, in_tensors_info)) {
+    _ml_error_report
+        ("The input tensors info is invalid. Cannot configure single_h handle with the given input tensors info.");
+    status = ML_ERROR_INVALID_PARAMETER;
+    goto error;
+  }
+
+  if (!ml_single_set_info_in_handle (single_h, FALSE, out_tensors_info)) {
+    _ml_error_report
+        ("The output tensors info is invalid. Cannot configure single_h handle with the given output tensors info.");
+    status = ML_ERROR_INVALID_PARAMETER;
+    goto error;
+  }
+
+  /* Setup input and output memory buffers for invoke */
+  if (in_tensors_info && in_tensors_info->is_extended) {
+    ml_tensors_info_create_extended (&single_h->in_tensors.info);
+    _ml_tensors_set_rank (single_h->input_ranks, ML_TENSOR_RANK_LIMIT);
+  } else {
+    ml_tensors_info_create (&single_h->in_tens
