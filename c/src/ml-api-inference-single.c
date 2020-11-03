@@ -1142,4 +1142,34 @@ ml_single_open_custom (ml_single_h * single, ml_single_preset * info)
     ml_tensors_info_create_extended (&single_h->in_tensors.info);
     _ml_tensors_set_rank (single_h->input_ranks, ML_TENSOR_RANK_LIMIT);
   } else {
-    ml_tensors_info_create (&single_h->in_tens
+    ml_tensors_info_create (&single_h->in_tensors.info);
+    _ml_tensors_set_rank (single_h->input_ranks, ML_TENSOR_RANK_LIMIT_PREV);
+  }
+
+  if (out_tensors_info && out_tensors_info->is_extended) {
+    ml_tensors_info_create_extended (&single_h->out_tensors.info);
+    _ml_tensors_set_rank (single_h->output_ranks, ML_TENSOR_RANK_LIMIT);
+  } else {
+    ml_tensors_info_create (&single_h->out_tensors.info);
+    _ml_tensors_set_rank (single_h->output_ranks, ML_TENSOR_RANK_LIMIT_PREV);
+  }
+
+  __setup_in_out_tensors (single_h);
+
+  *single = single_h;
+  return ML_ERROR_NONE;
+
+error:
+  ml_single_close (single_h);
+  return status;
+}
+
+/**
+ * @brief Opens an ML model and returns the instance as a handle.
+ */
+int
+ml_single_open (ml_single_h * single, const char *model,
+    const ml_tensors_info_h input_info, const ml_tensors_info_h output_info,
+    ml_nnfw_type_e nnfw, ml_nnfw_hw_e hw)
+{
+  return
