@@ -1172,4 +1172,35 @@ ml_single_open (ml_single_h * single, const char *model,
     const ml_tensors_info_h input_info, const ml_tensors_info_h output_info,
     ml_nnfw_type_e nnfw, ml_nnfw_hw_e hw)
 {
-  return
+  return ml_single_open_full (single, model, input_info, output_info, nnfw, hw,
+      NULL);
+}
+
+/**
+ * @brief Opens an ML model and returns the instance as a handle.
+ */
+int
+ml_single_open_full (ml_single_h * single, const char *model,
+    const ml_tensors_info_h input_info, const ml_tensors_info_h output_info,
+    ml_nnfw_type_e nnfw, ml_nnfw_hw_e hw, const char *custom_option)
+{
+  ml_single_preset info = { 0, };
+
+  info.input_info = input_info;
+  info.output_info = output_info;
+  info.nnfw = nnfw;
+  info.hw = hw;
+  info.models = (char *) model;
+  info.custom_option = (char *) custom_option;
+
+  return ml_single_open_custom (single, &info);
+}
+
+/**
+ * @brief Open new single handle with given option.
+ */
+int
+ml_single_open_with_option (ml_single_h * single, const ml_option_h option)
+{
+  ml_option_s *_option;
+  GHashTable *tab
