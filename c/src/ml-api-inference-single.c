@@ -1203,4 +1203,28 @@ int
 ml_single_open_with_option (ml_single_h * single, const ml_option_h option)
 {
   ml_option_s *_option;
-  GHashTable *tab
+  GHashTable *table;
+  GHashTableIter iter;
+  gchar *key;
+  ml_option_value_s *_option_value;
+  ml_single_preset info = { 0, };
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (!option) {
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, 'option' is NULL. It should be a valid ml_option_h, which should be created by ml_option_create().");
+  }
+
+  if (!single)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, 'single' (ml_single_h), is NULL. It should be a valid ml_single_h instance, usually created by ml_single_open().");
+
+  _option = (ml_option_s *) option;
+  table = _option->option_table;
+
+  g_hash_table_iter_init (&iter, table);
+  while (g_hash_table_iter_next (&iter, (gpointer *) & key,
+          (gpointer *) & _option_value)) {
+    if (g_ascii_strcasecmp (key, "input_info") == 0) {
+      info.input_in
