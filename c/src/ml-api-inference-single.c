@@ -1227,4 +1227,23 @@ ml_single_open_with_option (ml_single_h * single, const ml_option_h option)
   while (g_hash_table_iter_next (&iter, (gpointer *) & key,
           (gpointer *) & _option_value)) {
     if (g_ascii_strcasecmp (key, "input_info") == 0) {
-      info.input_in
+      info.input_info = _option_value->value;
+    } else if (g_ascii_strcasecmp (key, "output_info") == 0) {
+      info.output_info = _option_value->value;
+    } else if (g_ascii_strcasecmp (key, "nnfw") == 0) {
+      info.nnfw = *((ml_nnfw_type_e *) _option_value->value);
+    } else if (g_ascii_strcasecmp (key, "hw") == 0) {
+      info.hw = *((ml_nnfw_hw_e *) _option_value->value);
+    } else if (g_ascii_strcasecmp (key, "models") == 0) {
+      info.models = (gchar *) _option_value->value;
+    } else if (g_ascii_strcasecmp (key, "custom") == 0) {
+      info.custom_option = (gchar *) _option_value->value;
+    } else if (g_ascii_strcasecmp (key, "framework_name") == 0) {
+      info.fw_name = (gchar *) _option_value->value;
+    } else {
+      _ml_logw ("Ignore unknown key for ml_option: %s", key);
+    }
+  }
+
+  return ml_single_open_custom (single, &info);
+}
