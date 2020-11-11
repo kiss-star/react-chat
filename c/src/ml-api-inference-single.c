@@ -1276,4 +1276,28 @@ ml_single_close (ml_single_h single)
   invoking = single_h->invoking;
   ML_SINGLE_HANDLE_UNLOCK (single_h);
 
-  /** Wait u
+  /** Wait until invoke process is finished */
+  while (invoking) {
+    _ml_logd ("Wait 1 ms until invoke is finished and close the handle.");
+    g_usleep (1000);
+    invoking = single_h->invoking;
+    /**
+     * single_h->invoking is the only protected value here and we are
+     * doing a read-only operation and do not need to project its value
+     * after the assignment.
+     * Thus, we do not need to lock single_h here.
+     */
+  }
+
+  if (single_h->thread != NULL)
+    g_thread_join (single_h->thread);
+
+  /** locking ensures correctness with parallel calls on close */
+  if (single_h->filter) {
+    g_list_foreach (single_h->destroy_data_list, __destroy_notify, single_h);
+    g_list_free (single_h->destroy_data_list);
+
+    if (single_h->klass)
+      single_h->klass->stop (single_h->filter);
+
+    g_object_unre
