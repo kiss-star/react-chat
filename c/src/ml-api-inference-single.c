@@ -1247,3 +1247,33 @@ ml_single_open_with_option (ml_single_h * single, const ml_option_h option)
 
   return ml_single_open_custom (single, &info);
 }
+
+/**
+ * @brief Closes the opened model handle.
+ *
+ * @details State changes performed by this function:
+ *          ANY STATE -> JOIN REQUESTED - on receiving a request to close
+ *
+ *          Once requested to close, invoke_thread() will exit after processing
+ *          the current input (if any).
+ */
+int
+ml_single_close (ml_single_h single)
+{
+  ml_single *single_h;
+  gboolean invoking;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (!single)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, 'single' (ml_single_h), is NULL. It should be a valid ml_single_h instance, usually created by ml_single_open().");
+
+  ML_SINGLE_GET_VALID_HANDLE_LOCKED (single_h, single, 1);
+
+  single_h->state = JOIN_REQUESTED;
+  g_cond_broadcast (&single_h->cond);
+  invoking = single_h->invoking;
+  ML_SINGLE_HANDLE_UNLOCK (single_h);
+
+  /** Wait u
