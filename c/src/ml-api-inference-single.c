@@ -1300,4 +1300,41 @@ ml_single_close (ml_single_h single)
     if (single_h->klass)
       single_h->klass->stop (single_h->filter);
 
-    g_object_unre
+    g_object_unref (single_h->filter);
+    single_h->filter = NULL;
+  }
+
+  if (single_h->klass) {
+    g_type_class_unref (single_h->klass);
+    single_h->klass = NULL;
+  }
+
+  _ml_tensors_info_free (&single_h->in_info);
+  _ml_tensors_info_free (&single_h->out_info);
+
+  g_cond_clear (&single_h->cond);
+  g_mutex_clear (&single_h->mutex);
+
+  g_free (single_h);
+  return ML_ERROR_NONE;
+}
+
+/**
+ * @brief Internal function to validate input/output data.
+ */
+static int
+_ml_single_invoke_validate_data (ml_single_h single,
+    const ml_tensors_data_h data, const gboolean is_input)
+{
+  ml_single *single_h;
+  ml_tensors_data_s *_data;
+  ml_tensors_data_s *_model;
+  guint i;
+  size_t raw_size;
+
+  single_h = (ml_single *) single;
+  _data = (ml_tensors_data_s *) data;
+
+  if (G_UNLIKELY (!_data))
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "(inter
