@@ -1337,4 +1337,23 @@ _ml_single_invoke_validate_data (ml_single_h single,
 
   if (G_UNLIKELY (!_data))
     _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
-        "(inter
+        "(internal function) The parameter, 'data' (const ml_tensors_data_h), is NULL. It should be a valid instance of ml_tensors_data_h.");
+
+  if (is_input)
+    _model = &single_h->in_tensors;
+  else
+    _model = &single_h->out_tensors;
+
+  if (G_UNLIKELY (_data->num_tensors != _model->num_tensors))
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "(internal function) The number of %s tensors is not compatible with model. Given: %u, Expected: %u.",
+        (is_input) ? "input" : "output", _data->num_tensors,
+        _model->num_tensors);
+
+  for (i = 0; i < _data->num_tensors; i++) {
+    if (G_UNLIKELY (!_data->tensors[i].tensor))
+      _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+          "The %d-th input tensor is not valid. There is no valid dimension metadata for this tensor.",
+          i);
+
+    raw_size = _model->t
