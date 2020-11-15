@@ -1356,4 +1356,24 @@ _ml_single_invoke_validate_data (ml_single_h single,
           "The %d-th input tensor is not valid. There is no valid dimension metadata for this tensor.",
           i);
 
-    raw_size = _model->t
+    raw_size = _model->tensors[i].size;
+    if (G_UNLIKELY (_data->tensors[i].size != raw_size))
+      _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+          "The size of %d-th %s tensor is not compatible with model. Given: %zu, Expected: %zu (type: %d).",
+          i, (is_input) ? "input" : "output", _data->tensors[i].size, raw_size,
+          single_h->in_info.info[i].type);
+  }
+
+  return ML_ERROR_NONE;
+}
+
+/**
+ * @brief Internal function to invoke the model.
+ *
+ * @details State changes performed by this function:
+ *          IDLE -> RUNNING - on receiving a valid request
+ *
+ *          Invoke returns error if the current state is not IDLE.
+ *          If IDLE, then invoke is requested to the thread.
+ *          Invoke waits for the processing to be complete, and returns back
+ *          the resu
