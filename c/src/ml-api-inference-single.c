@@ -1399,4 +1399,19 @@ _ml_single_invoke_internal (ml_single_h single,
     _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
         "(internal function) The parameter, input (ml_tensors_data_h), is NULL. It should be a valid instance of ml_tensors_data_h.");
 
-  if (G_UNLIKE
+  if (G_UNLIKELY (!output))
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "(internal functino) The parameter, output (ml_tensors_data_h *), is NULL. It should be a valid pointer to an instance of ml_tensors_data_h to store the inference results.");
+
+  ML_SINGLE_GET_VALID_HANDLE_LOCKED (single_h, single, 0);
+
+  if (G_UNLIKELY (!single_h->filter)) {
+    _ml_error_report
+        ("The tensor_filter element of this single handle (single_h) is not valid. It appears that the handle (ml_single_h single) is not appropriately created by ml_single_open(), user thread has touched its internal data, or the handle is already closed or freed by user.");
+    status = ML_ERROR_INVALID_PARAMETER;
+    goto exit;
+  }
+
+  /* Validate input/output data */
+  status = _ml_single_invoke_validate_data (single, input, TRUE);
+  if (status != ML_ERROR
