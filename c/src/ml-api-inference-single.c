@@ -1376,4 +1376,27 @@ _ml_single_invoke_validate_data (ml_single_h single,
  *          Invoke returns error if the current state is not IDLE.
  *          If IDLE, then invoke is requested to the thread.
  *          Invoke waits for the processing to be complete, and returns back
- *          the resu
+ *          the result once notified by the processing thread.
+ *
+ * @note IDLE is the valid thread state before and after this function call.
+ */
+static int
+_ml_single_invoke_internal (ml_single_h single,
+    const ml_tensors_data_h input, ml_tensors_data_h * output,
+    const gboolean need_alloc)
+{
+  ml_single *single_h;
+  gint64 end_time;
+  int status = ML_ERROR_NONE;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (G_UNLIKELY (!single))
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "(internal function) The parameter, single (ml_single_h), is NULL. It should be a valid instance of ml_single_h, usually created by ml_single_open().");
+
+  if (G_UNLIKELY (!input))
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "(internal function) The parameter, input (ml_tensors_data_h), is NULL. It should be a valid instance of ml_tensors_data_h.");
+
+  if (G_UNLIKE
