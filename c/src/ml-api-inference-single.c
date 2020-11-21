@@ -1414,4 +1414,24 @@ _ml_single_invoke_internal (ml_single_h single,
 
   /* Validate input/output data */
   status = _ml_single_invoke_validate_data (single, input, TRUE);
-  if (status != ML_ERROR
+  if (status != ML_ERROR_NONE) {
+    _ml_error_report_continue
+        ("The input data for the inference is not valid: error code %d. Please check the dimensions, type, number-of-tensors, and size information of the input data.",
+        status);
+    goto exit;
+  }
+
+  if (!need_alloc) {
+    status = _ml_single_invoke_validate_data (single, *output, FALSE);
+    if (status != ML_ERROR_NONE) {
+      _ml_error_report_continue
+          ("The output data buffer provided by the user is not valid for the given neural network mode: error code %d. Please check the dimensions, type, number-of-tensors, and size information of the output data buffer.",
+          status);
+      goto exit;
+    }
+  }
+
+  if (single_h->state != IDLE) {
+    if (G_UNLIKELY (single_h->state == JOIN_REQUESTED)) {
+      _ml_error_report
+          ("The handle (single_h single) is closed or being closed awaiting for the last ongoing invoca
