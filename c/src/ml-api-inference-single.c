@@ -1458,4 +1458,32 @@ _ml_single_invoke_internal (ml_single_h single,
 
   /**
    * Clone input data here to prevent use-after-free case.
-   * We should 
+   * We should release single_h->input after calling __invoke() function.
+   */
+  status = ml_tensors_data_clone (input, &single_h->input);
+  if (status != ML_ERROR_NONE)
+    goto exit;
+
+  single_h->state = RUNNING;
+  single_h->free_output = need_alloc;
+
+  if (single_h->timeout > 0) {
+    /* Wake up "invoke_thread" */
+    g_cond_broadcast (&single_h->cond);
+
+    /* set timeout */
+    end_time = g_get_monotonic_time () +
+        single_h->timeout * G_TIME_SPAN_MILLISECOND;
+
+    if (g_cond_wait_until (&single_h->cond, &single_h->mutex, end_time)) {
+      status = single_h->status;
+    } else {
+      _ml_logw ("Wait for invoke has timed out");
+      status = ML_ERROR_TIMED_OUT;
+      /** This is set to notify invoke_thread to not process if timed out */
+      if (need_alloc)
+        set_destroy_notify (single_h, single_h->output, TRUE);
+    }
+  } else {
+    /**
+     * Don't worry. We ha
