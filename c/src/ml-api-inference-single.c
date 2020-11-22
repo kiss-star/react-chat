@@ -1434,4 +1434,28 @@ _ml_single_invoke_internal (ml_single_h single,
   if (single_h->state != IDLE) {
     if (G_UNLIKELY (single_h->state == JOIN_REQUESTED)) {
       _ml_error_report
-          ("The handle (single_h single) is closed or being closed awaiting for the last ongoing invoca
+          ("The handle (single_h single) is closed or being closed awaiting for the last ongoing invocation. Invoking with such a handle is not allowed. Please open another single_h handle to invoke.");
+      status = ML_ERROR_STREAMS_PIPE;
+      goto exit;
+    }
+    _ml_error_report
+        ("The handle (single_h single) is busy. There is another thread waiting for inference results with this handle. Please retry invoking again later when the handle becomes idle after completing the current inference task.");
+    status = ML_ERROR_TRY_AGAIN;
+    goto exit;
+  }
+
+  /* prepare output data */
+  if (need_alloc) {
+    *output = NULL;
+
+    status = _ml_tensors_data_clone_no_alloc (&single_h->out_tensors,
+        &single_h->output);
+    if (status != ML_ERROR_NONE)
+      goto exit;
+  } else {
+    single_h->output = *output;
+  }
+
+  /**
+   * Clone input data here to prevent use-after-free case.
+   * We should 
