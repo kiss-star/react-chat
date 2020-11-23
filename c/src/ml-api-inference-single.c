@@ -1486,4 +1486,33 @@ _ml_single_invoke_internal (ml_single_h single,
     }
   } else {
     /**
-     * Don't worry. We ha
+     * Don't worry. We have locked single_h->mutex, thus there is no
+     * other thread with ml_single_invoke function on the same handle
+     * that are in this if-then-else block, which means that there is
+     * no other thread with active invoke-thread (calling __invoke())
+     * with the same handle. Thus we can call __invoke without
+     * having yet another mutex for __invoke.
+     */
+    single_h->invoking = TRUE;
+    status = __invoke (single_h, single_h->input, single_h->output);
+    ml_tensors_data_destroy (single_h->input);
+    single_h->input = NULL;
+    single_h->invoking = FALSE;
+    single_h->state = IDLE;
+
+    if (status != ML_ERROR_NONE) {
+      if (need_alloc)
+        ml_tensors_data_destroy (single_h->output);
+      goto exit;
+    }
+
+    __process_output (single_h, single_h->output);
+  }
+
+exit:
+  if (status == ML_ERROR_NONE) {
+    if (need_alloc)
+      *output = single_h->output;
+  }
+
+  single_h->out
