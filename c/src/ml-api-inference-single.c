@@ -1515,4 +1515,38 @@ exit:
       *output = single_h->output;
   }
 
-  single_h->out
+  single_h->output = NULL;
+  ML_SINGLE_HANDLE_UNLOCK (single_h);
+  return status;
+}
+
+/**
+ * @brief Invokes the model with the given input data.
+ */
+int
+ml_single_invoke (ml_single_h single,
+    const ml_tensors_data_h input, ml_tensors_data_h * output)
+{
+  return _ml_single_invoke_internal (single, input, output, TRUE);
+}
+
+/**
+ * @brief Invokes the model with the given input data and fills the output data handle.
+ */
+int
+ml_single_invoke_fast (ml_single_h single,
+    const ml_tensors_data_h input, ml_tensors_data_h output)
+{
+  return _ml_single_invoke_internal (single, input, &output, FALSE);
+}
+
+/**
+ * @brief Gets the tensors info for the given handle.
+ * @param[out] info A pointer to a NULL (unallocated) instance.
+ */
+static int
+ml_single_get_tensors_info (ml_single_h single, gboolean is_input,
+    ml_tensors_info_h * info)
+{
+  ml_single *single_h;
+  in
