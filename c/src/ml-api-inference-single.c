@@ -1549,4 +1549,21 @@ ml_single_get_tensors_info (ml_single_h single, gboolean is_input,
     ml_tensors_info_h * info)
 {
   ml_single *single_h;
-  in
+  int status = ML_ERROR_NONE;
+  ml_tensors_info_s *input_info;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (!single)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "(internal function) The parameter, 'single' (ml_single_h), is NULL. It should be a valid ml_single_h instance, usually created by ml_single_open().");
+  if (!info)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "(internal function) The parameter, 'info' (ml_tensors_info_h *) is NULL. It should be a valid pointer to an empty (NULL) instance of ml_tensor_info_h, which is supposed to be filled with the fetched info by this function.");
+
+  ML_SINGLE_GET_VALID_HANDLE_LOCKED (single_h, single, 0);
+
+  /* allocate handle for tensors info */
+  status = ml_tensors_info_create (info);
+  if (status != ML_ERROR_NONE) {
+    _ml_error_re
