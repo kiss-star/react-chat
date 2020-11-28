@@ -1566,4 +1566,34 @@ ml_single_get_tensors_info (ml_single_h single, gboolean is_input,
   /* allocate handle for tensors info */
   status = ml_tensors_info_create (info);
   if (status != ML_ERROR_NONE) {
-    _ml_error_re
+    _ml_error_report_continue
+        ("(internal function) Failed to create an entry for the ml_tensors_info_h instance. Error code: %d",
+        status);
+    goto exit;
+  }
+
+  input_info = (ml_tensors_info_s *) (*info);
+
+  if (is_input)
+    status = ml_tensors_info_clone (input_info, &single_h->in_info);
+  else
+    status = ml_tensors_info_clone (input_info, &single_h->out_info);
+
+  if (status != ML_ERROR_NONE) {
+    _ml_error_report_continue
+        ("(internal function) Failed to clone fetched input/output metadata to output pointer (ml_tensors_info *info). Error code: %d",
+        status);
+    ml_tensors_info_destroy (input_info);
+  }
+
+exit:
+  ML_SINGLE_HANDLE_UNLOCK (single_h);
+  return status;
+}
+
+/**
+ * @brief Gets the information of required input data for the given handle.
+ * @note information = (tensor dimension, type, name and so on)
+ */
+int
+ml_single_ge
