@@ -1596,4 +1596,31 @@ exit:
  * @note information = (tensor dimension, type, name and so on)
  */
 int
-ml_single_ge
+ml_single_get_input_info (ml_single_h single, ml_tensors_info_h * info)
+{
+  return ml_single_get_tensors_info (single, TRUE, info);
+}
+
+/**
+ * @brief Gets the information of output data for the given handle.
+ * @note information = (tensor dimension, type, name and so on)
+ */
+int
+ml_single_get_output_info (ml_single_h single, ml_tensors_info_h * info)
+{
+  return ml_single_get_tensors_info (single, FALSE, info);
+}
+
+/**
+ * @brief Sets the maximum amount of time to wait for an output, in milliseconds.
+ */
+int
+ml_single_set_timeout (ml_single_h single, unsigned int timeout)
+{
+  ml_single *single_h;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (!single)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, single (ml_single_h), is NULL. It should be a valid instance of ml_single_h, which is usually created by ml_single_open()
