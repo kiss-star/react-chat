@@ -1623,4 +1623,30 @@ ml_single_set_timeout (ml_single_h single, unsigned int timeout)
 
   if (!single)
     _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
-        "The parameter, single (ml_single_h), is NULL. It should be a valid instance of ml_single_h, which is usually created by ml_single_open()
+        "The parameter, single (ml_single_h), is NULL. It should be a valid instance of ml_single_h, which is usually created by ml_single_open().");
+
+  ML_SINGLE_GET_VALID_HANDLE_LOCKED (single_h, single, 0);
+
+  single_h->timeout = (guint) timeout;
+
+  ML_SINGLE_HANDLE_UNLOCK (single_h);
+  return ML_ERROR_NONE;
+}
+
+/**
+ * @brief Sets the information (tensor dimension, type, name and so on) of required input data for the given model.
+ */
+int
+ml_single_set_input_info (ml_single_h single, const ml_tensors_info_h info)
+{
+  ml_single *single_h;
+  int status = ML_ERROR_NONE;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (!single)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, single (ml_single_h), is NULL. It should be a valid instance of ml_single_h, which is usually created by ml_single_open().");
+  if (!info)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, info (const ml_tensors_info_h), is NULL. It should be a va
