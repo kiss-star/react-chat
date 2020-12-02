@@ -1649,4 +1649,17 @@ ml_single_set_input_info (ml_single_h single, const ml_tensors_info_h info)
         "The parameter, single (ml_single_h), is NULL. It should be a valid instance of ml_single_h, which is usually created by ml_single_open().");
   if (!info)
     _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
-        "The parameter, info (const ml_tensors_info_h), is NULL. It should be a va
+        "The parameter, info (const ml_tensors_info_h), is NULL. It should be a valid instance of ml_tensors_info_h, which is usually created by ml_tensors_info_create() or other APIs.");
+
+  if (!ml_tensors_info_is_valid (info))
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, info (const ml_tensors_info_h), is not valid. Although it is not NULL, the content of 'info' is invalid. If it is created by ml_tensors_info_create(), which creates an empty instance, it should be filled by users afterwards. Please check if 'info' has all elements filled with valid values.");
+
+  ML_SINGLE_GET_VALID_HANDLE_LOCKED (single_h, single, 0);
+  status = ml_single_set_gst_info (single_h, info);
+  ML_SINGLE_HANDLE_UNLOCK (single_h);
+
+  if (status != ML_ERROR_NONE)
+    _ml_error_report_continue
+        ("ml_single_set_gst_info() has failed to configure the single_h handle with the given info. Error code: %d",
+    
