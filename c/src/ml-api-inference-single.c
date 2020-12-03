@@ -1662,4 +1662,28 @@ ml_single_set_input_info (ml_single_h single, const ml_tensors_info_h info)
   if (status != ML_ERROR_NONE)
     _ml_error_report_continue
         ("ml_single_set_gst_info() has failed to configure the single_h handle with the given info. Error code: %d",
-    
+        status);
+
+  return status;
+}
+
+/**
+ * @brief Invokes the model with the given input data with the given info.
+ */
+int
+ml_single_invoke_dynamic (ml_single_h single,
+    const ml_tensors_data_h input, const ml_tensors_info_h in_info,
+    ml_tensors_data_h * output, ml_tensors_info_h * out_info)
+{
+  int status;
+  ml_tensors_info_h cur_in_info = NULL;
+
+  if (!single)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, single (ml_single_h), is NULL. It should be a valid instance of ml_single_h, which is usually created by ml_single_open().");
+  if (!input)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, input (const ml_tensors_data_h), is NULL. It should be a valid instance of ml_tensors_data_h with input data frame for inference.");
+  if (!in_info)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "
