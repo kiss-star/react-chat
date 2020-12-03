@@ -1686,4 +1686,17 @@ ml_single_invoke_dynamic (ml_single_h single,
         "The parameter, input (const ml_tensors_data_h), is NULL. It should be a valid instance of ml_tensors_data_h with input data frame for inference.");
   if (!in_info)
     _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
-        "
+        "The parameter, in_info (const ml_tensors_info_h), is NULL. It should be a valid instance of ml_tensor_info_h that describes metadata of the given input for inference (input).");
+  if (!output)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, output (ml_tensors_data_h *), is NULL. It should be a pointer to an empty (NULL or do-not-care) instance of ml_tensors_data_h, which is filled by this API with the result of inference.");
+  if (!out_info)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, out_info (ml_tensors_info_h *), is NULL. It should be a pointer to an empty (NULL or do-not-care) instance of ml_tensors_info_h, which is filled by this API with the neural network model info.");
+
+  /* init null */
+  *output = NULL;
+  *out_info = NULL;
+
+  status = ml_single_get_input_info (single, &cur_in_info);
+  if (status != ML_ERROR_NON
