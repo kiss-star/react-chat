@@ -1699,4 +1699,30 @@ ml_single_invoke_dynamic (ml_single_h single,
   *out_info = NULL;
 
   status = ml_single_get_input_info (single, &cur_in_info);
-  if (status != ML_ERROR_NON
+  if (status != ML_ERROR_NONE) {
+    _ml_error_report_continue
+        ("Failed to get input metadata configured by the opened single_h handle instance. Error code: %d.",
+        status);
+    goto exit;
+  }
+  status = ml_single_update_info (single, in_info, out_info);
+  if (status != ML_ERROR_NONE) {
+    _ml_error_report_continue
+        ("Failed to reconfigure the opened single_h handle instance with the updated input/output metadata. Error code: %d.",
+        status);
+    goto exit;
+  }
+
+  status = ml_single_invoke (single, input, output);
+  if (status != ML_ERROR_NONE) {
+    ml_single_set_input_info (single, cur_in_info);
+    if (status != ML_ERROR_TRY_AGAIN) {
+      /* If it's TRY_AGAIN, ml_single_invoke() has already gave enough info. */
+      _ml_error_report_continue
+          ("Invoking the given neural network has failed. Error code: %d.",
+          status);
+    }
+  }
+
+exit:
+  if (cu
