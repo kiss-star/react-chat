@@ -1725,4 +1725,34 @@ ml_single_invoke_dynamic (ml_single_h single,
   }
 
 exit:
-  if (cu
+  if (cur_in_info)
+    ml_tensors_info_destroy (cur_in_info);
+
+  if (status != ML_ERROR_NONE) {
+    if (*out_info) {
+      ml_tensors_info_destroy (*out_info);
+      *out_info = NULL;
+    }
+  }
+
+  return status;
+}
+
+/**
+ * @brief Sets the property value for the given model.
+ */
+int
+ml_single_set_property (ml_single_h single, const char *name, const char *value)
+{
+  ml_single *single_h;
+  int status = ML_ERROR_NONE;
+  char *old_value = NULL;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (!single)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, single (ml_single_h), is NULL. It should be a valid instance of ml_single_h, which is usually created by ml_single_open().");
+  if (!name)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, name (const char *), is NULL. It should be a valid string representing a p
