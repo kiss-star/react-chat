@@ -1755,4 +1755,27 @@ ml_single_set_property (ml_single_h single, const char *name, const char *value)
         "The parameter, single (ml_single_h), is NULL. It should be a valid instance of ml_single_h, which is usually created by ml_single_open().");
   if (!name)
     _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
-        "The parameter, name (const char *), is NULL. It should be a valid string representing a p
+        "The parameter, name (const char *), is NULL. It should be a valid string representing a property key.");
+
+  /* get old value, also check the property is updatable. */
+  _ml_error_report_return_continue_iferr
+      (ml_single_get_property (single, name, &old_value),
+      "Cannot fetch the previous value for the given property name, '%s'. It appears that the property key, '%s', is invalid (not supported).",
+      name, name);
+
+  /* if sets same value, do not change. */
+  if (old_value && value && g_ascii_strcasecmp (old_value, value) == 0) {
+    g_free (old_value);
+    return ML_ERROR_NONE;
+  }
+
+  ML_SINGLE_GET_VALID_HANDLE_LOCKED (single_h, single, 0);
+
+  /* update property */
+  if (g_str_equal (name, "is-updatable")) {
+    if (!value)
+      goto error;
+    /* boolean */
+    if (g_ascii_strcasecmp (value, "true") == 0) {
+      if (g_ascii_strcasecmp (old_value, "true") != 0)
+        g_object_set
