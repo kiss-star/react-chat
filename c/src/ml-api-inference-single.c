@@ -1778,4 +1778,23 @@ ml_single_set_property (ml_single_h single, const char *name, const char *value)
     /* boolean */
     if (g_ascii_strcasecmp (value, "true") == 0) {
       if (g_ascii_strcasecmp (old_value, "true") != 0)
-        g_object_set
+        g_object_set (G_OBJECT (single_h->filter), name, (gboolean) TRUE, NULL);
+    } else if (g_ascii_strcasecmp (value, "false") == 0) {
+      if (g_ascii_strcasecmp (old_value, "false") != 0)
+        g_object_set (G_OBJECT (single_h->filter), name, (gboolean) FALSE,
+            NULL);
+    } else {
+      _ml_error_report
+          ("The property value, '%s', is not appropriate for a boolean property 'is-updatable'. It should be either 'true' or 'false'.",
+          value);
+      status = ML_ERROR_INVALID_PARAMETER;
+    }
+  } else if (g_str_equal (name, "input") || g_str_equal (name, "inputtype")
+      || g_str_equal (name, "inputname") || g_str_equal (name, "output")
+      || g_str_equal (name, "outputtype") || g_str_equal (name, "outputname")) {
+    GstTensorsInfo gst_info;
+    gboolean is_input = g_str_has_prefix (name, "input");
+    guint num;
+
+    if (!value)
+    
