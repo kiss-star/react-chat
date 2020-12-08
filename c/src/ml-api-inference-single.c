@@ -1797,4 +1797,34 @@ ml_single_set_property (ml_single_h single, const char *name, const char *value)
     guint num;
 
     if (!value)
-    
+      goto error;
+
+    ml_single_get_gst_info (single_h, is_input, &gst_info);
+
+    if (g_str_has_suffix (name, "type"))
+      num = gst_tensors_info_parse_types_string (&gst_info, value);
+    else if (g_str_has_suffix (name, "name"))
+      num = gst_tensors_info_parse_names_string (&gst_info, value);
+    else {
+      guint *rank;
+      gchar **str_dims;
+      guint i;
+
+      if (is_input) {
+        rank = single_h->input_ranks;
+      } else {
+        rank = single_h->output_ranks;
+      }
+
+      str_dims = g_strsplit_set (value, ",.", -1);
+      num = g_strv_length (str_dims);
+
+      if (num > ML_TENSOR_SIZE_LIMIT) {
+        _ml_error_report ("Invalid param, dimensions (%d) max (%d)\n",
+            num, ML_TENSOR_SIZE_LIMIT);
+
+        num = ML_TENSOR_SIZE_LIMIT;
+      }
+
+      for (i = 0; i < num; ++i) {
+        rank[i] = gst_tensor_par
