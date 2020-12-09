@@ -1827,4 +1827,33 @@ ml_single_set_property (ml_single_h single, const char *name, const char *value)
       }
 
       for (i = 0; i < num; ++i) {
-        rank[i] = gst_tensor_par
+        rank[i] = gst_tensor_parse_dimension (str_dims[i],
+            gst_info.info[i].dimension);
+      }
+      g_strfreev (str_dims);
+    }
+
+    if (num == gst_info.num_tensors) {
+      ml_tensors_info_h ml_info;
+
+      _ml_tensors_info_create_from_gst (&ml_info, &gst_info);
+
+      /* change configuration */
+      status = ml_single_set_gst_info (single_h, ml_info);
+
+      ml_tensors_info_destroy (ml_info);
+    } else {
+      _ml_error_report
+          ("The property value, '%s', is not appropriate for the given property key, '%s'. The API has failed to parse the given property value.",
+          value, name);
+      status = ML_ERROR_INVALID_PARAMETER;
+    }
+
+    gst_tensors_info_free (&gst_info);
+  } else {
+    g_object_set (G_OBJECT (single_h->filter), name, value, NULL);
+  }
+  goto done;
+error:
+  _ml_error_report
+      ("The parameter, value (const char *), is NULL. It should be a valid string rep
