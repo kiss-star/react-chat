@@ -1856,4 +1856,32 @@ ml_single_set_property (ml_single_h single, const char *name, const char *value)
   goto done;
 error:
   _ml_error_report
-      ("The parameter, value (const char *), is NULL. It should be a valid string rep
+      ("The parameter, value (const char *), is NULL. It should be a valid string representing the value to be set for the given property key, '%s'",
+      name);
+  status = ML_ERROR_INVALID_PARAMETER;
+done:
+  ML_SINGLE_HANDLE_UNLOCK (single_h);
+
+  g_free (old_value);
+  return status;
+}
+
+/**
+ * @brief Gets the property value for the given model.
+ */
+int
+ml_single_get_property (ml_single_h single, const char *name, char **value)
+{
+  ml_single *single_h;
+  int status = ML_ERROR_NONE;
+
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (!single)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, single (ml_single_h), is NULL. It should be a valid instance of ml_single_h, which is usually created by ml_single_open().");
+  if (!name)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, name (const char *), is NULL. It should be a valid string representing a property key.");
+  if (!value)
+    _ml_
