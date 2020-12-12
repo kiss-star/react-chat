@@ -1884,4 +1884,24 @@ ml_single_get_property (ml_single_h single, const char *name, char **value)
     _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
         "The parameter, name (const char *), is NULL. It should be a valid string representing a property key.");
   if (!value)
-    _ml_
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, value (const char *), is NULL. It should be a valid string representing the value to be set for the given property key, '%s'",
+        name);
+
+  /* init null */
+  *value = NULL;
+
+  ML_SINGLE_GET_VALID_HANDLE_LOCKED (single_h, single, 0);
+
+  if (g_str_equal (name, "inputtype") || g_str_equal (name, "inputname") ||
+      g_str_equal (name, "inputlayout") || g_str_equal (name, "outputtype") ||
+      g_str_equal (name, "outputname") || g_str_equal (name, "outputlayout") ||
+      g_str_equal (name, "accelerator") || g_str_equal (name, "custom")) {
+    /* string */
+    g_object_get (G_OBJECT (single_h->filter), name, value, NULL);
+  } else if (g_str_equal (name, "is-updatable")) {
+    gboolean bool_value = FALSE;
+
+    /* boolean */
+    g_object_get (G_OBJECT (single_h->filter), name, &bool_value, NULL);
+    *value = (bool_val
