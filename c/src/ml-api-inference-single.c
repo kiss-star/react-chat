@@ -1932,3 +1932,33 @@ ml_single_get_property (ml_single_h single, const char *name, char **value)
         if (i < gst_info.num_tensors - 1) {
           g_string_append (dimensions, ",");
         }
+        g_free (dim_str);
+      }
+      dim_str = g_string_free (dimensions, FALSE);
+    } else {
+      dim_str = g_strdup ("");
+    }
+    *value = dim_str;
+  } else {
+    _ml_error_report
+        ("The property key, '%s', is not available for get_property and not recognized by the API. It should be one of {input, inputtype, inputname, inputlayout, output, outputtype, outputname, outputlayout, accelerator, custom, is-updatable}.",
+        name);
+    status = ML_ERROR_NOT_SUPPORTED;
+  }
+
+  ML_SINGLE_HANDLE_UNLOCK (single_h);
+  return status;
+}
+
+/**
+ * @brief Internal helper function to validate model files.
+ */
+static int
+__ml_validate_model_file (const char *const *model,
+    const unsigned int num_models, gboolean * is_dir)
+{
+  guint i;
+
+  if (!model)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, model, is NULL. It should be a valid a
