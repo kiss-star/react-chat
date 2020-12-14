@@ -1904,4 +1904,31 @@ ml_single_get_property (ml_single_h single, const char *name, char **value)
 
     /* boolean */
     g_object_get (G_OBJECT (single_h->filter), name, &bool_value, NULL);
-    *value = (bool_val
+    *value = (bool_value) ? g_strdup ("true") : g_strdup ("false");
+  } else if (g_str_equal (name, "input") || g_str_equal (name, "output")) {
+    gchar *dim_str = NULL;
+    const guint *rank;
+    gboolean is_input = g_str_has_prefix (name, "input");
+    GstTensorsInfo gst_info;
+
+    if (is_input) {
+      rank = single_h->input_ranks;
+    } else {
+      rank = single_h->output_ranks;
+    }
+
+    ml_single_get_gst_info (single_h, is_input, &gst_info);
+
+    if (gst_info.num_tensors > 0) {
+      guint i;
+      GString *dimensions = g_string_new (NULL);
+
+      for (i = 0; i < gst_info.num_tensors; ++i) {
+        dim_str =
+            gst_tensor_get_rank_dimension_string (gst_info.info[i].dimension,
+            *(rank + i));
+        g_string_append (dimensions, dim_str);
+
+        if (i < gst_info.num_tensors - 1) {
+          g_string_append (dimensions, ",");
+        }
