@@ -1961,4 +1961,31 @@ __ml_validate_model_file (const char *const *model,
 
   if (!model)
     _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
-        "The parameter, model, is NULL. It should be a valid a
+        "The parameter, model, is NULL. It should be a valid array of strings, where each string is a valid file path for a neural network model file.");
+  if (num_models < 1)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, num_models, is 0. It should be the number of files for the given neural network model.");
+
+  if (g_file_test (model[0], G_FILE_TEST_IS_DIR)) {
+    *is_dir = TRUE;
+    return ML_ERROR_NONE;
+  }
+
+  for (i = 0; i < num_models; i++) {
+    if (!model[i] || !g_file_test (model[i], G_FILE_TEST_IS_REGULAR)) {
+      _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+          "The given param, model path [%d] = \"%s\" is invalid or the file is not found or accessible.",
+          i, _STR_NULL (model[i]));
+    }
+  }
+
+  *is_dir = FALSE;
+
+  return ML_ERROR_NONE;
+}
+
+/**
+ * @brief Validates the nnfw model file.
+ * @since_tizen 5.5
+ * @param[in] model The path of model file.
+ * @param[
