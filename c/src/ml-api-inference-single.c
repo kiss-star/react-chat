@@ -2009,4 +2009,21 @@ _ml_validate_model_file (const char *const *model,
     _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
         "The parameter, nnfw, is NULL. It should be a valid pointer of ml_nnfw_type_e.");
 
-  _ml_error_report_return_continue_iferr (__ml_valida
+  _ml_error_report_return_continue_iferr (__ml_validate_model_file (model,
+          num_models, &is_dir),
+      "The parameters, model and num_models, are not valid.");
+
+  /**
+   * @note detect-fw checks the file ext and returns proper fw name for given models.
+   * If detected fw and given nnfw are same, we don't need to check the file extension.
+   * If any condition for auto detection is added later, below code also should be updated.
+   */
+  fw_name = gst_tensor_filter_detect_framework (model, num_models, TRUE);
+  detected = _ml_get_nnfw_type_by_subplugin_name (fw_name);
+  g_free (fw_name);
+
+  if (*nnfw == ML_NNFW_TYPE_ANY) {
+    if (detected == ML_NNFW_TYPE_ANY) {
+      _ml_error_report
+          ("The given neural network model (1st path is \"%s\", and there are %d paths declared) has unknown or unsupported extension. Please check its corresponding neural network framework and try to specify it instead of \"ML_NNFW_TYPE_ANY\".",
+          model[0]
