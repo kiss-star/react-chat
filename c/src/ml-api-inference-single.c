@@ -1988,4 +1988,25 @@ __ml_validate_model_file (const char *const *model,
  * @brief Validates the nnfw model file.
  * @since_tizen 5.5
  * @param[in] model The path of model file.
- * @param[
+ * @param[in/out] nnfw The type of NNFW.
+ * @return @c 0 on success. Otherwise a negative error value.
+ * @retval #ML_ERROR_NONE Successful
+ * @retval #ML_ERROR_NOT_SUPPORTED Not supported, or framework to support this model file is unavailable in the environment.
+ * @retval #ML_ERROR_INVALID_PARAMETER Given parameter is invalid.
+ */
+int
+_ml_validate_model_file (const char *const *model,
+    const unsigned int num_models, ml_nnfw_type_e * nnfw)
+{
+  int status = ML_ERROR_NONE;
+  ml_nnfw_type_e detected = ML_NNFW_TYPE_ANY;
+  gboolean is_dir = FALSE;
+  gchar *pos, *fw_name;
+  gchar **file_ext = NULL;
+  guint i;
+
+  if (!nnfw)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, nnfw, is NULL. It should be a valid pointer of ml_nnfw_type_e.");
+
+  _ml_error_report_return_continue_iferr (__ml_valida
