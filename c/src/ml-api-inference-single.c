@@ -2026,4 +2026,26 @@ _ml_validate_model_file (const char *const *model,
     if (detected == ML_NNFW_TYPE_ANY) {
       _ml_error_report
           ("The given neural network model (1st path is \"%s\", and there are %d paths declared) has unknown or unsupported extension. Please check its corresponding neural network framework and try to specify it instead of \"ML_NNFW_TYPE_ANY\".",
-          model[0]
+          model[0], num_models);
+      status = ML_ERROR_INVALID_PARAMETER;
+    } else {
+      _ml_logi ("The given model is supposed a %s model.",
+          _ml_get_nnfw_subplugin_name (detected));
+      *nnfw = detected;
+    }
+
+    goto done;
+  } else if (is_dir && *nnfw != ML_NNFW_TYPE_NNFW) {
+    /* supposed it is ONE if given model is directory */
+    _ml_error_report
+        ("The given model (1st path is \"%s\", and there are %d paths declared) is directory, which is allowed by \"NNFW (One Runtime)\" only, Please check the model and framework.",
+        model[0], num_models);
+    status = ML_ERROR_INVALID_PARAMETER;
+    goto done;
+  } else if (detected == *nnfw) {
+    /* Expected framework, nothing to do. */
+    goto done;
+  }
+
+  /* Handle mismatched case, check file extension. */
+  file_ext = g_malloc0 (sizeof (char *) * (num_models + 
