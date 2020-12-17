@@ -2048,4 +2048,31 @@ _ml_validate_model_file (const char *const *model,
   }
 
   /* Handle mismatched case, check file extension. */
-  file_ext = g_malloc0 (sizeof (char *) * (num_models + 
+  file_ext = g_malloc0 (sizeof (char *) * (num_models + 1));
+  for (i = 0; i < num_models; i++) {
+    if ((pos = strrchr (model[i], '.')) == NULL) {
+      _ml_error_report ("The given model [%d]=\"%s\" has invalid extension.", i,
+          model[i]);
+      status = ML_ERROR_INVALID_PARAMETER;
+      goto done;
+    }
+
+    file_ext[i] = g_ascii_strdown (pos, -1);
+  }
+
+  /** @todo Make sure num_models is correct for each nnfw type */
+  switch (*nnfw) {
+    case ML_NNFW_TYPE_NNFW:
+    case ML_NNFW_TYPE_TVM:
+      /**
+       * We cannot check the file ext with NNFW.
+       * NNFW itself will validate metadata and model file.
+       */
+      break;
+    case ML_NNFW_TYPE_MVNC:
+    case ML_NNFW_TYPE_OPENVINO:
+    case ML_NNFW_TYPE_EDGE_TPU:
+      /**
+       * @todo Need to check method to validate model
+       * Although nnstreamer supports these frameworks,
+       * ML-API implementation 
