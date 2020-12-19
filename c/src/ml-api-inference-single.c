@@ -2075,4 +2075,21 @@ _ml_validate_model_file (const char *const *model,
       /**
        * @todo Need to check method to validate model
        * Although nnstreamer supports these frameworks,
-       * ML-API implementation 
+       * ML-API implementation is not ready.
+       */
+      _ml_error_report
+          ("Given NNFW is not supported by ML-API Inference.Single, yet, although it is supported by NNStreamer. If you have such NNFW integrated into your machine and want to access via ML-API, please update the corresponding implementation or report and discuss at github.com/nnstreamer/nnstreamer/issues.");
+      status = ML_ERROR_NOT_SUPPORTED;
+      break;
+    case ML_NNFW_TYPE_VD_AIFW:
+      if (!g_str_equal (file_ext[0], ".nb") &&
+          !g_str_equal (file_ext[0], ".ncp") &&
+          !g_str_equal (file_ext[0], ".tvn") &&
+          !g_str_equal (file_ext[0], ".bin")) {
+        status = ML_ERROR_INVALID_PARAMETER;
+      }
+      break;
+    case ML_NNFW_TYPE_SNAP:
+#if !defined (__ANDROID__)
+      _ml_error_report ("SNAP is supported by Android/arm64-v8a devices only.");
+      status = ML_ERROR_NOT_S
