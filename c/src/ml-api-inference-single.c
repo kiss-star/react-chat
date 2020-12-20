@@ -2092,4 +2092,26 @@ _ml_validate_model_file (const char *const *model,
     case ML_NNFW_TYPE_SNAP:
 #if !defined (__ANDROID__)
       _ml_error_report ("SNAP is supported by Android/arm64-v8a devices only.");
-      status = ML_ERROR_NOT_S
+      status = ML_ERROR_NOT_SUPPORTED;
+#endif
+      /* SNAP requires multiple files, set supported if model file exists. */
+      break;
+    case ML_NNFW_TYPE_ARMNN:
+      if (!g_str_equal (file_ext[0], ".caffemodel") &&
+          !g_str_equal (file_ext[0], ".tflite") &&
+          !g_str_equal (file_ext[0], ".pb") &&
+          !g_str_equal (file_ext[0], ".prototxt")) {
+        _ml_error_report
+            ("ARMNN accepts .caffemodel, .tflite, .pb, and .prototxt files only. Please support correct file extension. You have specified: \"%s\"",
+            file_ext[0]);
+        status = ML_ERROR_INVALID_PARAMETER;
+      }
+      break;
+    case ML_NNFW_TYPE_MXNET:
+      if (!g_str_equal (file_ext[0], ".params") &&
+          !g_str_equal (file_ext[0], ".json")) {
+        status = ML_ERROR_INVALID_PARAMETER;
+      }
+      break;
+    default:
+      _ml_error_rep
