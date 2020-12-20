@@ -2114,4 +2114,20 @@ _ml_validate_model_file (const char *const *model,
       }
       break;
     default:
-      _ml_error_rep
+      _ml_error_report
+          ("You have designated an incorrect neural network framework (out of bound).");
+      status = ML_ERROR_INVALID_PARAMETER;
+      break;
+  }
+
+done:
+  if (status == ML_ERROR_NONE) {
+    if (!_ml_nnfw_is_available (*nnfw, ML_NNFW_HW_ANY)) {
+      status = ML_ERROR_NOT_SUPPORTED;
+      _ml_error_report
+          ("The subplugin for tensor-filter \"%s\" is not available. Please install the corresponding tensor-filter subplugin file (usually, \"libnnstreamer_filter_${NAME}.so\") at the correct path. Please use \"nnstreamer-check\" utility to check related configurations. If you do not have the utility ready, build and install \"confchk\", which is located at ${nnstreamer_source}/tools/development/confchk/ .",
+          _ml_get_nnfw_subplugin_name (*nnfw));
+    }
+  } else {
+    _ml_error_report
+        ("The given model file, \"%s
