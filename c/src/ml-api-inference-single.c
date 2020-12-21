@@ -2130,4 +2130,10 @@ done:
     }
   } else {
     _ml_error_report
-        ("The given model file, \"%s
+        ("The given model file, \"%s\" (1st of %d files), is invalid.",
+        model[0], num_models);
+  }
+
+  g_strfreev (file_ext);
+  return status;
+}
