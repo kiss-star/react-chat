@@ -66,4 +66,42 @@ typedef struct _type_element
   int count_int;
   type_string **value_string;
   int count_string;
-} type_ele
+} type_element;
+
+/**
+ * @brief Structure to parse ini file for mmfw elements.
+ */
+typedef struct _conf_detail
+{
+  int count;
+  void **detail_info;
+} conf_detail;
+
+/**
+ * @brief Structure to parse ini file for mmfw elements.
+ */
+typedef struct _camera_conf
+{
+  int type;
+  conf_detail **info;
+} camera_conf;
+
+#define MMFW_CONFIG_MAIN_FILE "mmfw_camcorder.ini"
+
+extern int
+_mmcamcorder_conf_get_info (MMHandleType handle, int type, const char *ConfFile,
+    camera_conf ** configure_info);
+
+extern void
+_mmcamcorder_conf_release_info (MMHandleType handle,
+    camera_conf ** configure_info);
+
+extern int
+_mmcamcorder_conf_get_element (MMHandleType handle,
+    camera_conf * configure_info, int category, const char *name,
+    type_element ** element);
+
+extern int
+_mmcamcorder_conf_get_value_element_name (type_element * element,
+    const char **value);
+#endif /*
