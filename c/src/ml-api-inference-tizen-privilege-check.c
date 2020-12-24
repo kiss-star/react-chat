@@ -21,4 +21,49 @@
 #include "ml-api-inference-pipeline-internal.h"
 
 #include <system_info.h>
-#include <restriction.h>        /* device 
+#include <restriction.h>        /* device policy manager */
+#if TIZENPPM
+#include <privacy_privilege_manager.h>
+#endif
+#if TIZEN5PLUS
+#include <mm_resource_manager.h>
+#endif
+#include <mm_camcorder.h>
+
+
+#if TIZENMMCONF
+/* We can use "MMCAM_VIDEOSRC_ELEMENT_NAME and MMCAM_AUDIOSRC_ELEMENT_NAME */
+#else /* TIZENMMCONF */
+/* Tizen multimedia framework */
+/* Defined in mm_camcorder_configure.h */
+
+/**
+ * @brief Structure to parse ini file for mmfw elements.
+ */
+typedef struct _type_int
+{
+  const char *name;
+  int value;
+} type_int;
+
+/**
+ * @brief Structure to parse ini file for mmfw elements.
+ */
+typedef struct _type_string
+{
+  const char *name;
+  const char *value;
+} type_string;
+
+/**
+ * @brief Structure to parse ini file for mmfw elements.
+ */
+typedef struct _type_element
+{
+  const char *name;
+  const char *element_name;
+  type_int **value_int;
+  int count_int;
+  type_string **value_string;
+  int count_string;
+} type_ele
