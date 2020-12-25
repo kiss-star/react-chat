@@ -133,4 +133,38 @@ typedef struct
 /**
  * @brief Tizen Privilege Recoder (See https://www.tizen.org/privilege)
  */
-#define TIZEN_PRIVILEGE_RECODER "http:/
+#define TIZEN_PRIVILEGE_RECODER "http://tizen.org/privilege/recorder"
+
+/** The following functions are either not used or supported in Tizen 4 */
+#if TIZEN5PLUS
+#if TIZENPPM
+/**
+ * @brief Function to check tizen privilege.
+ */
+static int
+ml_tizen_check_privilege (const gchar * privilege)
+{
+  int status = ML_ERROR_NONE;
+  ppm_check_result_e priv_result;
+  int err;
+
+  /* check privilege */
+  err = ppm_check_permission (privilege, &priv_result);
+  if (err == PRIVACY_PRIVILEGE_MANAGER_ERROR_NONE &&
+      priv_result == PRIVACY_PRIVILEGE_MANAGER_CHECK_RESULT_ALLOW) {
+    /* privilege allowed */
+  } else {
+    _ml_loge ("Failed to check the privilege %s.", privilege);
+    status = ML_ERROR_PERMISSION_DENIED;
+  }
+
+  return status;
+}
+#else
+#define ml_tizen_check_privilege(...) (ML_ERROR_NONE)
+#endif /* TIZENPPM */
+
+/**
+ * @brief Function to check device policy.
+ */
+static in
