@@ -104,4 +104,33 @@ _mmcamcorder_conf_get_element (MMHandleType handle,
 extern int
 _mmcamcorder_conf_get_value_element_name (type_element * element,
     const char **value);
-#endif /*
+#endif /* TIZENMMCONF */
+
+/**
+ * @brief Internal structure for tizen mm framework.
+ */
+typedef struct
+{
+  gboolean invalid; /**< flag to indicate rm handle is valid */
+  mm_resource_manager_h rm_h; /**< rm handle */
+  device_policy_manager_h dpm_h; /**< dpm handle */
+  int dpm_cb_id; /**< dpm callback id */
+  gboolean has_video_src; /**< pipeline includes video src */
+  gboolean has_audio_src; /**< pipeline includes audio src */
+  GHashTable *res_handles; /**< hash table of resource handles */
+} tizen_mm_handle_s;
+
+/**
+ * @brief Tizen resource type for multimedia.
+ */
+#define TIZEN_RES_MM "tizen_res_mm"
+
+/**
+ * @brief Tizen Privilege Camera (See https://www.tizen.org/privilege)
+ */
+#define TIZEN_PRIVILEGE_CAMERA "http://tizen.org/privilege/camera"
+
+/**
+ * @brief Tizen Privilege Recoder (See https://www.tizen.org/privilege)
+ */
+#define TIZEN_PRIVILEGE_RECODER "http:/
