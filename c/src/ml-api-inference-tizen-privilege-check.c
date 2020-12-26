@@ -167,4 +167,35 @@ ml_tizen_check_privilege (const gchar * privilege)
 /**
  * @brief Function to check device policy.
  */
-static in
+static int
+ml_tizen_check_dpm_restriction (device_policy_manager_h dpm_handle, int type)
+{
+  int err = DPM_ERROR_NOT_PERMITTED;
+  int dpm_is_allowed = 0;
+
+  switch (type) {
+    case 1:                    /* camera */
+      err = dpm_restriction_get_camera_state (dpm_handle, &dpm_is_allowed);
+      break;
+    case 2:                    /* mic */
+      err = dpm_restriction_get_microphone_state (dpm_handle, &dpm_is_allowed);
+      break;
+    default:
+      /* unknown type */
+      break;
+  }
+
+  if (err != DPM_ERROR_NONE || dpm_is_allowed != 1) {
+    _ml_loge ("Failed, device policy is not allowed.");
+    return ML_ERROR_PERMISSION_DENIED;
+  }
+
+  return ML_ERROR_NONE;
+}
+
+/**
+ * @brief Callback to be called when device policy is changed.
+ */
+static void
+ml_tizen_dpm_policy_changed_cb (const char *name, const char *state,
+   
