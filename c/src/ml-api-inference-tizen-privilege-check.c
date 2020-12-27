@@ -198,4 +198,39 @@ ml_tizen_check_dpm_restriction (device_policy_manager_h dpm_handle, int type)
  */
 static void
 ml_tizen_dpm_policy_changed_cb (const char *name, const char *state,
-   
+    void *user_data)
+{
+  ml_pipeline *p;
+
+  g_return_if_fail (state);
+  g_return_if_fail (user_data);
+
+  p = (ml_pipeline *) user_data;
+
+  if (g_ascii_strcasecmp (state, "disallowed") == 0) {
+    g_mutex_lock (&p->lock);
+
+    /* pause the pipeline */
+    gst_element_set_state (p->element, GST_STATE_PAUSED);
+
+    g_mutex_unlock (&p->lock);
+  }
+
+  return;
+}
+
+/**
+ * @brief Function to get key string of resource type to handle hash table.
+ */
+static gchar *
+ml_tizen_mm_res_get_key_string (mm_resource_manager_res_type_e type)
+{
+  gchar *res_key = NULL;
+
+  switch (type) {
+    case MM_RESOURCE_MANAGER_RES_TYPE_VIDEO_DECODER:
+      res_key = g_strdup ("tizen_mm_res_video_decoder");
+      break;
+    case MM_RESOURCE_MANAGER_RES_TYPE_VIDEO_OVERLAY:
+      res_key = g_strdup ("tizen_mm_res_video_overlay");
+      bre
