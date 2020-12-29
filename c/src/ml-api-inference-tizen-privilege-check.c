@@ -233,4 +233,34 @@ ml_tizen_mm_res_get_key_string (mm_resource_manager_res_type_e type)
       break;
     case MM_RESOURCE_MANAGER_RES_TYPE_VIDEO_OVERLAY:
       res_key = g_strdup ("tizen_mm_res_video_overlay");
-      bre
+      break;
+    case MM_RESOURCE_MANAGER_RES_TYPE_CAMERA:
+      res_key = g_strdup ("tizen_mm_res_camera");
+      break;
+    case MM_RESOURCE_MANAGER_RES_TYPE_VIDEO_ENCODER:
+      res_key = g_strdup ("tizen_mm_res_video_encoder");
+      break;
+    case MM_RESOURCE_MANAGER_RES_TYPE_RADIO:
+      res_key = g_strdup ("tizen_mm_res_radio");
+      break;
+    default:
+      _ml_logw ("The resource type %d is invalid.", type);
+      break;
+  }
+
+  return res_key;
+}
+
+/**
+ * @brief Function to get resource type from key string to handle hash table.
+ */
+static mm_resource_manager_res_type_e
+ml_tizen_mm_res_get_type (const gchar * res_key)
+{
+  mm_resource_manager_res_type_e type = MM_RESOURCE_MANAGER_RES_TYPE_MAX;
+
+  g_return_val_if_fail (res_key, type);
+
+  if (g_str_equal (res_key, "tizen_mm_res_video_decoder")) {
+    type = MM_RESOURCE_MANAGER_RES_TYPE_VIDEO_DECODER;
+  } else if (g_str_equal (res_key, "tizen_mm_res_v
