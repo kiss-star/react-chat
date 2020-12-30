@@ -263,4 +263,33 @@ ml_tizen_mm_res_get_type (const gchar * res_key)
 
   if (g_str_equal (res_key, "tizen_mm_res_video_decoder")) {
     type = MM_RESOURCE_MANAGER_RES_TYPE_VIDEO_DECODER;
-  } else if (g_str_equal (res_key, "tizen_mm_res_v
+  } else if (g_str_equal (res_key, "tizen_mm_res_video_overlay")) {
+    type = MM_RESOURCE_MANAGER_RES_TYPE_VIDEO_OVERLAY;
+  } else if (g_str_equal (res_key, "tizen_mm_res_camera")) {
+    type = MM_RESOURCE_MANAGER_RES_TYPE_CAMERA;
+  } else if (g_str_equal (res_key, "tizen_mm_res_video_encoder")) {
+    type = MM_RESOURCE_MANAGER_RES_TYPE_VIDEO_ENCODER;
+  } else if (g_str_equal (res_key, "tizen_mm_res_radio")) {
+    type = MM_RESOURCE_MANAGER_RES_TYPE_RADIO;
+  }
+
+  return type;
+}
+
+/**
+ * @brief Callback to be called from mm resource manager.
+ */
+static int
+ml_tizen_mm_res_release_cb (mm_resource_manager_h rm,
+    mm_resource_manager_res_h resource_h, void *user_data)
+{
+  ml_pipeline *p;
+  pipeline_resource_s *res;
+  tizen_mm_handle_s *mm_handle;
+
+  g_return_val_if_fail (user_data, FALSE);
+  p = (ml_pipeline *) user_data;
+  g_mutex_lock (&p->lock);
+
+  res =
+      (pipeline_resource_s *) g_hash_table_lookup (p-
