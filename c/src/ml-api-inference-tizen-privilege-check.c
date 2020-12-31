@@ -330,4 +330,41 @@ ml_tizen_mm_res_status_cb (mm_resource_manager_h rm,
   g_mutex_lock (&p->lock);
 
   res =
-      (pipeline_resource_s *) g_hash_table_lookup (p->resources, TIZ
+      (pipeline_resource_s *) g_hash_table_lookup (p->resources, TIZEN_RES_MM);
+  if (!res) {
+    /* rm handle is not registered or removed */
+    goto done;
+  }
+
+  mm_handle = (tizen_mm_handle_s *) res->handle;
+  if (!mm_handle) {
+    /* supposed the rm handle is already released */
+    goto done;
+  }
+
+  switch (status) {
+    case MM_RESOURCE_MANAGER_STATUS_DISCONNECTED:
+      /* pause pipeline, rm handle should be released */
+      gst_element_set_state (p->element, GST_STATE_PAUSED);
+      mm_handle->invalid = TRUE;
+      break;
+    default:
+      break;
+  }
+
+done:
+  g_mutex_unlock (&p->lock);
+}
+
+/**
+ * @brief Function to get the handle of resource type.
+ */
+static int
+ml_tizen_mm_res_get_handle (mm_resource_manager_h rm,
+    mm_resource_manager_res_type_e res_type, gpointer * handle)
+{
+  mm_resource_manager_res_h rm_res_h;
+  int err;
+
+  /* add resource handle */
+  err = mm_resource_manager_mark_for_acqui
