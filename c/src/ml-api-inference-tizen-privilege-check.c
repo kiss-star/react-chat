@@ -292,4 +292,42 @@ ml_tizen_mm_res_release_cb (mm_resource_manager_h rm,
   g_mutex_lock (&p->lock);
 
   res =
-      (pipeline_resource_s *) g_hash_table_lookup (p-
+      (pipeline_resource_s *) g_hash_table_lookup (p->resources, TIZEN_RES_MM);
+  if (!res) {
+    /* rm handle is not registered or removed */
+    goto done;
+  }
+
+  mm_handle = (tizen_mm_handle_s *) res->handle;
+  if (!mm_handle) {
+    /* supposed the rm handle is already released */
+    goto done;
+  }
+
+  /* pause pipeline */
+  gst_element_set_state (p->element, GST_STATE_PAUSED);
+  mm_handle->invalid = TRUE;
+
+done:
+  g_mutex_unlock (&p->lock);
+  return FALSE;
+}
+
+/**
+ * @brief Callback to be called from mm resource manager.
+ */
+static void
+ml_tizen_mm_res_status_cb (mm_resource_manager_h rm,
+    mm_resource_manager_status_e status, void *user_data)
+{
+  ml_pipeline *p;
+  pipeline_resource_s *res;
+  tizen_mm_handle_s *mm_handle;
+
+  g_return_if_fail (user_data);
+
+  p = (ml_pipeline *) user_data;
+  g_mutex_lock (&p->lock);
+
+  res =
+      (pipeline_resource_s *) g_hash_table_lookup (p->resources, TIZ
