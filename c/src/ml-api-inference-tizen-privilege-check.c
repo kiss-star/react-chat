@@ -367,4 +367,27 @@ ml_tizen_mm_res_get_handle (mm_resource_manager_h rm,
   int err;
 
   /* add resource handle */
-  err = mm_resource_manager_mark_for_acqui
+  err = mm_resource_manager_mark_for_acquire (rm, res_type,
+      MM_RESOURCE_MANAGER_RES_VOLUME_FULL, &rm_res_h);
+  if (err != MM_RESOURCE_MANAGER_ERROR_NONE)
+    _ml_error_report_return (ML_ERROR_STREAMS_PIPE,
+        "Internal error of Tizen multimedia resource manager: mm_resource_manager_mark_for_acquire () cannot acquire resources. It has returned %d.",
+        err);
+
+  err = mm_resource_manager_commit (rm);
+  if (err != MM_RESOURCE_MANAGER_ERROR_NONE)
+    _ml_error_report_return (ML_ERROR_STREAMS_PIPE,
+        "Internal error of Tizen multimedia resource manager: mm_resource_manager_commit has failed with error code: %d",
+        err);
+
+  *handle = rm_res_h;
+  return ML_ERROR_NONE;
+}
+
+/**
+ * @brief Function to release the resource handle of tizen mm resource manager.
+ */
+static void
+ml_tizen_mm_res_release (gpointer handle, gboolean destroy)
+{
+  tizen_mm_handle_s *mm_ha
