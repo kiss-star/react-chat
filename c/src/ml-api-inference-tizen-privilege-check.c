@@ -424,3 +424,41 @@ ml_tizen_mm_res_release (gpointer handle, gboolean destroy)
   mm_resource_manager_destroy (mm_handle->rm_h);
   mm_handle->rm_h = NULL;
 
+  mm_handle->invalid = FALSE;
+
+  if (destroy) {
+    if (mm_handle->dpm_h) {
+      if (mm_handle->dpm_cb_id > 0) {
+        dpm_remove_policy_changed_cb (mm_handle->dpm_h, mm_handle->dpm_cb_id);
+        mm_handle->dpm_cb_id = 0;
+      }
+
+      dpm_manager_destroy (mm_handle->dpm_h);
+      mm_handle->dpm_h = NULL;
+    }
+
+    g_hash_table_remove_all (mm_handle->res_handles);
+    g_free (mm_handle);
+  }
+}
+
+/**
+ * @brief Function to initialize mm resource manager.
+ */
+static int
+ml_tizen_mm_res_initialize (ml_pipeline_h pipe, gboolean has_video_src,
+    gboolean has_audio_src)
+{
+  ml_pipeline *p;
+  pipeline_resource_s *res;
+  tizen_mm_handle_s *mm_handle = NULL;
+  int status = ML_ERROR_STREAMS_PIPE;
+
+  p = (ml_pipeline *) pipe;
+
+  res =
+      (pipeline_resource_s *) g_hash_table_lookup (p->resources, TIZEN_RES_MM);
+
+  /* register new resource handle of tizen mmfw */
+  if (!res) {
+    r
