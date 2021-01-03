@@ -390,4 +390,37 @@ ml_tizen_mm_res_get_handle (mm_resource_manager_h rm,
 static void
 ml_tizen_mm_res_release (gpointer handle, gboolean destroy)
 {
-  tizen_mm_handle_s *mm_ha
+  tizen_mm_handle_s *mm_handle;
+
+  g_return_if_fail (handle);
+
+  mm_handle = (tizen_mm_handle_s *) handle;
+
+  /* release res handles */
+  if (g_hash_table_size (mm_handle->res_handles)) {
+    GHashTableIter iter;
+    gpointer key, value;
+    gboolean marked = FALSE;
+
+    g_hash_table_iter_init (&iter, mm_handle->res_handles);
+    while (g_hash_table_iter_next (&iter, &key, &value)) {
+      pipeline_resource_s *mm_res = value;
+
+      if (mm_res->handle) {
+        mm_resource_manager_mark_for_release (mm_handle->rm_h, mm_res->handle);
+        mm_res->handle = NULL;
+        marked = TRUE;
+      }
+
+      if (destroy)
+        g_free (mm_res->type);
+    }
+
+    if (marked)
+      mm_resource_manager_commit (mm_handle->rm_h);
+  }
+
+  mm_resource_manager_set_status_cb (mm_handle->rm_h, NULL, NULL);
+  mm_resource_manager_destroy (mm_handle->rm_h);
+  mm_handle->rm_h = NULL;
+
