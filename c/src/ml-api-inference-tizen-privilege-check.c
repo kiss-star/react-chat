@@ -461,4 +461,30 @@ ml_tizen_mm_res_initialize (ml_pipeline_h pipe, gboolean has_video_src,
 
   /* register new resource handle of tizen mmfw */
   if (!res) {
-    r
+    res = g_new0 (pipeline_resource_s, 1);
+    if (!res) {
+      _ml_loge ("Failed to allocate pipeline resource handle.");
+      status = ML_ERROR_OUT_OF_MEMORY;
+      goto rm_error;
+    }
+
+    res->type = g_strdup (TIZEN_RES_MM);
+    g_hash_table_insert (p->resources, g_strdup (TIZEN_RES_MM), res);
+  }
+
+  mm_handle = (tizen_mm_handle_s *) res->handle;
+  if (!mm_handle) {
+    mm_handle = g_new0 (tizen_mm_handle_s, 1);
+    if (!mm_handle) {
+      _ml_loge ("Failed to allocate media resource handle.");
+      status = ML_ERROR_OUT_OF_MEMORY;
+      goto rm_error;
+    }
+
+    mm_handle->res_handles =
+        g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+
+    /* device policy manager */
+    mm_handle->dpm_h = dpm_manager_create ();
+    if (dpm_add_policy_changed_cb (mm_handle->dpm_h, "camera",
+            ml_tizen_dpm_policy_change
