@@ -487,4 +487,43 @@ ml_tizen_mm_res_initialize (ml_pipeline_h pipe, gboolean has_video_src,
     /* device policy manager */
     mm_handle->dpm_h = dpm_manager_create ();
     if (dpm_add_policy_changed_cb (mm_handle->dpm_h, "camera",
-            ml_tizen_dpm_policy_change
+            ml_tizen_dpm_policy_changed_cb, pipe,
+            &mm_handle->dpm_cb_id) != DPM_ERROR_NONE) {
+      _ml_loge ("Failed to add device policy callback.");
+      status = ML_ERROR_PERMISSION_DENIED;
+      goto rm_error;
+    }
+
+    /* set mm handle */
+    res->handle = mm_handle;
+  }
+
+  mm_handle->has_video_src = has_video_src;
+  mm_handle->has_audio_src = has_audio_src;
+  status = ML_ERROR_NONE;
+
+rm_error:
+  if (status != ML_ERROR_NONE) {
+    /* failed to initialize mm handle */
+    if (mm_handle)
+      ml_tizen_mm_res_release (mm_handle, TRUE);
+  }
+
+  return status;
+}
+
+/**
+ * @brief Function to acquire the resource from mm resource manager.
+ */
+static int
+ml_tizen_mm_res_acquire (ml_pipeline_h pipe,
+    mm_resource_manager_res_type_e res_type)
+{
+  ml_pipeline *p;
+  pipeline_resource_s *res;
+  tizen_mm_handle_s *mm_handle;
+  gchar *res_key;
+  int status = ML_ERROR_STREAMS_PIPE;
+  int err;
+
+  p = (ml_pipeline *
