@@ -526,4 +526,25 @@ ml_tizen_mm_res_acquire (ml_pipeline_h pipe,
   int status = ML_ERROR_STREAMS_PIPE;
   int err;
 
-  p = (ml_pipeline *
+  p = (ml_pipeline *) pipe;
+
+  res =
+      (pipeline_resource_s *) g_hash_table_lookup (p->resources, TIZEN_RES_MM);
+  if (!res)
+    _ml_error_report_return (ML_ERROR_STREAMS_PIPE,
+        "Internal function error: cannot find the resource, '%s', from the resource table",
+        TIZEN_RES_MM);
+
+  mm_handle = (tizen_mm_handle_s *) res->handle;
+  if (!mm_handle)
+    _ml_error_report_return (ML_ERROR_STREAMS_PIPE,
+        "Internal function error: the resource '%s' does not have a valid mm handle (NULL).",
+        TIZEN_RES_MM);
+
+  /* check dpm state */
+  if (mm_handle->has_video_src &&
+      (status =
+          ml_tizen_check_dpm_restriction (mm_handle->dpm_h,
+              1)) != ML_ERROR_NONE)
+    _ml_error_report_return (ML_ERROR_PERMISSION_DENIED,
+        "Video camera source requires permission to access the camera; you do not have the permission. Your Tizen application is req
