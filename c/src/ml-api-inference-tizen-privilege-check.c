@@ -547,4 +547,21 @@ ml_tizen_mm_res_acquire (ml_pipeline_h pipe,
           ml_tizen_check_dpm_restriction (mm_handle->dpm_h,
               1)) != ML_ERROR_NONE)
     _ml_error_report_return (ML_ERROR_PERMISSION_DENIED,
-        "Video camera source requires permission to access the camera; you do not have the permission. Your Tizen application is req
+        "Video camera source requires permission to access the camera; you do not have the permission. Your Tizen application is required to acquire video permission (DPM) from Tizen. Refer: https://docs.tizen.org/application/native/guides/security/dpm/");
+
+  if (mm_handle->has_audio_src &&
+      (status =
+          ml_tizen_check_dpm_restriction (mm_handle->dpm_h,
+              2)) != ML_ERROR_NONE)
+    _ml_error_report_return (ML_ERROR_PERMISSION_DENIED,
+        "Audio mic source requires permission to access the mic; you do not have the permission. Your Tizen application is required to acquire audio/mic permission (DPM) from Tizen. Refer: https://docs.tizen.org/application/native/guides/security/dpm/");
+
+  /* check invalid handle */
+  if (mm_handle->invalid)
+    ml_tizen_mm_res_release (mm_handle, FALSE);
+
+  /* create rm handle */
+  if (!mm_handle->rm_h) {
+    mm_resource_manager_h rm_h;
+
+    err = mm_resource_manager_c
