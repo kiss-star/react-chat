@@ -578,4 +578,30 @@ ml_tizen_mm_res_acquire (ml_pipeline_h pipe,
     if (err != MM_RESOURCE_MANAGER_ERROR_NONE) {
       mm_resource_manager_destroy (rm_h);
       _ml_error_report_return (ML_ERROR_STREAMS_PIPE,
-          "Cannot configure status callback with multimedia resource manager, mm_resource_manager_set_status_cb (), it has returned %d. Ple
+          "Cannot configure status callback with multimedia resource manager, mm_resource_manager_set_status_cb (), it has returned %d. Please check if your Tizen installation is valid; do you have all multmedia packages properly installed?",
+          err);
+    }
+
+    mm_handle->rm_h = rm_h;
+  }
+
+  /* acquire resource */
+  if (res_type == MM_RESOURCE_MANAGER_RES_TYPE_MAX) {
+    GHashTableIter iter;
+    gpointer key, value;
+
+    /* iterate all handle and acquire res if released */
+    g_hash_table_iter_init (&iter, mm_handle->res_handles);
+    while (g_hash_table_iter_next (&iter, &key, &value)) {
+      pipeline_resource_s *mm_res = value;
+
+      if (!mm_res->handle) {
+        mm_resource_manager_res_type_e type;
+
+        type = ml_tizen_mm_res_get_type (mm_res->type);
+        if (type != MM_RESOURCE_MANAGER_RES_TYPE_MAX) {
+          status =
+              ml_tizen_mm_res_get_handle (mm_handle->rm_h, type,
+              &mm_res->handle);
+          if (status != ML_ERROR_NONE)
+           
