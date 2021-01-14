@@ -564,4 +564,18 @@ ml_tizen_mm_res_acquire (ml_pipeline_h pipe,
   if (!mm_handle->rm_h) {
     mm_resource_manager_h rm_h;
 
-    err = mm_resource_manager_c
+    err = mm_resource_manager_create (MM_RESOURCE_MANAGER_APP_CLASS_MEDIA,
+        ml_tizen_mm_res_release_cb, pipe, &rm_h);
+    if (err != MM_RESOURCE_MANAGER_ERROR_NONE)
+      _ml_error_report_return (ML_ERROR_STREAMS_PIPE,
+          "Cannot create multimedia resource manager handle with mm_resource_manager_create (), it has returned %d. Please check if your Tizen installation is valid; do you have all multimedia packages properly installed?",
+          err);
+
+    /* add state change callback */
+    err =
+        mm_resource_manager_set_status_cb (rm_h, ml_tizen_mm_res_status_cb,
+        pipe);
+    if (err != MM_RESOURCE_MANAGER_ERROR_NONE) {
+      mm_resource_manager_destroy (rm_h);
+      _ml_error_report_return (ML_ERROR_STREAMS_PIPE,
+          "Cannot configure status callback with multimedia resource manager, mm_resource_manager_set_status_cb (), it has returned %d. Ple
