@@ -604,4 +604,29 @@ ml_tizen_mm_res_acquire (ml_pipeline_h pipe,
               ml_tizen_mm_res_get_handle (mm_handle->rm_h, type,
               &mm_res->handle);
           if (status != ML_ERROR_NONE)
-           
+            _ml_error_report_return_continue (status,
+                "Internal error: cannot get resource handle from Tizen multimedia resource manager.");
+        }
+      }
+    }
+  } else {
+    res_key = ml_tizen_mm_res_get_key_string (res_type);
+    if (res_key) {
+      pipeline_resource_s *mm_res;
+
+      mm_res =
+          (pipeline_resource_s *) g_hash_table_lookup (mm_handle->res_handles,
+          res_key);
+      if (!mm_res) {
+        mm_res = g_new0 (pipeline_resource_s, 1);
+        if (mm_res == NULL) {
+          _ml_loge ("Failed to allocate media resource data.");
+          g_free (res_key);
+          _ml_error_report_return (ML_ERROR_OUT_OF_MEMORY,
+              "Cannot allocate memory. Out of memory?");
+        }
+
+        mm_res->type = g_strdup (res_key);
+        g_hash_table_insert (mm_handle->res_handles, g_strdup (res_key),
+            mm_res);
+     
