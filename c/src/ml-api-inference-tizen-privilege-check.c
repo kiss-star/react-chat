@@ -660,4 +660,39 @@ ml_tizen_mm_replace_element (MMHandleType * handle, camera_conf * conf,
   guint changed = 0;
 
   _mmcamcorder_conf_get_element (handle, conf, category, name, &element);
-  _mmcamcorder_conf_get_value_element_name (element,
+  _mmcamcorder_conf_get_value_element_name (element, &src_name);
+
+  if (!src_name) {
+    _ml_loge ("Failed to get the name of %s.", name);
+    return ML_ERROR_STREAMS_PIPE;
+  }
+
+  *description =
+      _ml_replace_string (*description, what, src_name, " !", &changed);
+  if (changed > 1) {
+    /* allow one src in the pipeline */
+    _ml_loge ("Cannot parse duplicated src node.");
+    return ML_ERROR_STREAMS_PIPE;
+  }
+
+  return ML_ERROR_NONE;
+}
+#endif
+
+/**
+ * @brief Converts predefined mmfw element.
+ */
+static int
+ml_tizen_mm_convert_element (ml_pipeline_h pipe, gchar ** result,
+    gboolean is_internal)
+{
+  gchar *video_src, *audio_src;
+  MMHandleType hcam = NULL;
+  MMCamPreset cam_info;
+#if !TIZENMMCONF                /* < 6.5 */
+  camera_conf *cam_conf = NULL;
+#endif
+  int status = ML_ERROR_STREAMS_PIPE;
+  int err;
+
+  video_src = g_strstr_len (*result,
