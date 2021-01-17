@@ -629,4 +629,35 @@ ml_tizen_mm_res_acquire (ml_pipeline_h pipe,
         mm_res->type = g_strdup (res_key);
         g_hash_table_insert (mm_handle->res_handles, g_strdup (res_key),
             mm_res);
-     
+      }
+
+      g_free (res_key);
+
+      if (!mm_res->handle) {
+        status =
+            ml_tizen_mm_res_get_handle (mm_handle->rm_h, res_type,
+            &mm_res->handle);
+        if (status != ML_ERROR_NONE)
+          _ml_error_report_return (ML_ERROR_STREAMS_PIPE,
+              "Cannot get handle from Tizen multimedia resource manager.");
+      }
+    }
+  }
+
+  return ML_ERROR_NONE;
+}
+
+#if !TIZENMMCONF
+/**
+ * @brief Gets element name from mm conf and replaces element.
+ */
+static int
+ml_tizen_mm_replace_element (MMHandleType * handle, camera_conf * conf,
+    gint category, const gchar * name, const gchar * what, gchar ** description)
+{
+  type_element *element = NULL;
+  const gchar *src_name = NULL;
+  guint changed = 0;
+
+  _mmcamcorder_conf_get_element (handle, conf, category, name, &element);
+  _mmcamcorder_conf_get_value_element_name (element,
