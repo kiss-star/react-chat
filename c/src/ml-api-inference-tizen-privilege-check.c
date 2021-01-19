@@ -695,4 +695,35 @@ ml_tizen_mm_convert_element (ml_pipeline_h pipe, gchar ** result,
   int status = ML_ERROR_STREAMS_PIPE;
   int err;
 
-  video_src = g_strstr_len (*result,
+  video_src = g_strstr_len (*result, -1, ML_TIZEN_CAM_VIDEO_SRC);
+  audio_src = g_strstr_len (*result, -1, ML_TIZEN_CAM_AUDIO_SRC);
+
+  /* replace src element */
+  if (video_src || audio_src) {
+    /* check privilege first */
+    if (!is_internal) {
+      /* ignore permission when runs as internal mode */
+      if (video_src &&
+          (status =
+              ml_tizen_check_privilege (TIZEN_PRIVILEGE_CAMERA)) !=
+          ML_ERROR_NONE) {
+        goto mm_error;
+      }
+
+      if (audio_src &&
+          (status =
+              ml_tizen_check_privilege (TIZEN_PRIVILEGE_RECODER)) !=
+          ML_ERROR_NONE) {
+        goto mm_error;
+      }
+    }
+
+    /* create camcoder handle (primary camera) */
+    if (video_src) {
+      cam_info.videodev_type = MM_VIDEO_DEVICE_CAMERA0;
+    } else {
+      /* no camera */
+      cam_info.videodev_type = MM_VIDEO_DEVICE_NONE;
+    }
+
+    if ((er
