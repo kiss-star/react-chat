@@ -726,4 +726,25 @@ ml_tizen_mm_convert_element (ml_pipeline_h pipe, gchar ** result,
       cam_info.videodev_type = MM_VIDEO_DEVICE_NONE;
     }
 
-    if ((er
+    if ((err = mm_camcorder_create (&hcam, &cam_info)) != MM_ERROR_NONE) {
+      _ml_loge ("Fail to call mm_camcorder_create = %x\n", err);
+      goto mm_error;
+    }
+#if TIZENMMCONF                 /* 6.5 or higher */
+    if (video_src) {
+      char *src_name = NULL;    /* Do not free this! */
+      int size = 0;
+      guint changed = 0;
+      err = mm_camcorder_get_attributes (hcam, NULL,
+          MMCAM_VIDEOSRC_ELEMENT_NAME, &src_name, &size, NULL);
+
+      if (err != MM_ERROR_NONE || !src_name || size < 1) {
+        _ml_loge ("Failed to get attributes of MMCAM_VIDEOSRC_ELEMENT_NAME.");
+        status = ML_ERROR_NOT_SUPPORTED;
+        goto mm_error;
+      }
+      *result = _ml_replace_string (*result, ML_TIZEN_CAM_VIDEO_SRC, src_name,
+          " !", &changed);
+      if (changed > 1) {
+        /* Allow one src only in a pipeline */
+        _ml_loge ("Cannot pars
