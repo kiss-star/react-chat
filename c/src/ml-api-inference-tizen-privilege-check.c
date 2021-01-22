@@ -747,4 +747,25 @@ ml_tizen_mm_convert_element (ml_pipeline_h pipe, gchar ** result,
           " !", &changed);
       if (changed > 1) {
         /* Allow one src only in a pipeline */
-        _ml_loge ("Cannot pars
+        _ml_loge ("Cannot parse duplicated Tizen video src nodes.");
+        status = ML_ERROR_INVALID_PARAMETER;
+        goto mm_error;
+      }
+    }
+    if (audio_src) {
+      char *src_name = NULL;    /* Do not free this! */
+      int size = 0;
+      guint changed = 0;
+      err = mm_camcorder_get_attributes (hcam, NULL,
+          MMCAM_AUDIOSRC_ELEMENT_NAME, &src_name, &size, NULL);
+
+      if (err != MM_ERROR_NONE || !src_name || size < 1) {
+        _ml_loge ("Failed to get attributes of MMCAM_AUDIOSRC_ELEMENT_NAME.");
+        status = ML_ERROR_NOT_SUPPORTED;
+        goto mm_error;
+      }
+      *result = _ml_replace_string (*result, ML_TIZEN_CAM_AUDIO_SRC, src_name,
+          " !", &changed);
+      if (changed > 1) {
+        /* Allow one src only in a pipeline */
+        _ml_loge ("Cannot parse duplicated Tizen audio src nodes.")
