@@ -768,4 +768,33 @@ ml_tizen_mm_convert_element (ml_pipeline_h pipe, gchar ** result,
           " !", &changed);
       if (changed > 1) {
         /* Allow one src only in a pipeline */
-        _ml_loge ("Cannot parse duplicated Tizen audio src nodes.")
+        _ml_loge ("Cannot parse duplicated Tizen audio src nodes.");
+        status = ML_ERROR_INVALID_PARAMETER;
+        goto mm_error;
+      }
+    }
+#else
+
+    /* read ini, type CONFIGURE_TYPE_MAIN */
+    err =
+        _mmcamcorder_conf_get_info (hcam, 0, MMFW_CONFIG_MAIN_FILE, &cam_conf);
+    if (err != MM_ERROR_NONE || !cam_conf) {
+      _ml_loge ("Failed to load conf %s.", MMFW_CONFIG_MAIN_FILE);
+      status = ML_ERROR_NOT_SUPPORTED;
+      goto mm_error;
+    }
+
+    if (video_src) {
+      /* category CONFIGURE_CATEGORY_MAIN_VIDEO_INPUT */
+      status =
+          ml_tizen_mm_replace_element (hcam, cam_conf, 1, "VideosrcElement",
+          ML_TIZEN_CAM_VIDEO_SRC, result);
+      if (status != ML_ERROR_NONE)
+        goto mm_error;
+    }
+
+    if (audio_src) {
+      /* category CONFIGURE_CATEGORY_MAIN_AUDIO_INPUT */
+      status =
+          ml_tizen_mm_replace_element (hcam, cam_conf, 2, "AudiosrcElement",
+          ML_TIZEN_CA
