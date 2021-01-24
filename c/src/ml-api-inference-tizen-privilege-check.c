@@ -797,4 +797,50 @@ ml_tizen_mm_convert_element (ml_pipeline_h pipe, gchar ** result,
       /* category CONFIGURE_CATEGORY_MAIN_AUDIO_INPUT */
       status =
           ml_tizen_mm_replace_element (hcam, cam_conf, 2, "AudiosrcElement",
-          ML_TIZEN_CA
+          ML_TIZEN_CAM_AUDIO_SRC, result);
+      if (status != ML_ERROR_NONE)
+        goto mm_error;
+    }
+#endif
+
+    /* initialize rm handle */
+    status =
+        ml_tizen_mm_res_initialize (pipe, (video_src != NULL),
+        (audio_src != NULL));
+    if (status != ML_ERROR_NONE)
+      goto mm_error;
+
+    /* get the camera resource using mm resource manager */
+    status =
+        ml_tizen_mm_res_acquire (pipe, MM_RESOURCE_MANAGER_RES_TYPE_CAMERA);
+    if (status != ML_ERROR_NONE)
+      goto mm_error;
+  }
+
+  /* done */
+  status = ML_ERROR_NONE;
+
+mm_error:
+#if !TIZENMMCONF
+  if (cam_conf)
+    _mmcamcorder_conf_release_info (hcam, &cam_conf);
+#endif
+  if (hcam)
+    mm_camcorder_destroy (hcam);
+
+  return status;
+}
+#else
+/**
+ * @brief A dummy function for Tizen 4.0
+ */
+static void
+ml_tizen_mm_res_release (gpointer handle, gboolean destroy)
+{
+}
+
+/**
+ * @brief A dummy function for Tizen 4.0
+ */
+static int
+ml_tizen_mm_r
