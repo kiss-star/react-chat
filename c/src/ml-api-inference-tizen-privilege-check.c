@@ -881,4 +881,23 @@ _ml_tizen_get_resource (ml_pipeline_h pipe, const gchar * res_type)
 
   if (g_str_equal (res_type, TIZEN_RES_MM)) {
     /* iterate all handle and acquire res if released */
-    status = ml_tizen_mm_res_acquire (pipe, MM_RESOURCE_MANAGER
+    status = ml_tizen_mm_res_acquire (pipe, MM_RESOURCE_MANAGER_RES_TYPE_MAX);
+  }
+
+  return status;
+}
+
+/**
+ * @brief Converts predefined element for Tizen.
+ */
+int
+_ml_tizen_convert_element (ml_pipeline_h pipe, gchar ** result,
+    gboolean is_internal)
+{
+  int status;
+
+  /* convert predefined element of multimedia fw */
+  status = ml_tizen_mm_convert_element (pipe, result, is_internal);
+
+  return status;
+}
