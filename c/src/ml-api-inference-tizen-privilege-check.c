@@ -843,4 +843,42 @@ ml_tizen_mm_res_release (gpointer handle, gboolean destroy)
  * @brief A dummy function for Tizen 4.0
  */
 static int
-ml_tizen_mm_r
+ml_tizen_mm_res_acquire (ml_pipeline_h pipe,
+    mm_resource_manager_res_type_e res_type)
+{
+  return ML_ERROR_NOT_SUPPORTED;
+}
+
+/**
+ * @brief A dummy function for Tizen 4.0
+ */
+static int
+ml_tizen_mm_convert_element (ml_pipeline_h pipe, gchar ** result,
+    gboolean is_internal)
+{
+  return ML_ERROR_NOT_SUPPORTED;
+}
+#endif /* TIZEN5PLUS */
+
+/**
+ * @brief Releases the resource handle of Tizen.
+ */
+void
+_ml_tizen_release_resource (gpointer handle, const gchar * res_type)
+{
+  if (g_str_equal (res_type, TIZEN_RES_MM)) {
+    ml_tizen_mm_res_release (handle, TRUE);
+  }
+}
+
+/**
+ * @brief Gets the resource handle of Tizen.
+ */
+int
+_ml_tizen_get_resource (ml_pipeline_h pipe, const gchar * res_type)
+{
+  int status = ML_ERROR_NONE;
+
+  if (g_str_equal (res_type, TIZEN_RES_MM)) {
+    /* iterate all handle and acquire res if released */
+    status = ml_tizen_mm_res_acquire (pipe, MM_RESOURCE_MANAGER
