@@ -74,4 +74,9 @@ MachinelearningServicePipeline * _get_mlsp_proxy_new_for_bus_sync (void);
 /**
  * @brief Internal function to get proxy of the model d-bus interface
  */
-MachinelearningServiceModel * _get_
+MachinelearningServiceModel * _get_mlsm_proxy_new_for_bus_sync (void);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+#endif /* __ML_API_SERVICE_PRIVATE_DATA_H__ */
