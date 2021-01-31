@@ -55,4 +55,39 @@ _sink_callback_for_query_client (const ml_tensors_data_h data,
         data_s->tensors[i].size);
   }
 
-  g_async_queue_push (mls->out_data_que
+  g_async_queue_push (mls->out_data_queue, copied_data);
+}
+
+/**
+ * @brief Creates query client service handle with given ml-option handle.
+ */
+int
+ml_service_query_create (ml_option_h option, ml_service_h * h)
+{
+  int status = ML_ERROR_NONE;
+
+  gchar *description = NULL;
+
+  ml_option_s *_option;
+  GHashTableIter iter;
+  gchar *key;
+  ml_option_value_s *_option_value;
+
+  GString *tensor_query_client_prop;
+  gchar *prop = NULL;
+
+  ml_service_s *mls;
+
+  _ml_service_query_s *query_s;
+  ml_pipeline_h pipe_h;
+  ml_pipeline_src_h src_h;
+  ml_pipeline_sink_h sink_h;
+  gchar *caps = NULL;
+  guint timeout = 1000U;        /* default 1s timeout */
+
+  check_feature_state (ML_FEATURE_SERVICE);
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (!option) {
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, 'option' is NULL. It should be a valid ml_option_h, which s
