@@ -90,4 +90,23 @@ ml_service_query_create (ml_option_h option, ml_service_h * h)
 
   if (!option) {
     _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
-        "The parameter, 'option' is NULL. It should be a valid ml_option_h, which s
+        "The parameter, 'option' is NULL. It should be a valid ml_option_h, which should be created by ml_option_create().");
+  }
+
+  if (!h) {
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, 'h' (ml_service_h), is NULL. It should be a valid ml_service_h.");
+  }
+
+  _option = (ml_option_s *) option;
+  g_hash_table_iter_init (&iter, _option->option_table);
+  tensor_query_client_prop = g_string_new (NULL);
+  while (g_hash_table_iter_next (&iter, (gpointer *) & key,
+          (gpointer *) & _option_value)) {
+    if (0 == g_ascii_strcasecmp (key, "host")) {
+      g_string_append_printf (tensor_query_client_prop, " host=%s ",
+          (gchar *) _option_value->value);
+    } else if (0 == g_ascii_strcasecmp (key, "port")) {
+      g_string_append_printf (tensor_query_client_prop, " port=%u ",
+          *((guint *) _option_value->value));
+    } else if (0 == g_a
