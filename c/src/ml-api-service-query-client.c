@@ -109,4 +109,18 @@ ml_service_query_create (ml_option_h option, ml_service_h * h)
     } else if (0 == g_ascii_strcasecmp (key, "port")) {
       g_string_append_printf (tensor_query_client_prop, " port=%u ",
           *((guint *) _option_value->value));
-    } else if (0 == g_a
+    } else if (0 == g_ascii_strcasecmp (key, "dest-host")) {
+      g_string_append_printf (tensor_query_client_prop, " dest-host=%s ",
+          (gchar *) _option_value->value);
+    } else if (0 == g_ascii_strcasecmp (key, "dest-port")) {
+      g_string_append_printf (tensor_query_client_prop, " dest-port=%u ",
+          *((guint *) _option_value->value));
+    } else if (0 == g_ascii_strcasecmp (key, "connect-type")) {
+      g_string_append_printf (tensor_query_client_prop, " connect-type=%s ",
+          (gchar *) _option_value->value);
+    } else if (0 == g_ascii_strcasecmp (key, "topic")) {
+      g_string_append_printf (tensor_query_client_prop, " topic=%s ",
+          (gchar *) _option_value->value);
+    } else if (0 == g_ascii_strcasecmp (key, "timeout")) {
+      g_string_append_printf (tensor_query_client_prop, " timeout=%u ",
+          *((
