@@ -123,4 +123,29 @@ ml_service_query_create (ml_option_h option, ml_service_h * h)
           (gchar *) _option_value->value);
     } else if (0 == g_ascii_strcasecmp (key, "timeout")) {
       g_string_append_printf (tensor_query_client_prop, " timeout=%u ",
-          *((
+          *((guint *) _option_value->value));
+      timeout = *((guint *) _option_value->value);
+    } else if (0 == g_ascii_strcasecmp (key, "caps")) {
+      caps = g_strdup (_option_value->value);
+    } else {
+      _ml_logw ("Ignore unknown key for ml_option: %s", key);
+    }
+  }
+
+  if (!caps) {
+    g_string_free (tensor_query_client_prop, TRUE);
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The option 'caps' must be set before call ml_service_query_create.");
+  }
+
+  prop = g_string_free (tensor_query_client_prop, FALSE);
+  description =
+      g_strdup_printf
+      ("appsrc name=srcx ! %s ! tensor_query_client %s name=qcx ! tensor_sink name=sinkx async=false sync=false",
+      caps, prop);
+
+  g_free (caps);
+  g_free (prop);
+
+  status = ml_pipeline_construct (description, NULL, NULL, &pipe_h);
+  g_free (descrip
