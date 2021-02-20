@@ -177,4 +177,38 @@ ml_service_query_create (ml_option_h option, ml_service_h * h)
 
   query_s->timeout = timeout;
   query_s->pipe_h = pipe_h;
-  query
+  query_s->src_h = src_h;
+  query_s->sink_h = sink_h;
+  query_s->out_data_queue = g_async_queue_new ();
+
+  mls = g_new0 (ml_service_s, 1);
+  mls->type = ML_SERVICE_TYPE_CLIENT_QUERY;
+  mls->priv = query_s;
+
+  *h = mls;
+
+  return ML_ERROR_NONE;
+}
+
+/**
+ * @brief Requests query client service an output with given input data.
+ */
+int
+ml_service_query_request (ml_service_h h, const ml_tensors_data_h input,
+    ml_tensors_data_h * output)
+{
+  int status = ML_ERROR_NONE;
+  ml_service_s *mls = (ml_service_s *) h;
+  _ml_service_query_s *query;
+
+  check_feature_state (ML_FEATURE_SERVICE);
+  check_feature_state (ML_FEATURE_INFERENCE);
+
+  if (!h)
+    _ml_error_report_return (ML_ERROR_INVALID_PARAMETER,
+        "The parameter, 'h' is NULL. It should be a valid ml_service_h");
+
+  query = (_ml_service_query_s *) mls->priv;
+
+  status = ml_pipeline_src_input_data (query->src_h, input,
+      ML_PIPELINE_BUF_
