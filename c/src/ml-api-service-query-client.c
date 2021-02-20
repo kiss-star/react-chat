@@ -211,4 +211,16 @@ ml_service_query_request (ml_service_h h, const ml_tensors_data_h input,
   query = (_ml_service_query_s *) mls->priv;
 
   status = ml_pipeline_src_input_data (query->src_h, input,
-      ML_PIPELINE_BUF_
+      ML_PIPELINE_BUF_POLICY_DO_NOT_FREE);
+  if (ML_ERROR_NONE != status) {
+    _ml_error_report_return (status, "Failed to input data");
+  }
+
+  *output = g_async_queue_timeout_pop (query->out_data_queue,
+      query->timeout * G_TIME_SPAN_MILLISECOND);
+  if (NULL == *output) {
+    _ml_error_report_return (ML_ERROR_TIMED_OUT, "timeout!");
+  }
+
+  return ML_ERROR_NONE;
+}
