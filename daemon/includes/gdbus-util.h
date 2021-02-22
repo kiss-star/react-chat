@@ -39,4 +39,23 @@ struct gdbus_signal_info
 
 /**
  * @brief Export the DBus interface at the Object path on the bus connection.
- * @param 
+ * @param instance The instance of the DBus interface to export.
+ * @param obj_path The path to export the interface at.
+ * @return @c 0 on success. Otherwise a negative error value.
+ */
+int gdbus_export_interface (gpointer instance, const char *obj_path);
+
+/**
+ * @brief Acquire the given name on the SYSTEM session of the DBus message bus.
+ * @remarks If the name is acquired, 'READY=1' signal will be sent to the systemd.
+ * @param name The well-known name to own.
+ * @return @c 0 on success. Otherwise a negative error value.
+ */
+int gdbus_get_name (const char *name);
+
+/**
+ * @brief Connects the callback functions for each signal of the particular DBus interface.
+ * @param instance The instance of the DBus interface.
+ * @param num_signals The number of signals to connect.
+ * @param signal_infos The array of DBus signal handler.
+ * @return @c 0 on s
