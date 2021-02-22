@@ -58,4 +58,33 @@ int gdbus_get_name (const char *name);
  * @param instance The instance of the DBus interface.
  * @param num_signals The number of signals to connect.
  * @param signal_infos The array of DBus signal handler.
- * @return @c 0 on s
+ * @return @c 0 on success. Otherwise a negative error value.
+ */
+int gdbus_connect_signal (gpointer instance, int num_signals,
+    struct gdbus_signal_info *signal_infos);
+
+/**
+ * @brief Disconnects the callback functions from the particular DBus interface.
+ * @param instance The instance of the DBus interface.
+ * @param num_signals The number of signals to connect.
+ * @param signal_infos The array of DBus signal handler.
+ */
+void gdbus_disconnect_signal (gpointer instance, int num_signals,
+    struct gdbus_signal_info *signal_infos);
+
+/**
+ * @brief Connect to the DBus message bus
+ * @param is_session True is DBus Bus type is session.
+ * @return @c 0 on success. Otherwise a negative error value.
+ */
+int gdbus_get_system_connection (gboolean is_session);
+
+/**
+ * @brief Disconnect the DBus message bus.
+ */
+void gdbus_put_system_connection (void);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+#endif /* __GD
