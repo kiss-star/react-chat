@@ -87,4 +87,4 @@ void gdbus_put_system_connection (void);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
-#endif /* __GD
+#endif /* __GDBUS_UTIL_H__ */
