@@ -26,4 +26,12 @@
 #define _W(fmt, arg...)		do { SLOGW(fmt, ##arg); } while (0)
 #define _E(fmt, arg...)		do { SLOGE(fmt, ##arg); } while (0)
 #else
-#includ
+#include <glib.h>
+
+#define _D g_debug
+#define _I g_info
+#define _W g_warning
+#define _E g_critical
+#endif
+
+#endif /* __LOG_H__ */
