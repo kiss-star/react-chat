@@ -23,4 +23,34 @@ extern "C" {
 #endif /* __cplusplus */
 
 /**
- * @brief Data structure contains the name and callback function
+ * @brief Data structure contains the name and callback functions for a specific DBus interface.
+ */
+struct module_ops
+{
+  const char *name;     /**< Name of DBus Interface. */
+  int (*probe) (void *data);    /**< Callback function for probing the DBus Interface */
+  void (*init) (void *data);    /**< Callback function for initializing the DBus Interface */
+  void (*exit) (void *data);    /**< Callback function for exiting the DBus Interface */
+};
+
+/**
+ * @brief Utility macro for adding and removing the specific DBus interface.
+ */
+#define MODULE_OPS_REGISTER(module)	\
+static void __CONSTRUCTOR__ module_init(void)	\
+{	\
+  add_module (module);	\
+}	\
+static void __DESTRUCTOR__ module_exit(void)	\
+{	\
+  remove_module (module);	\
+}
+
+/**
+ * @brief Initialize all added modules by calling probe and init callback functions.
+ * @param[in/out] data user data for passing the callback functions.
+ */
+void init_modules (void *data);
+
+/**
+ * @brief Clean up all added modules 
