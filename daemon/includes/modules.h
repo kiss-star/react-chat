@@ -53,4 +53,24 @@ static void __DESTRUCTOR__ module_exit(void)	\
 void init_modules (void *data);
 
 /**
- * @brief Clean up all added modules 
+ * @brief Clean up all added modules by calling the exit callback function.
+ * @param[in/out] data user data for passing the callback functions.
+ */
+void exit_modules (void *data);
+
+/**
+ * @brief Add the specific DBus interface into the Machine Learning agent daemon.
+ * @param[in] module DBus interface information.
+ */
+void add_module (const struct module_ops *module);
+
+/**
+ * @brief Remove the specific DBus interface from the Machine Learning agent daemon.
+ * @param[in] module DBus interface information.
+ */
+void remove_module (const struct module_ops *module);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+#endif /* __MODULES_H__ */
