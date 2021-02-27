@@ -93,3 +93,39 @@ parse_args (gint *argc, gchar ***argv)
   }
 
   return 0;
+}
+
+/**
+ * @brief main function of the Machine Learning agent daemon.
+ */
+int
+main (int argc, char **argv)
+{
+  if (parse_args (&argc, &argv)) {
+    return -EINVAL;
+  }
+
+  g_mainloop = g_main_loop_new (NULL, FALSE);
+  gdbus_get_system_connection (is_session);
+
+  init_modules (NULL);
+  if (postinit () < 0)
+    _E ("cannot init system");
+
+  /* Register package manager callback */
+  if (pkg_mgr_init () < 0) {
+    _E ("cannot init package manager");
+  }
+
+  g_main_loop_run (g_mainloop);
+  exit_modules (NULL);
+
+  gdbus_put_system_connection ();
+  g_main_loop_unref (g_mainloop);
+  g_mainloop = NULL;
+
+  if (pkg_mgr_deinit () < 0)
+    _W ("cannot finalize package manager");
+
+  return 0;
+}
