@@ -18,3 +18,31 @@ gdbus_gen_pipeline_src = custom_target('gdbus-gencode',
   output: ['pipeline-dbus.h', 'pipeline-dbus.c'],
   command: [gdbus_prog, '--interface-prefix', 'org.tizen',
             '--generate-c-code', 'pipeline-dbus',
+            '--output-directory', meson.current_build_dir(),
+            '@INPUT@'])
+
+gdbus_gen_model_src = custom_target('gdbus-model-gencode',
+  input: model_dbus_input,
+  output: ['model-dbus.h', 'model-dbus.c'],
+  command: [gdbus_prog, '--interface-prefix', 'org.tizen',
+            '--generate-c-code', 'model-dbus',
+            '--output-directory', meson.current_build_dir(),
+            '@INPUT@'])
+
+gdbus_gen_header_dep = declare_dependency(sources: [gdbus_gen_pipeline_src, gdbus_gen_model_src])
+
+ai_service_daemon_deps = [
+  gdbus_gen_header_dep,
+  glib_dep,
+  gio_dep,
+  gst_dep,
+  sqlite_dep,
+  libsystemd_dep
+]
+
+if (get_option('enable-tizen'))
+  ai_service_daemon_deps += [appfw_package_manager_dep, dependency('dlog')]
+endif
+
+serviceDBPath = get_option('service-db-path')
+daemon_cpp_db_path_arg = '-DDB_PATH="
