@@ -45,4 +45,30 @@ if (get_option('enable-tizen'))
 endif
 
 serviceDBPath = get_option('service-db-path')
-daemon_cpp_db_path_arg = '-DDB_PATH="
+daemon_cpp_db_path_arg = '-DDB_PATH="' + serviceDBPath + '"'
+
+serviceDBKeyPrefix = get_option('service-db-key-prefix')
+daemon_cpp_db_key_prefix_arg = '-DMESON_KEY_PREFIX="' + serviceDBKeyPrefix + '"'
+
+nns_ml_agent_executable = executable('machine-learning-agent',
+  nns_ml_agent_srcs,
+  dependencies: [ai_service_daemon_deps],
+  include_directories: nns_ml_agent_incs,
+  install: true,
+  install_dir: api_install_bindir,
+  cpp_args: [daemon_cpp_db_path_arg, daemon_cpp_db_key_prefix_arg],
+  pie: true
+)
+
+# DBus Policy configuration
+dbus_policy_conf = configuration_data()
+configure_file(input: '../dbus/machine-learning-agent.conf.in',
+  output: 'machine-learning-agent.conf',
+  install_dir: dbus_policy_dir,
+  configuration: dbus_policy_conf
+)
+
+# DBus System Service
+dbus_system_conf = configuration_data()
+configure_file(input: '../dbus/org.tizen.machinelearning.service.service.in',
+  output: 'org.tizen.machinelearning.service.ser
