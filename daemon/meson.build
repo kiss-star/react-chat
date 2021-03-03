@@ -71,4 +71,15 @@ configure_file(input: '../dbus/machine-learning-agent.conf.in',
 # DBus System Service
 dbus_system_conf = configuration_data()
 configure_file(input: '../dbus/org.tizen.machinelearning.service.service.in',
-  output: 'org.tizen.machinelearning.service.ser
+  output: 'org.tizen.machinelearning.service.service',
+  install_dir: dbus_system_service_dir,
+  configuration: dbus_system_conf
+)
+
+# Systemd Service file
+systemd_conf = configuration_data()
+configure_file(input: '../dbus/machine-learning-agent.service.in',
+  output: 'machine-learning-agent.service',
+  install_dir: systemd_service_dir,
+  configuration: systemd_conf
+)
