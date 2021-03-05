@@ -74,4 +74,8 @@ exit_modules (void *data)
   const struct module_ops *module;
 
   for (elem = module_head; elem != NULL; elem = elem->next) {
-    module = elem->dat
+    module = elem->data;
+    if (module->exit)
+      module->exit (data);
+  }
+}
