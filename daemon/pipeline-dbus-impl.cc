@@ -107,4 +107,37 @@ dbus_cb_core_set_pipeline (MachinelearningServicePipeline *obj,
     _E ("An exception occurred during write to the DB. Error message: %s", e.what ());
     result = -EINVAL;
   } catch (const std::exception &e) {
-    _E ("An exception occurred during write to the DB. Error messa
+    _E ("An exception occurred during write to the DB. Error message: %s", e.what ());
+    result = -EIO;
+  }
+
+  db.disconnectDB ();
+
+  if (result) {
+    _E ("Failed to set pipeline description of %s", service_name);
+    machinelearning_service_pipeline_complete_set_pipeline (obj, invoc, result);
+    return TRUE;
+  }
+
+  machinelearning_service_pipeline_complete_set_pipeline (obj, invoc, result);
+
+  return TRUE;
+}
+
+/**
+ * @brief Get the pipeline description of the given service. Return the call result and the pipeline description.
+ */
+static gboolean
+dbus_cb_core_get_pipeline (MachinelearningServicePipeline *obj,
+    GDBusMethodInvocation *invoc, const gchar *service_name,
+    gpointer user_data)
+{
+  gint result = 0;
+  std::string stored_pipeline_description;
+  MLServiceDB &db = MLServiceDB::getInstance ();
+
+  try {
+    db.connectDB ();
+    db.get_pipeline (service_name, stored_pipeline_description);
+  } catch (const std::invalid_argument &e) {
+    _E (
