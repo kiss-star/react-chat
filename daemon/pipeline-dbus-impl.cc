@@ -77,4 +77,34 @@ _pipeline_free (gpointer data)
 static MachinelearningServicePipeline *
 gdbus_get_pipeline_instance (void)
 {
-  return machinelearning_service_pipeline_sk
+  return machinelearning_service_pipeline_skeleton_new ();
+}
+
+/**
+ * @brief Put the obtained skeleton object and release the resource.
+ */
+static void
+gdbus_put_pipeline_instance (MachinelearningServicePipeline **instance)
+{
+  g_clear_object (instance);
+}
+
+/**
+ * @brief Set the service with given description. Return the call result.
+ */
+static gboolean
+dbus_cb_core_set_pipeline (MachinelearningServicePipeline *obj,
+    GDBusMethodInvocation *invoc, const gchar *service_name,
+    const gchar *pipeline_desc, gpointer user_data)
+{
+  gint result = 0;
+  MLServiceDB &db = MLServiceDB::getInstance ();
+
+  try {
+    db.connectDB ();
+    db.set_pipeline (service_name, pipeline_desc);
+  } catch (const std::invalid_argument &e) {
+    _E ("An exception occurred during write to the DB. Error message: %s", e.what ());
+    result = -EINVAL;
+  } catch (const std::exception &e) {
+    _E ("An exception occurred during write to the DB. Error messa
