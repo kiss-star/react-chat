@@ -140,4 +140,32 @@ dbus_cb_core_get_pipeline (MachinelearningServicePipeline *obj,
     db.connectDB ();
     db.get_pipeline (service_name, stored_pipeline_description);
   } catch (const std::invalid_argument &e) {
-    _E (
+    _E ("An exception occurred during read the DB. Error message: %s", e.what ());
+    result = -EINVAL;
+  } catch (const std::exception &e) {
+    _E ("An exception occurred during read the DB. Error message: %s", e.what ());
+    result = -EIO;
+  }
+
+  db.disconnectDB ();
+
+  if (result) {
+    _E ("Failed to get pipeline description of %s", service_name);
+    machinelearning_service_pipeline_complete_get_pipeline (obj, invoc, result, NULL);
+    return TRUE;
+  }
+
+  machinelearning_service_pipeline_complete_get_pipeline (obj, invoc, result, stored_pipeline_description.c_str ());
+
+  return TRUE;
+}
+
+/**
+ * @brief Delete the pipeline description of the given service. Return the call result.
+ */
+static gboolean
+dbus_cb_core_delete_pipeline (MachinelearningServicePipeline *obj,
+    GDBusMethodInvocation *invoc, const gchar *service_name,
+    gpointer user_data)
+{
+  gint r
