@@ -168,4 +168,33 @@ dbus_cb_core_delete_pipeline (MachinelearningServicePipeline *obj,
     GDBusMethodInvocation *invoc, const gchar *service_name,
     gpointer user_data)
 {
-  gint r
+  gint result = 0;
+  MLServiceDB &db = MLServiceDB::getInstance ();
+
+  try {
+    db.connectDB ();
+    db.delete_pipeline (service_name);
+  } catch (const std::invalid_argument &e) {
+    _E ("An exception occurred during delete an item in the DB. Error message: %s", e.what ());
+    result = -EINVAL;
+  } catch (const std::exception &e) {
+    _E ("An exception occurred during delete an item in the DB. Error message: %s", e.what ());
+    result = -EIO;
+  }
+
+  db.disconnectDB ();
+
+  if (result) {
+    _E ("Failed to delete the pipeline description of %s", service_name);
+    machinelearning_service_pipeline_complete_delete_pipeline (obj, invoc, result);
+    return TRUE;
+  }
+
+  machinelearning_service_pipeline_complete_delete_pipeline (obj, invoc, result);
+
+  return TRUE;
+}
+
+/**
+ * @brief Launch the pipeline with given description. Return the call result and its id.
+ */
