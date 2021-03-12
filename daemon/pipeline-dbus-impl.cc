@@ -198,3 +198,28 @@ dbus_cb_core_delete_pipeline (MachinelearningServicePipeline *obj,
 /**
  * @brief Launch the pipeline with given description. Return the call result and its id.
  */
+static gboolean
+dbus_cb_core_launch_pipeline (MachinelearningServicePipeline *obj,
+    GDBusMethodInvocation *invoc, const gchar *service_name,
+    gpointer user_data)
+{
+  gint result = 0;
+  GError *err = NULL;
+  GstStateChangeReturn sc_ret;
+  GstElement *pipeline = NULL;
+  pipeline_s *p;
+
+  MLServiceDB &db = MLServiceDB::getInstance ();
+  std::string stored_pipeline_description;
+
+  /** get pipeline description from the DB */
+  try {
+    db.connectDB ();
+    db.get_pipeline (service_name, stored_pipeline_description);
+  } catch (const std::invalid_argument &e) {
+    _E ("An exception occurred during read the DB. Error message: %s", e.what ());
+    result = -EINVAL;
+  } catch (const std::exception &e) {
+    _E ("An exception occurred during read the DB. Error message: %s", e.what ());
+    result = -EIO;
+  }
