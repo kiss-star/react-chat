@@ -223,3 +223,31 @@ dbus_cb_core_launch_pipeline (MachinelearningServicePipeline *obj,
     _E ("An exception occurred during read the DB. Error message: %s", e.what ());
     result = -EIO;
   }
+
+  db.disconnectDB ();
+
+  if (result) {
+    _E ("Failed to launch pipeline of %s", service_name);
+    machinelearning_service_pipeline_complete_launch_pipeline (obj, invoc, result, -1);
+    return TRUE;
+  }
+
+  pipeline = gst_parse_launch (stored_pipeline_description.c_str (), &err);
+  if (!pipeline || err) {
+    _E ("gst_parse_launch with %s Failed. error msg: %s",
+        stored_pipeline_description.c_str (),
+        (err) ? err->message : "unknown reason");
+    g_clear_error (&err);
+
+    if (pipeline)
+      gst_object_unref (pipeline);
+
+    result = -ESTRPIPE;
+    machinelearning_service_pipeline_complete_launch_pipeline (obj, invoc, result, -1);
+    return TRUE;
+  }
+
+  /** now set pipeline as paused state */
+  sc_ret = gst_element_set_state (pipeline, GST_STATE_PAUSED);
+  if (sc_ret == GST_STATE_CHANGE_FAILURE) {
+    _E ("Failed
