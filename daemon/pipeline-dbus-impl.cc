@@ -250,4 +250,30 @@ dbus_cb_core_launch_pipeline (MachinelearningServicePipeline *obj,
   /** now set pipeline as paused state */
   sc_ret = gst_element_set_state (pipeline, GST_STATE_PAUSED);
   if (sc_ret == GST_STATE_CHANGE_FAILURE) {
-    _E ("Failed
+    _E ("Failed to set the state of the pipeline to PAUSED. For the detail, please check the GStreamer log message. The input pipeline was %s", stored_pipeline_description.c_str ());
+
+    gst_object_unref (pipeline);
+    result = -ESTRPIPE;
+    machinelearning_service_pipeline_complete_launch_pipeline (obj, invoc, result, -1);
+    return TRUE;
+  }
+
+  /** now fill the struct and store into hash table */
+  p = g_new0 (pipeline_s, 1);
+  p->element = pipeline;
+  p->description = g_strdup (stored_pipeline_description.c_str ());
+  p->service_name = g_strdup (service_name);
+  g_mutex_init (&p->lock);
+
+  G_LOCK (pipeline_table_lock);
+  p->id = g_get_monotonic_time ();
+  g_hash_table_insert (pipeline_table, GINT_TO_POINTER (p->id), p);
+  G_UNLOCK (pipeline_table_lock);
+
+  machinelearning_service_pipeline_complete_launch_pipeline (obj, invoc, result, p->id);
+
+  return TRUE;
+}
+
+/**
+ * @brief Start the pip
