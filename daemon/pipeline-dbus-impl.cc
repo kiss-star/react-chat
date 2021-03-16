@@ -332,4 +332,36 @@ dbus_cb_core_stop_pipeline (MachinelearningServicePipeline *obj,
     g_mutex_lock (&p->lock);
     G_UNLOCK (pipeline_table_lock);
     sc_ret = gst_element_set_state (p->element, GST_STATE_PAUSED);
-    
+    g_mutex_unlock (&p->lock);
+
+    if (sc_ret == GST_STATE_CHANGE_FAILURE) {
+      _E ("Failed to set the state of the pipline to PAUSED whose service_name is %s (id: %" G_GINT64_FORMAT ")", p->service_name, id);
+      result = -ESTRPIPE;
+    }
+  }
+
+  machinelearning_service_pipeline_complete_stop_pipeline (obj, invoc, result);
+
+  return TRUE;
+}
+
+/**
+ * @brief Destroy the pipeline with given id. Return the call result.
+ */
+static gboolean
+dbus_cb_core_destroy_pipeline (MachinelearningServicePipeline *obj,
+    GDBusMethodInvocation *invoc, gint64 id, gpointer user_data)
+{
+  gint result = 0;
+  pipeline_s *p = NULL;
+
+  G_LOCK (pipeline_table_lock);
+  p = (pipeline_s *) g_hash_table_lookup (pipeline_table, GINT_TO_POINTER (id));
+
+  if (!p) {
+    _E ("there is no pipeline with id: %" G_GINT64_FORMAT, id);
+    result = -EINVAL;
+  } else {
+
+/**
+ * @todo Fix hanging issue when trying to set GST
