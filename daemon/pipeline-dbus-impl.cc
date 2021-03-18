@@ -411,4 +411,31 @@ dbus_cb_core_get_state (MachinelearningServicePipeline *obj,
   }
 
   g_mutex_lock (&p->lock);
-  G_UNLOCK (pipelin
+  G_UNLOCK (pipeline_table_lock);
+  sc_ret = gst_element_get_state (p->element, &state, NULL, GST_MSECOND);
+  g_mutex_unlock (&p->lock);
+
+  if (sc_ret == GST_STATE_CHANGE_FAILURE) {
+    _E ("Failed to get the state of the pipline whose service_name is %s (id: %" G_GINT64_FORMAT ")", p->service_name, id);
+    result = -ESTRPIPE;
+    machinelearning_service_pipeline_complete_get_state (obj, invoc, result, (gint) state);
+    return TRUE;
+  }
+
+  machinelearning_service_pipeline_complete_get_state (obj, invoc, result, (gint) state);
+
+  return TRUE;
+}
+
+static struct gdbus_signal_info handler_infos[] = {
+  {
+    .signal_name = DBUS_PIPELINE_I_SET_HANDLER,
+    .cb = G_CALLBACK (dbus_cb_core_set_pipeline),
+    .cb_data = NULL,
+    .handler_id = 0,
+  }, {
+    .signal_name = DBUS_PIPELINE_I_GET_HANDLER,
+    .cb = G_CALLBACK (dbus_cb_core_get_pipeline),
+    .cb_data = NULL,
+    .handler_id = 0,
+  },
