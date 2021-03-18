@@ -382,4 +382,33 @@ dbus_cb_core_destroy_pipeline (MachinelearningServicePipeline *obj,
   }
 
   G_UNLOCK (pipeline_table_lock);
-  machinelearning_service_pipeline_complete_destro
+  machinelearning_service_pipeline_complete_destroy_pipeline (obj, invoc, result);
+
+  return TRUE;
+}
+
+/**
+ * @brief Get the state of pipeline with given id. Return the call result and its state.
+ */
+static gboolean
+dbus_cb_core_get_state (MachinelearningServicePipeline *obj,
+    GDBusMethodInvocation *invoc, gint64 id, gpointer user_data)
+{
+  gint result = 0;
+  GstStateChangeReturn sc_ret;
+  GstState state = GST_STATE_NULL;
+  pipeline_s *p = NULL;
+
+  G_LOCK (pipeline_table_lock);
+  p = (pipeline_s *) g_hash_table_lookup (pipeline_table, GINT_TO_POINTER (id));
+
+  if (!p) {
+    _E ("there is no pipeline with id: %" G_GINT64_FORMAT, id);
+    result = -EINVAL;
+    machinelearning_service_pipeline_complete_get_state (obj, invoc, result, (gint) state);
+    G_UNLOCK (pipeline_table_lock);
+    return TRUE;
+  }
+
+  g_mutex_lock (&p->lock);
+  G_UNLOCK (pipelin
