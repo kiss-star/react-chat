@@ -438,4 +438,31 @@ static struct gdbus_signal_info handler_infos[] = {
     .cb = G_CALLBACK (dbus_cb_core_get_pipeline),
     .cb_data = NULL,
     .handler_id = 0,
-  },
+  }, {
+    .signal_name = DBUS_PIPELINE_I_DELETE_HANDLER,
+    .cb = G_CALLBACK (dbus_cb_core_delete_pipeline),
+    .cb_data = NULL,
+    .handler_id = 0,
+  }, {
+    .signal_name = DBUS_PIPELINE_I_LAUNCH_HANDLER,
+    .cb = G_CALLBACK (dbus_cb_core_launch_pipeline),
+    .cb_data = NULL,
+    .handler_id = 0,
+  }, {
+    .signal_name = DBUS_PIPELINE_I_START_HANDLER,
+    .cb = G_CALLBACK (dbus_cb_core_start_pipeline),
+    .cb_data = NULL,
+    .handler_id = 0,
+  }, {
+    .signal_name = DBUS_PIPELINE_I_STOP_HANDLER,
+    .cb = G_CALLBACK (dbus_cb_core_stop_pipeline),
+    .cb_data = NULL,
+    .handler_id = 0,
+  }, {
+    .signal_name = DBUS_PIPELINE_I_DESTROY_HANDLER,
+    .cb = G_CALLBACK (dbus_cb_core_destroy_pipeline),
+    .cb_data = NULL,
+    .handler_id = 0,
+  }, {
+    .signal_name = DBUS_PIPELINE_I_GET_STATE_HANDLER,
+   
