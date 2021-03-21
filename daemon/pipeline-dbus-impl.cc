@@ -465,4 +465,37 @@ static struct gdbus_signal_info handler_infos[] = {
     .handler_id = 0,
   }, {
     .signal_name = DBUS_PIPELINE_I_GET_STATE_HANDLER,
-   
+    .cb = G_CALLBACK (dbus_cb_core_get_state),
+    .cb_data = NULL,
+    .handler_id = 0,
+  },
+};
+
+/**
+ * @brief Probe the D-BUS and connect this module.
+ */
+static int
+probe_pipeline_module (void *data)
+{
+  int ret = 0;
+
+  g_gdbus_instance = gdbus_get_pipeline_instance ();
+  if (g_gdbus_instance == NULL) {
+    _E ("cannot get a dbus instance for the %s interface\n",
+        DBUS_PIPELINE_INTERFACE);
+    return -ENOSYS;
+  }
+
+  ret = gdbus_connect_signal (g_gdbus_instance,
+      ARRAY_SIZE (handler_infos), handler_infos);
+  if (ret < 0) {
+    _E ("cannot register callbacks as the dbus method invocation handlers\n ret: %d",
+        ret);
+    ret = -ENOSYS;
+    goto out;
+  }
+
+  ret = gdbus_export_interface (g_gdbus_instance, DBUS_PIPELINE_PATH);
+  if (ret < 0) {
+    _E ("cannot export the dbus interface '%s' at the object path '%s'\n",
+        DBUS_
