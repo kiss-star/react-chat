@@ -532,4 +532,34 @@ init_pipeline_module (void *data)
     if (err) {
       _E ("Initializing gstreamer failed with err msg %s", err->message);
       g_clear_error (&err);
-    } els
+    } else {
+      _E ("cannot initialize GStreamer with unknown reason.");
+    }
+  }
+}
+
+/**
+ * @brief Finalize this module.
+ */
+static void
+exit_pipeline_module (void *data)
+{
+  G_LOCK (pipeline_table_lock);
+  g_assert (pipeline_table); /** Internal error */
+  g_hash_table_destroy (pipeline_table);
+  pipeline_table = NULL;
+  G_UNLOCK (pipeline_table_lock);
+
+  gdbus_disconnect_signal (g_gdbus_instance,
+      ARRAY_SIZE (handler_infos), handler_infos);
+  gdbus_put_pipeline_instance (&g_gdbus_instance);
+}
+
+static const struct module_ops pipeline_ops = {
+  .name = "pipeline",
+  .probe = probe_pipeline_module,
+  .init = init_pipeline_module,
+  .exit = exit_pipeline_module,
+};
+
+MODULE_OPS_REGISTER (&pipeline_ops)
