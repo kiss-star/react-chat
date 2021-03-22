@@ -498,4 +498,38 @@ probe_pipeline_module (void *data)
   ret = gdbus_export_interface (g_gdbus_instance, DBUS_PIPELINE_PATH);
   if (ret < 0) {
     _E ("cannot export the dbus interface '%s' at the object path '%s'\n",
-        DBUS_
+        DBUS_PIPELINE_INTERFACE, DBUS_PIPELINE_PATH);
+    ret = -ENOSYS;
+    goto out_disconnect;
+  }
+
+  return 0;
+
+out_disconnect:
+  gdbus_disconnect_signal (g_gdbus_instance,
+      ARRAY_SIZE (handler_infos), handler_infos);
+out:
+  gdbus_put_pipeline_instance (&g_gdbus_instance);
+
+  return ret;
+}
+
+/**
+ * @brief Initialize this module.
+ */
+static void
+init_pipeline_module (void *data)
+{
+  GError *err = NULL;
+
+  G_LOCK (pipeline_table_lock);
+  g_assert (NULL == pipeline_table); /** Internal error */
+  pipeline_table = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, _pipeline_free);
+  G_UNLOCK (pipeline_table_lock);
+
+  _I ("init gstreamer");
+  if (!gst_init_check (NULL, NULL, &err)) {
+    if (err) {
+      _E ("Initializing gstreamer failed with err msg %s", err->message);
+      g_clear_error (&err);
+    } els
