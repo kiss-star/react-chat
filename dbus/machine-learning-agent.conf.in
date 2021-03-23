@@ -3,4 +3,15 @@
 <busconfig>
     <policy user="root">
         <allow send_destination="org.tizen.machinelearning.service"
-		send_interface="org.tizen.machinelearnin
+		send_interface="org.tizen.machinelearning.service.pipeline"/>
+    </policy>
+    <policy user="service_fw">
+        <allow own="org.tizen.machinelearning.service"/>
+    </policy>
+    <policy context="default">
+	<deny own="org.tizen.machinelearning.service"/>
+	<deny send_destination="org.tizen.machinelearning.service"/>
+
+	<allow send_destination="org.tizen.machinelearning.service"/>
+    </policy>
+</busconfig>
