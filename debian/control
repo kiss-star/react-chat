@@ -59,4 +59,7 @@ Depends: ml-inference-api, ${shlibs:Depends}, ${misc:Depends}
 Description: Jni wrapper for Machine Learning Inference Java API
 
 Package: ml-api-unittests
-Archit
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Unittests for Machine Learning API
