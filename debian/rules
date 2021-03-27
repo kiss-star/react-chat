@@ -1,4 +1,31 @@
 #!/usr/bin/make -f
 # See debhelper(7) (uncomment to enable)
 # output every command that modifies files on the build system.
-#export DH_VER
+#export DH_VERBOSE = 1
+
+# see FEATURE AREAS in dpkg-buildflags(1)
+#export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+# see ENVIRONMENT in dpkg-buildflags(1)
+# package maintainers to append CFLAGS
+#export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
+# package maintainers to append LDFLAGS
+#export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
+
+ROOT_DIR:=$(shell pwd)
+export DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+export DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
+export BUILDDIR=build
+export MLAPI_SOURCE_ROOT_PATH=$(ROOT_DIR)
+export MLAPI_BUILD_ROOT_PATH=${MLAPI_SOURCE_ROOT_PATH}/${BUILDDIR}
+export JAVA_DIR ?= $(shell echo 'System.out.println(java.lang.System.getProperty("java.home"));' | jshell  -)
+
+%:
+	dh $@ --parallel
+
+override_dh_auto_clean:
+	rm -rf ${BUILDDIR}
+
+override_dh_auto_configure:
+	mkdir -p ${BUILDDIR}
+	meson --buildtype=plain --prefix=/usr --sysconfdir=/etc --libdir=lib/
