@@ -1047,3 +1047,814 @@ public class APITestPipeline {
             pipe.start();
 
             /* get pad list of output-selector */
+            String[] pads = pipe.getSwitchPads("outs");
+
+            assertEquals(2, pads.length);
+            assertEquals("src_0", pads[0]);
+            assertEquals("src_1", pads[1]);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testGetSwitchInvalidName_n() {
+        String desc = "appsrc name=srcx ! " +
+                "other/tensor,dimension=(string)2:10:10:1,type=(string)uint8,framerate=(fraction)0/1 ! " +
+                "output-selector name=outs " +
+                "outs.src_0 ! tensor_sink name=sinkx async=false " +
+                "outs.src_1 ! tensor_sink async=false";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            /* start pipeline */
+            pipe.start();
+
+            /* get pad list with invalid switch name */
+            pipe.getSwitchPads("invalid_outs");
+            fail();
+        } catch (Exception e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testGetSwitchNullName_n() {
+        String desc = "appsrc name=srcx ! " +
+                "other/tensor,dimension=(string)2:10:10:1,type=(string)uint8,framerate=(fraction)0/1 ! " +
+                "output-selector name=outs " +
+                "outs.src_0 ! tensor_sink name=sinkx async=false " +
+                "outs.src_1 ! tensor_sink async=false";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            /* start pipeline */
+            pipe.start();
+
+            /* get pad list with null param */
+            pipe.getSwitchPads(null);
+            fail();
+        } catch (Exception e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testGetSwitchEmptyName_n() {
+        String desc = "appsrc name=srcx ! " +
+                "other/tensor,dimension=(string)2:10:10:1,type=(string)uint8,framerate=(fraction)0/1 ! " +
+                "output-selector name=outs " +
+                "outs.src_0 ! tensor_sink name=sinkx async=false " +
+                "outs.src_1 ! tensor_sink async=false";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            /* start pipeline */
+            pipe.start();
+
+            /* get pad list with empty name */
+            pipe.getSwitchPads("");
+            fail();
+        } catch (Exception e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testSelectInvalidPad_n() {
+        String desc = "appsrc name=srcx ! " +
+                "other/tensor,dimension=(string)2:10:10:1,type=(string)uint8,framerate=(fraction)0/1 ! " +
+                "output-selector name=outs " +
+                "outs.src_0 ! tensor_sink name=sinkx async=false " +
+                "outs.src_1 ! tensor_sink async=false";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            /* start pipeline */
+            pipe.start();
+
+            /* select invalid pad name */
+            pipe.selectSwitchPad("outs", "invalid_src");
+            fail();
+        } catch (Exception e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testSelectNullPad_n() {
+        String desc = "appsrc name=srcx ! " +
+                "other/tensor,dimension=(string)2:10:10:1,type=(string)uint8,framerate=(fraction)0/1 ! " +
+                "output-selector name=outs " +
+                "outs.src_0 ! tensor_sink name=sinkx async=false " +
+                "outs.src_1 ! tensor_sink async=false";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            /* start pipeline */
+            pipe.start();
+
+            /* null pad name */
+            pipe.selectSwitchPad("outs", null);
+            fail();
+        } catch (Exception e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testSelectEmptyPad_n() {
+        String desc = "appsrc name=srcx ! " +
+                "other/tensor,dimension=(string)2:10:10:1,type=(string)uint8,framerate=(fraction)0/1 ! " +
+                "output-selector name=outs " +
+                "outs.src_0 ! tensor_sink name=sinkx async=false " +
+                "outs.src_1 ! tensor_sink async=false";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            /* start pipeline */
+            pipe.start();
+
+            /* empty pad name */
+            pipe.selectSwitchPad("outs", "");
+            fail();
+        } catch (Exception e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testSelectNullSwitchName_n() {
+        String desc = "appsrc name=srcx ! " +
+                "other/tensor,dimension=(string)2:10:10:1,type=(string)uint8,framerate=(fraction)0/1 ! " +
+                "output-selector name=outs " +
+                "outs.src_0 ! tensor_sink name=sinkx async=false " +
+                "outs.src_1 ! tensor_sink async=false";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            /* start pipeline */
+            pipe.start();
+
+            /* null switch name */
+            pipe.selectSwitchPad(null, "src_1");
+            fail();
+        } catch (Exception e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testSelectEmptySwitchName_n() {
+        String desc = "appsrc name=srcx ! " +
+                "other/tensor,dimension=(string)2:10:10:1,type=(string)uint8,framerate=(fraction)0/1 ! " +
+                "output-selector name=outs " +
+                "outs.src_0 ! tensor_sink name=sinkx async=false " +
+                "outs.src_1 ! tensor_sink async=false";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            /* start pipeline */
+            pipe.start();
+
+            /* empty switch name */
+            pipe.selectSwitchPad("", "src_1");
+            fail();
+        } catch (Exception e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testControlValve() {
+        String desc = "appsrc name=srcx ! " +
+                "other/tensor,dimension=(string)2:10:10:1,type=(string)uint8,framerate=(fraction)0/1 ! " +
+                "tee name=t " +
+                "t. ! queue ! tensor_sink " +
+                "t. ! queue ! valve name=valvex ! tensor_sink name=sinkx";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            TensorsInfo info = new TensorsInfo();
+            info.addTensorInfo(NNStreamer.TensorType.UINT8, new int[]{2,10,10,1});
+
+            /* register sink callback */
+            pipe.registerSinkCallback("sinkx", mSinkCb);
+
+            /* start pipeline */
+            pipe.start();
+
+            /* push input buffer */
+            for (int i = 0; i < 15; i++) {
+                /* dummy input */
+                pipe.inputData("srcx", info.allocate());
+                Thread.sleep(50);
+
+                if (i == 9) {
+                    /* close valve */
+                    pipe.controlValve("valvex", false);
+                }
+            }
+
+            /* sleep 300 to pass all input buffers to sink */
+            Thread.sleep(300);
+
+            /* stop pipeline */
+            pipe.stop();
+
+            /* check received data from sink */
+            assertFalse(mInvalidState);
+            assertEquals(10, mReceived);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testControlInvalidValve_n() {
+        String desc = "appsrc name=srcx ! " +
+                "other/tensor,dimension=(string)2:10:10:1,type=(string)uint8,framerate=(fraction)0/1 ! " +
+                "tee name=t " +
+                "t. ! queue ! tensor_sink " +
+                "t. ! queue ! valve name=valvex ! tensor_sink name=sinkx";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            /* start pipeline */
+            pipe.start();
+
+            /* control valve with invalid name */
+            pipe.controlValve("invalid_valve", false);
+            fail();
+        } catch (Exception e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testControlNullValveName_n() {
+        String desc = "appsrc name=srcx ! " +
+                "other/tensor,dimension=(string)2:10:10:1,type=(string)uint8,framerate=(fraction)0/1 ! " +
+                "tee name=t " +
+                "t. ! queue ! tensor_sink " +
+                "t. ! queue ! valve name=valvex ! tensor_sink name=sinkx";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            /* start pipeline */
+            pipe.start();
+
+            /* control valve with null name */
+            pipe.controlValve(null, false);
+            fail();
+        } catch (Exception e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testControlEmptyValveName_n() {
+        String desc = "appsrc name=srcx ! " +
+                "other/tensor,dimension=(string)2:10:10:1,type=(string)uint8,framerate=(fraction)0/1 ! " +
+                "tee name=t " +
+                "t. ! queue ! tensor_sink " +
+                "t. ! queue ! valve name=valvex ! tensor_sink name=sinkx";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            /* start pipeline */
+            pipe.start();
+
+            /* control valve with empty name */
+            pipe.controlValve("", false);
+            fail();
+        } catch (Exception e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testSetNullSurface() {
+        if (!Pipeline.isElementAvailable("glimagesink")) {
+            /* cannot run the test */
+            return;
+        }
+
+        String desc = "videotestsrc ! videoconvert ! glimagesink name=vsink";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            pipe.start();
+            Thread.sleep(500);
+
+            /* Setting null surface will release old window */
+            pipe.setSurface("vsink", null);
+
+            Thread.sleep(500);
+            pipe.stop();
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testSetSurfaceNullName_n() {
+        if (!Pipeline.isElementAvailable("glimagesink")) {
+            /* cannot run the test */
+            return;
+        }
+
+        String desc = "videotestsrc ! videoconvert ! glimagesink name=vsink";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            pipe.start();
+            Thread.sleep(500);
+
+            pipe.setSurface(null, null);
+            fail();
+        } catch (Exception e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testSetSurfaceEmptyName_n() {
+        if (!Pipeline.isElementAvailable("glimagesink")) {
+            /* cannot run the test */
+            return;
+        }
+
+        String desc = "videotestsrc ! videoconvert ! glimagesink name=vsink";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            pipe.start();
+            Thread.sleep(500);
+
+            pipe.setSurface("", null);
+            fail();
+        } catch (Exception e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testSetInvalidSurface_n() {
+        if (!Pipeline.isElementAvailable("glimagesink")) {
+            /* cannot run the test */
+            return;
+        }
+
+        /* invalid surface */
+        SurfaceView surfaceView = new SurfaceView(APITestCommon.getContext());
+        Surface surface = surfaceView.getHolder().getSurface();
+
+        if (surface.isValid()) {
+            return;
+        }
+
+        String desc = "videotestsrc ! videoconvert ! glimagesink name=vsink";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            pipe.start();
+            Thread.sleep(500);
+
+            pipe.setSurface("vsink", surface);
+            fail();
+        } catch (Exception e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testAMCsrc() {
+        String root = Environment.getExternalStorageDirectory().getAbsolutePath();
+        String media = root + "/nnstreamer/test/test_video.mp4";
+
+        String desc = "amcsrc location=" + media + " ! " +
+                "videoconvert ! videoscale ! video/x-raw,format=RGB,width=320,height=240 ! " +
+                "tensor_converter ! tensor_sink name=sinkx";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            /* register sink callback */
+            pipe.registerSinkCallback("sinkx", new Pipeline.NewDataCallback() {
+                @Override
+                public void onNewDataReceived(TensorsData data) {
+                    if (data == null || data.getTensorsCount() != 1) {
+                        mInvalidState = true;
+                        return;
+                    }
+
+                    TensorsInfo info = data.getTensorsInfo();
+
+                    if (info == null || info.getTensorsCount() != 1) {
+                        mInvalidState = true;
+                    } else {
+                        ByteBuffer output = data.getTensorData(0);
+
+                        if (!APITestCommon.isValidBuffer(output, 230400)) {
+                            mInvalidState = true;
+                        }
+                    }
+
+                    mReceived++;
+                }
+            });
+
+            /* start pipeline */
+            pipe.start();
+
+            /* sleep 2 seconds to invoke */
+            Thread.sleep(2000);
+
+            /* stop pipeline */
+            pipe.stop();
+
+            /* check received data from sink */
+            assertFalse(mInvalidState);
+            assertTrue(mReceived > 0);
+
+            /* sleep 1 second and restart */
+            Thread.sleep(1000);
+            mReceived = 0;
+
+            pipe.start();
+
+            /* sleep 2 seconds to invoke */
+            Thread.sleep(2000);
+
+            /* stop pipeline */
+            pipe.stop();
+
+            /* check received data from sink */
+            assertFalse(mInvalidState);
+            assertTrue(mReceived > 0);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    /**
+     * Run SNAP with Caffe model.
+     */
+    private void runSNAPCaffe(APITestCommon.SNAPComputingUnit computingUnit) {
+        File[] models = APITestCommon.getSNAPCaffeModel();
+        String option = APITestCommon.getSNAPCaffeOption(computingUnit);
+
+        String desc = "appsrc name=srcx ! " +
+                "other/tensor,dimension=(string)3:224:224:1,type=(string)float32,framerate=(fraction)0/1 ! " +
+                "tensor_filter framework=snap " +
+                    "model=" + models[0].getAbsolutePath() + "," + models[1].getAbsolutePath() + " " +
+                    "input=3:224:224:1 inputtype=float32 inputlayout=NHWC inputname=data " +
+                    "output=1:1:1000:1 outputtype=float32 outputlayout=NCHW outputname=prob " +
+                    "custom=" + option + " ! " +
+                "tensor_sink name=sinkx";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            TensorsInfo info = new TensorsInfo();
+            info.addTensorInfo(NNStreamer.TensorType.FLOAT32, new int[]{3,224,224,1});
+
+            /* register sink callback */
+            pipe.registerSinkCallback("sinkx", new Pipeline.NewDataCallback() {
+                @Override
+                public void onNewDataReceived(TensorsData data) {
+                    if (data == null || data.getTensorsCount() != 1) {
+                        mInvalidState = true;
+                        return;
+                    }
+
+                    TensorsInfo info = data.getTensorsInfo();
+
+                    if (info == null || info.getTensorsCount() != 1) {
+                        mInvalidState = true;
+                    } else {
+                        ByteBuffer output = data.getTensorData(0);
+
+                        if (!APITestCommon.isValidBuffer(output, 4000)) {
+                            mInvalidState = true;
+                        }
+                    }
+
+                    mReceived++;
+                }
+            });
+
+            /* start pipeline */
+            pipe.start();
+
+            /* push input buffer */
+            for (int i = 0; i < 10; i++) {
+                /* dummy input */
+                pipe.inputData("srcx", TensorsData.allocate(info));
+                Thread.sleep(100);
+            }
+
+            /* sleep 500 to invoke */
+            Thread.sleep(500);
+
+            /* stop pipeline */
+            pipe.stop();
+
+            /* check received data from sink */
+            assertFalse(mInvalidState);
+            assertTrue(mReceived > 0);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testSNAPCaffeCPU() {
+        if (!NNStreamer.isAvailable(NNStreamer.NNFWType.SNAP)) {
+            /* cannot run the test */
+            return;
+        }
+
+        runSNAPCaffe(APITestCommon.SNAPComputingUnit.CPU);
+    }
+
+    @Test
+    public void testSNAPCaffeGPU() {
+        if (!NNStreamer.isAvailable(NNStreamer.NNFWType.SNAP)) {
+            /* cannot run the test */
+            return;
+        }
+
+        runSNAPCaffe(APITestCommon.SNAPComputingUnit.GPU);
+    }
+
+    /**
+     * Run SNAP with Tensorflow model.
+     */
+    private void runSNAPTensorflow(APITestCommon.SNAPComputingUnit computingUnit) {
+        File[] model = APITestCommon.getSNAPTensorflowModel(computingUnit);
+        String option = APITestCommon.getSNAPTensorflowOption(computingUnit);
+        String desc = "appsrc name=srcx ! " +
+                "other/tensor,dimension=(string)3:224:224:1,type=(string)float32,framerate=(fraction)0/1 ! " +
+                "tensor_filter framework=snap " +
+                    "model=" + model[0].getAbsolutePath() + " " +
+                    "input=3:224:224:1 inputtype=float32 inputlayout=NHWC inputname=input " +
+                    "output=1001:1 outputtype=float32 outputlayout=NHWC outputname=MobilenetV1/Predictions/Reshape_1:0 " +
+                    "custom=" + option + " ! " +
+                "tensor_sink name=sinkx";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            TensorsInfo info = new TensorsInfo();
+            info.addTensorInfo(NNStreamer.TensorType.FLOAT32, new int[]{3,224,224,1});
+
+            /* register sink callback */
+            pipe.registerSinkCallback("sinkx", new Pipeline.NewDataCallback() {
+                @Override
+                public void onNewDataReceived(TensorsData data) {
+                    if (data == null || data.getTensorsCount() != 1) {
+                        mInvalidState = true;
+                        return;
+                    }
+
+                    TensorsInfo info = data.getTensorsInfo();
+
+                    if (info == null || info.getTensorsCount() != 1) {
+                        mInvalidState = true;
+                    } else {
+                        ByteBuffer output = data.getTensorData(0);
+
+                        if (!APITestCommon.isValidBuffer(output, 4004)) {
+                            mInvalidState = true;
+                        }
+                    }
+
+                    mReceived++;
+                }
+            });
+
+            /* start pipeline */
+            pipe.start();
+
+            /* push input buffer */
+            for (int i = 0; i < 10; i++) {
+                /* dummy input */
+                pipe.inputData("srcx", TensorsData.allocate(info));
+                Thread.sleep(100);
+            }
+
+            /* sleep 500 to invoke */
+            Thread.sleep(500);
+
+            /* stop pipeline */
+            pipe.stop();
+
+            /* check received data from sink */
+            assertFalse(mInvalidState);
+            assertTrue(mReceived > 0);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testSNAPTensorflowCPU() {
+        if (!NNStreamer.isAvailable(NNStreamer.NNFWType.SNAP)) {
+            /* cannot run the test */
+            return;
+        }
+
+        runSNAPTensorflow(APITestCommon.SNAPComputingUnit.CPU);
+    }
+
+    @Test
+    public void testSNAPTensorflowDSP() {
+        if (!NNStreamer.isAvailable(NNStreamer.NNFWType.SNAP)) {
+            /* cannot run the test */
+            return;
+        }
+
+        if (!android.os.Build.HARDWARE.equals("qcom")) {
+            /*
+             * Tensorflow model using DSP runtime can only be executed on
+             * Snapdragon SoC. Cannot run this test on exynos.
+             */
+            return;
+        }
+
+        runSNAPTensorflow(APITestCommon.SNAPComputingUnit.DSP);
+    }
+
+    @Test
+    public void testSNAPTensorflowNPU() {
+        if (!NNStreamer.isAvailable(NNStreamer.NNFWType.SNAP)) {
+            /* cannot run the test */
+            return;
+        }
+
+        if (!android.os.Build.HARDWARE.equals("qcom")) {
+            /*
+             * Tensorflow model using NPU runtime can only be executed on
+             * Snapdragon. Cannot run this test on exynos.
+             */
+            return;
+        }
+
+        runSNAPTensorflow(APITestCommon.SNAPComputingUnit.NPU);
+    }
+
+    /**
+     * Run SNAP with Tensorflow Lite model (mobilenet_v1_1.0_224.tflite).
+     */
+    private void runSNAPTensorflowLite(APITestCommon.SNAPComputingUnit computingUnit) {
+        File[] model = APITestCommon.getSNAPTensorflowLiteModel();
+        String option = APITestCommon.getSNAPTensorflowLiteOption(computingUnit);
+        String desc = "appsrc name=srcx ! " +
+                "other/tensor,dimension=(string)3:224:224:1,type=(string)uint8,framerate=(fraction)0/1 ! " +
+                "tensor_transform mode=arithmetic option=typecast:float32,add:-127.5,div:127.5 ! " +
+                "tensor_filter framework=snap " +
+                "model=" + model[0].getAbsolutePath() + " " +
+                "input=3:224:224:1 inputtype=float32 inputlayout=NHWC inputname=input " +
+                "output=1001:1 outputtype=float32 outputlayout=NHWC outputname=MobilenetV1/Predictions/Reshape_1 " +
+                "custom=" + option + " ! " +
+                "tensor_sink name=sinkx";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            /* register sink callback */
+            pipe.registerSinkCallback("sinkx", new Pipeline.NewDataCallback() {
+                @Override
+                public void onNewDataReceived(TensorsData data) {
+                    if (data == null || data.getTensorsCount() != 1) {
+                        mInvalidState = true;
+                        return;
+                    }
+
+                    ByteBuffer buffer = data.getTensorData(0);
+                    int labelIndex = APITestCommon.getMaxScoreFloatBuffer(buffer, 1001);
+
+                    /* check label index (orange) */
+                    if (labelIndex != 951) {
+                        mInvalidState = true;
+                    }
+
+                    mReceived++;
+                }
+            });
+
+            /* start pipeline */
+            pipe.start();
+
+            /* push input buffer */
+            for (int i = 0; i < 10; i++) {
+                TensorsData in = APITestCommon.readRawImageData();
+                pipe.inputData("srcx", in);
+                Thread.sleep(100);
+            }
+
+            /* stop pipeline */
+            pipe.stop();
+
+            /* check received data from sink */
+            assertFalse(mInvalidState);
+            assertTrue(mReceived == 10);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testSNAPTensorflowLiteCPU() {
+        if (!NNStreamer.isAvailable(NNStreamer.NNFWType.SNAP)) {
+            /* cannot run the test */
+            return;
+        }
+
+        runSNAPTensorflowLite(APITestCommon.SNAPComputingUnit.CPU);
+    }
+
+    @Test
+    public void testSNAPTensorflowLiteGPU() {
+        if (!NNStreamer.isAvailable(NNStreamer.NNFWType.SNAP)) {
+            /* cannot run the test */
+            return;
+        }
+
+        runSNAPTensorflowLite(APITestCommon.SNAPComputingUnit.GPU);
+    }
+
+    @Test
+    public void testSNAPTensorflowLiteNPU() {
+        if (!NNStreamer.isAvailable(NNStreamer.NNFWType.SNAP)) {
+            /* cannot run the test */
+            return;
+        }
+
+        if (android.os.Build.HARDWARE.equals("qcom")) {
+            /*
+             * TensorflowLite model using NPU runtime can only be executed on
+             * Exynos. Cannot run this test on Snapdragon.
+             */
+            return;
+        }
+
+        runSNAPTensorflowLite(APITestCommon.SNAPComputingUnit.NPU);
+    }
+
+
+    @Test
+    public void testNNFWTFLite() {
+        if (!NNStreamer.isAvailable(NNStreamer.NNFWType.NNFW)) {
+            /* cannot run the test */
+            return;
+        }
+
+        File model = APITestCommon.getTFLiteAddModel();
+        String desc = "appsrc name=srcx ! " +
+                "other/tensor,dimension=(string)1:1:1:1,type=(string)float32,framerate=(fraction)0/1 ! " +
+                "tensor_filter framework=nnfw model=" + model.getAbsolutePath() + " ! " +
+                "tensor_sink name=sinkx";
+
+        try (Pipeline pipe = new Pipeline(desc)) {
+            TensorsInfo info = new TensorsInfo();
+            info.addTensorInfo(NNStreamer.TensorType.FLOAT32, new int[]{1,1,1,1});
+
+            /* register sink callback */
+            pipe.registerSinkCallback("sinkx", new Pipeline.NewDataCallback() {
+                @Override
+                public void onNewDataReceived(TensorsData data) {
+                    if (data == null || data.getTensorsCount() != 1) {
+                        mInvalidState = true;
+                        return;
+                    }
+
+                    ByteBuffer buffer = data.getTensorData(0);
+                    float expected = buffer.getFloat(0);
+
+                    /* check received data */
+                    if (expected != 3.5f) {
+                        mInvalidState = true;
+                    }
+
+                    mReceived++;
+                }
+            });
+
+            /* start pipeline */
+            pipe.start();
+
+            /* push input buffer */
+            TensorsData input = info.allocate();
+
+            ByteBuffer buffer = input.getTensorData(0);
+            buffer.putFloat(0, 1.5f);
+
+            input.setTensorData(0, buffer);
+
+            pipe.inputData("srcx", input);
+
+            /* sleep 1000 to invoke */
+            Thread.sleep(1000);
+
+            /* stop pipeline */
+            pipe.stop();
+
+            /* check received data from sink */
+            assertFalse(mInvalidState);
+            assertTrue(mReceived > 0);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testSNPE() {
+        if (!NNStreamer.isAvailable(NNStreamer.NNFWType.SNPE)) {
+            /* cannot run the test */
+            return;
+        }
+
+        File model = APITestCommon.getSNPEModel();
+        String desc = "appsrc name=srcx ! " +
+                "other/tensor,dimension=(string)3:299:299:1,type=(string)float32,framerate=(fraction)0/1 ! " +
+                "tensor_filter framework=snpe " + "model=" + model.getAbsolutePath() + " ! " +
+                "tensor_sink name=sinkx";
