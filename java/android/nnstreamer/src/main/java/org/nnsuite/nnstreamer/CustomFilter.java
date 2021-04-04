@@ -81,3 +81,61 @@ public final class CustomFilter implements AutoCloseable {
      *
      * @throws IllegalArgumentException if given param is invalid
      * @throws IllegalStateException if failed to initialize custom-filter
+     */
+    private CustomFilter(String name, TensorsInfo in, TensorsInfo out, Callback callback) {
+        if (name == null) {
+            throw new IllegalArgumentException("Given name is null");
+        }
+
+        if (in == null || out == null) {
+            throw new IllegalArgumentException("Given info is null");
+        }
+
+        if (callback == null) {
+            throw new IllegalArgumentException("Given callback is null");
+        }
+
+        mHandle = nativeInitialize(name, in, out);
+        if (mHandle == 0) {
+            throw new IllegalStateException("Failed to initialize custom-filter " + name);
+        }
+
+        mName = name;
+        mCallback = callback;
+    }
+
+    /**
+     * Internal method called from native while processing the pipeline.
+     */
+    private TensorsData invoke(TensorsData in) {
+        TensorsData out = null;
+
+        if (mCallback != null) {
+            out = mCallback.invoke(in);
+        }
+
+        return out;
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        try {
+            close();
+        } finally {
+            super.finalize();
+        }
+    }
+
+    @Override
+    public void close() {
+        if (mHandle != 0) {
+            nativeDestroy(mHandle);
+            mHandle = 0;
+        }
+    }
+
+    /**
+     * Private constructor to prevent the instantiation.
+     */
+    private CustomFilter() {}
+}
