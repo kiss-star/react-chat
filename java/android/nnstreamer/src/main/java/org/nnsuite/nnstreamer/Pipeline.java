@@ -31,4 +31,19 @@ public final class Pipeline implements AutoCloseable {
     private native boolean nativeStop(long handle);
     private native boolean nativeFlush(long handle, boolean start);
     private native int nativeGetState(long handle);
-    private native boolean nativeInputData(long handle, String
+    private native boolean nativeInputData(long handle, String name, TensorsData data);
+    private native String[] nativeGetSwitchPads(long handle, String name);
+    private native boolean nativeSelectSwitchPad(long handle, String name, String pad);
+    private native boolean nativeControlValve(long handle, String name, boolean open);
+    private native boolean nativeAddSinkCallback(long handle, String name);
+    private native boolean nativeRemoveSinkCallback(long handle, String name);
+    private native boolean nativeInitializeSurface(long handle, String name, Object surface);
+    private native boolean nativeFinalizeSurface(long handle, String name);
+
+    /**
+     * Interface definition for a callback to be invoked when a sink node receives new data.
+     *
+     * @see #registerSinkCallback(String, NewDataCallback)
+     */
+    public interface NewDataCallback {
+   
