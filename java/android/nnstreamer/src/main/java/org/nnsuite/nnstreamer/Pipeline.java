@@ -61,4 +61,30 @@ public final class Pipeline implements AutoCloseable {
 
     /**
      * Interface definition for a callback to be invoked when the pipeline state is changed.
-     * This callback can be registered only when constructing the p
+     * This callback can be registered only when constructing the pipeline.
+     *
+     * @see State
+     * @see #start()
+     * @see #stop()
+     * @see Pipeline#Pipeline(String, StateChangeCallback)
+     */
+    public interface StateChangeCallback {
+        /**
+         * Called when the pipeline state is changed.
+         *
+         * If an application wants to get the change of pipeline state, use this callback.
+         * This callback can be registered when constructing the pipeline.
+         * This is synchronously called, so do not spend too much time in the callback.
+         *
+         * @param state The changed state
+         */
+        void onStateChanged(Pipeline.State state);
+    }
+
+    /**
+     * The enumeration for pipeline state.
+     * Refer to <a href="https://gstreamer.freedesktop.org/documentation/plugin-development/basics/states.html">GStreamer states</a> for the details.
+     */
+    public enum State {
+        /**
+  
