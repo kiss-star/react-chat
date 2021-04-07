@@ -46,4 +46,19 @@ public final class Pipeline implements AutoCloseable {
      * @see #registerSinkCallback(String, NewDataCallback)
      */
     public interface NewDataCallback {
-   
+        /**
+         * Called when a sink node receives new data.
+         *
+         * If an application wants to accept data outputs of an NNStreamer stream, use this callback to get data from the stream.
+         * Note that this is synchronously called and the buffer may be deallocated after the callback is finished.
+         * Thus, if you need the data afterwards, copy the data to another buffer and return fast.
+         * Do not spend too much time in the callback. It is recommended to use very small tensors at sinks.
+         *
+         * @param data The output data (a single frame, tensor/tensors)
+         */
+        void onNewDataReceived(TensorsData data);
+    }
+
+    /**
+     * Interface definition for a callback to be invoked when the pipeline state is changed.
+     * This callback can be registered only when constructing the p
