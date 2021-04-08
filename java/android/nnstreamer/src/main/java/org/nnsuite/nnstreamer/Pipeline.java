@@ -115,4 +115,21 @@ public final class Pipeline implements AutoCloseable {
      *                    <a href="https://github.com/nnstreamer/nnstreamer">NNStreamer</a> documentation for examples and the grammar.
      *
      * @throws IllegalArgumentException if given param is null
-    
+     * @throws IllegalStateException if failed to construct the pipeline
+     */
+    public Pipeline(String description) {
+        this(description, null);
+    }
+
+    /**
+     * Creates a new {@link Pipeline} instance with the given pipeline description.
+     *
+     * @param description The pipeline description. Refer to GStreamer manual or
+     *                    <a href="https://github.com/nnstreamer/nnstreamer">NNStreamer</a> documentation for examples and the grammar.
+     * @param callback    The function to be called when the pipeline state is changed.
+     *                    You may set null if it is not required.
+     *
+     * @throws IllegalArgumentException if given param is invalid
+     * @throws IllegalStateException if failed to construct the pipeline
+     */
+    public Pipeline(String description, StateChangeCallback callbac
