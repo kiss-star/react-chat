@@ -87,4 +87,32 @@ public final class Pipeline implements AutoCloseable {
      */
     public enum State {
         /**
-  
+         * Unknown state.
+         */
+        UNKNOWN,
+        /**
+         * Initial state of the pipeline.
+         */
+        NULL,
+        /**
+         * The pipeline is ready to go to PAUSED.
+         */
+        READY,
+        /**
+         * The pipeline is stopped, ready to accept and process data.
+         */
+        PAUSED,
+        /**
+         * The pipeline is started and the data is flowing.
+         */
+        PLAYING
+    }
+
+    /**
+     * Creates a new {@link Pipeline} instance with the given pipeline description.
+     *
+     * @param description The pipeline description. Refer to GStreamer manual or
+     *                    <a href="https://github.com/nnstreamer/nnstreamer">NNStreamer</a> documentation for examples and the grammar.
+     *
+     * @throws IllegalArgumentException if given param is null
+    
