@@ -132,4 +132,28 @@ public final class Pipeline implements AutoCloseable {
      * @throws IllegalArgumentException if given param is invalid
      * @throws IllegalStateException if failed to construct the pipeline
      */
-    public Pipeline(String description, StateChangeCallback callbac
+    public Pipeline(String description, StateChangeCallback callback) {
+        if (description == null || description.isEmpty()) {
+            throw new IllegalArgumentException("Given description is invalid");
+        }
+
+        mStateCallback = callback;
+
+        mHandle = nativeConstruct(description, (callback != null));
+        if (mHandle == 0) {
+            throw new IllegalStateException("Failed to construct the pipeline");
+        }
+    }
+
+    /**
+     * Checks the element is registered and available on the pipeline.
+     *
+     * @param element The name of GStreamer element
+     *
+     * @return true if the element is available
+     *
+     * @throws IllegalArgumentException if given param is invalid
+     */
+    public static boolean isElementAvailable(String element) {
+        if (element == null || element.isEmpty()) {
+            throw new IllegalArgumentException("Given 
