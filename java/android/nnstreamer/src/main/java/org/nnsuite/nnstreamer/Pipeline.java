@@ -156,4 +156,31 @@ public final class Pipeline implements AutoCloseable {
      */
     public static boolean isElementAvailable(String element) {
         if (element == null || element.isEmpty()) {
-            throw new IllegalArgumentException("Given 
+            throw new IllegalArgumentException("Given element is invalid");
+        }
+
+        return nativeCheckElementAvailability(element);
+    }
+
+    /**
+     * Starts the pipeline, asynchronously.
+     * The pipeline state would be changed to {@link State#PLAYING}.
+     * If you need to get the changed state, add a callback while constructing a pipeline.
+     *
+     * @throws IllegalStateException if failed to start the pipeline
+     *
+     * @see State
+     * @see StateChangeCallback
+     */
+    public void start() {
+        checkPipelineHandle();
+
+        if (!nativeStart(mHandle)) {
+            throw new IllegalStateException("Failed to start the pipeline");
+        }
+    }
+
+    /**
+     * Stops the pipeline, asynchronously.
+     * The pipeline state would be changed to {@link State#PAUSED}.
+     * If you need to get the changed state, add a callback while constructing a pi
