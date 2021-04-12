@@ -183,4 +183,36 @@ public final class Pipeline implements AutoCloseable {
     /**
      * Stops the pipeline, asynchronously.
      * The pipeline state would be changed to {@link State#PAUSED}.
-     * If you need to get the changed state, add a callback while constructing a pi
+     * If you need to get the changed state, add a callback while constructing a pipeline.
+     *
+     * @throws IllegalStateException if failed to stop the pipeline
+     *
+     * @see State
+     * @see StateChangeCallback
+     */
+    public void stop() {
+        checkPipelineHandle();
+
+        if (!nativeStop(mHandle)) {
+            throw new IllegalStateException("Failed to stop the pipeline");
+        }
+    }
+
+    /**
+     * Clears all data and resets the pipeline.
+     * During the flush operation, the pipeline is stopped and after the operation is done,
+     * the pipeline is resumed and ready to start the data flow.
+     *
+     * @param start The flag to start the pipeline after the flush operation is done
+     *
+     * @throws IllegalStateException if failed to flush the pipeline
+     */
+    public void flush(boolean start) {
+        checkPipelineHandle();
+
+        if (!nativeFlush(mHandle, start)) {
+            throw new IllegalStateException("Failed to flush the pipeline");
+        }
+    }
+
+    
