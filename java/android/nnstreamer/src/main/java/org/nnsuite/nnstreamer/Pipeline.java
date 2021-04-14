@@ -215,4 +215,32 @@ public final class Pipeline implements AutoCloseable {
         }
     }
 
-    
+    /**
+     * Gets the state of pipeline.
+     *
+     * @return The state of pipeline
+     *
+     * @throws IllegalStateException if the pipeline is not constructed
+     *
+     * @see State
+     * @see StateChangeCallback
+     */
+    public State getState() {
+        checkPipelineHandle();
+
+        return convertPipelineState(nativeGetState(mHandle));
+    }
+
+    /**
+     * Adds an input data frame to source node.
+     *
+     * @param name The name of source node
+     * @param data The input data (a single frame, tensor/tensors)
+     *
+     * @throws IllegalArgumentException if given param is invalid
+     * @throws IllegalStateException if failed to push data to source node
+     */
+    public void inputData(String name, TensorsData data) {
+        checkPipelineHandle();
+
+        if (name == null || name.isEmpty()) {
