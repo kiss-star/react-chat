@@ -273,4 +273,31 @@ public final class Pipeline implements AutoCloseable {
             throw new IllegalArgumentException("Given name is invalid");
         }
 
-        String[] pads =
+        String[] pads = nativeGetSwitchPads(mHandle, name);
+
+        if (pads == null || pads.length == 0) {
+            throw new IllegalStateException("Failed to get the pads in switch " + name);
+        }
+
+        return pads;
+    }
+
+    /**
+     * Controls the switch to select input/output nodes (pads).
+     *
+     * @param name The name of switch node
+     * @param pad  The name of the chosen pad to be activated
+     *
+     * @throws IllegalArgumentException if given param is invalid
+     * @throws IllegalStateException if failed to select the switch pad
+     */
+    public void selectSwitchPad(String name, String pad) {
+        checkPipelineHandle();
+
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Given name is invalid");
+        }
+
+        if (pad == null || pad.isEmpty()) {
+            throw new IllegalArgumentException("Given pad is invalid");
+        }
