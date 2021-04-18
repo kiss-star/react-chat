@@ -325,4 +325,28 @@ public final class Pipeline implements AutoCloseable {
         }
 
         if (!nativeControlValve(mHandle, name, open)) {
-            throw new IllegalStateException("Failed to change the valve 
+            throw new IllegalStateException("Failed to change the valve " + name);
+        }
+    }
+
+    /**
+     * Registers new data callback to sink node.
+     * The callback can be added in duplicate if an application tries to register multiple callbacks with same name.
+     *
+     * @param name     The name of sink node
+     * @param callback The callback for new data
+     *
+     * @throws IllegalArgumentException if given param is invalid
+     * @throws IllegalStateException if failed to register the callback to sink node in the pipeline
+     */
+    public void registerSinkCallback(String name, NewDataCallback callback) {
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Given name is invalid");
+        }
+
+        if (callback == null) {
+            throw new IllegalArgumentException("Given callback is null");
+        }
+
+        synchronized(this) {
+            ArrayList<NewDat
