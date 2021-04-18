@@ -301,3 +301,28 @@ public final class Pipeline implements AutoCloseable {
         if (pad == null || pad.isEmpty()) {
             throw new IllegalArgumentException("Given pad is invalid");
         }
+
+        if (!nativeSelectSwitchPad(mHandle, name, pad)) {
+            throw new IllegalStateException("Failed to select the pad " + pad);
+        }
+    }
+
+    /**
+     * Controls the valve.
+     * Set the flag true to open (let the flow pass), false to close (drop & stop the flow).
+     *
+     * @param name The name of valve node
+     * @param open The flag to control the flow
+     *
+     * @throws IllegalArgumentException if given param is invalid
+     * @throws IllegalStateException if failed to change the valve state
+     */
+    public void controlValve(String name, boolean open) {
+        checkPipelineHandle();
+
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Given name is invalid");
+        }
+
+        if (!nativeControlValve(mHandle, name, open)) {
+            throw new IllegalStateException("Failed to change the valve 
