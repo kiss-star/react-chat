@@ -349,4 +349,29 @@ public final class Pipeline implements AutoCloseable {
         }
 
         synchronized(this) {
-            ArrayList<NewDat
+            ArrayList<NewDataCallback> cbList = mSinkCallbacks.get(name);
+
+            if (cbList != null) {
+                /* check the list already includes same callback */
+                if (!cbList.contains(callback)) {
+                    cbList.add(callback);
+                }
+            } else {
+                if (nativeAddSinkCallback(mHandle, name)) {
+                    cbList = new ArrayList<>();
+                    cbList.add(callback);
+                    mSinkCallbacks.put(name, cbList);
+                } else {
+                    throw new IllegalStateException("Failed to register sink callback to " + name);
+                }
+            }
+        }
+    }
+
+    /**
+     * Unregisters data callback from sink node.
+     *
+     * @param name     The name of sink node
+     * @param callback The callback object to be unregistered
+     *
+     * @throws IllegalArgumentException if given param is in
