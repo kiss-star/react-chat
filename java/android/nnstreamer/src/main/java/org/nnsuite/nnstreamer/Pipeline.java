@@ -374,4 +374,27 @@ public final class Pipeline implements AutoCloseable {
      * @param name     The name of sink node
      * @param callback The callback object to be unregistered
      *
-     * @throws IllegalArgumentException if given param is in
+     * @throws IllegalArgumentException if given param is invalid
+     * @throws IllegalStateException if failed to unregister the callback from sink node
+     */
+    public void unregisterSinkCallback(String name, NewDataCallback callback) {
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Given name is invalid");
+        }
+
+        if (callback == null) {
+            throw new IllegalArgumentException("Given callback is null");
+        }
+
+        synchronized(this) {
+            ArrayList<NewDataCallback> cbList = mSinkCallbacks.get(name);
+
+            if (cbList == null || !cbList.contains(callback)) {
+                throw new IllegalStateException("Failed to unregister sink callback from " + name);
+            }
+
+            cbList.remove(callback);
+            if (cbList.isEmpty()) {
+                /* remove callback */
+                mSinkCallbacks.remove(name);
+                nativeRemoveSink
