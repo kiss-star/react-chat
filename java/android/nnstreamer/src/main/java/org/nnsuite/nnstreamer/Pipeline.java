@@ -397,4 +397,28 @@ public final class Pipeline implements AutoCloseable {
             if (cbList.isEmpty()) {
                 /* remove callback */
                 mSinkCallbacks.remove(name);
-                nativeRemoveSink
+                nativeRemoveSinkCallback(mHandle, name);
+            }
+        }
+    }
+
+    /**
+     * Sets a surface to video sink element.
+     * If {@code surface} is null, this will stop using the old surface.
+     * Note that, this method is available only on Android.
+     *
+     * @param name    The name of video sink element
+     * @param surface The window surface instance
+     *
+     * @throws IllegalArgumentException if given param is invalid
+     * @throws IllegalStateException if failed to set the surface to video sink
+     */
+    public void setSurface(String name, android.view.Surface surface) {
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Given name is invalid");
+        }
+
+        if (surface == null) {
+            nativeFinalizeSurface(mHandle, name);
+        } else {
+@BUILD_ANDR
