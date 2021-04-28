@@ -421,4 +421,30 @@ public final class Pipeline implements AutoCloseable {
         if (surface == null) {
             nativeFinalizeSurface(mHandle, name);
         } else {
-@BUILD_ANDR
+@BUILD_ANDROID@            if (!surface.isValid()) {
+@BUILD_ANDROID@                throw new IllegalArgumentException("The surface is not available");
+@BUILD_ANDROID@            }
+
+            if (!nativeInitializeSurface(mHandle, name, surface)) {
+                throw new IllegalStateException("Failed to set the surface to " + name);
+            }
+        }
+    }
+
+    /**
+     * Internal method called from native when a new data is available.
+     */
+    private void newDataReceived(String name, TensorsData data) {
+        synchronized(this) {
+            ArrayList<NewDataCallback> cbList = mSinkCallbacks.get(name);
+
+            if (cbList != null) {
+                for (int i = 0; i < cbList.size(); i++) {
+                    cbList.get(i).onNewDataReceived(data);
+                }
+            }
+        }
+    }
+
+    /**
+     * Internal 
