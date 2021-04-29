@@ -447,4 +447,33 @@ public final class Pipeline implements AutoCloseable {
     }
 
     /**
-     * Internal 
+     * Internal method called from native when the state of pipeline is changed.
+     */
+    private void stateChanged(int value) {
+        synchronized(this) {
+            if (mStateCallback != null) {
+                mStateCallback.onStateChanged(convertPipelineState(value));
+            }
+        }
+    }
+
+    /**
+     * Internal method to get the pipeline state from int value.
+     */
+    private State convertPipelineState(int value) {
+        State state = State.UNKNOWN;
+
+        switch (value) {
+            case 1:
+                state = State.NULL;
+                break;
+            case 2:
+                state = State.READY;
+                break;
+            case 3:
+                state = State.PAUSED;
+                break;
+            case 4:
+                state = State.PLAYING;
+                break;
+      
