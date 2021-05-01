@@ -476,4 +476,41 @@ public final class Pipeline implements AutoCloseable {
             case 4:
                 state = State.PLAYING;
                 break;
-      
+            default:
+                /* invalid or unknown state */
+                break;
+        }
+
+        return state;
+    }
+
+    /**
+     * Internal method to check native handle.
+     *
+     * @throws IllegalStateException if the pipeline is not constructed
+     */
+    private void checkPipelineHandle() {
+        if (mHandle == 0) {
+            throw new IllegalStateException("The pipeline is not constructed");
+        }
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        try {
+            close();
+        } finally {
+            super.finalize();
+        }
+    }
+
+    @Override
+    public void close() {
+        synchronized(this) {
+            mSinkCallbacks.clear();
+            mStateCallback = null;
+        }
+
+        if (mHandle != 0) {
+            nativeDestroy(mHandle);
+            
