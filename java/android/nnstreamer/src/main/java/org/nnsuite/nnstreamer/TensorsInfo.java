@@ -36,4 +36,36 @@ public final class TensorsInfo implements AutoCloseable, Cloneable {
     /**
      * Creates a new {@link TensorsInfo} instance cloned from the current tensors information.
      *
-     * @return {@link Tens
+     * @return {@link TensorsInfo} instance
+     */
+    @Override
+    public TensorsInfo clone() {
+        TensorsInfo cloned = new TensorsInfo();
+
+        for (TensorInfo info : mInfoList) {
+            cloned.addTensorInfo(info.getName(), info.getType(), info.getDimension());
+        }
+
+        return cloned;
+    }
+
+    /**
+     * Gets the number of tensors.
+     * The maximum number of tensors is {@link NNStreamer#TENSOR_SIZE_LIMIT}.
+     *
+     * @return The number of tensors
+     */
+    public int getTensorsCount() {
+        return mInfoList.size();
+    }
+
+    /**
+     * Adds a new tensor information.
+     *
+     * @param type      The tensor data type
+     * @param dimension The tensor dimension
+     *
+     * @throws IndexOutOfBoundsException when the maximum number of tensors in the list
+     * @throws IllegalArgumentException if given param is null or invalid
+     */
+    public voi
