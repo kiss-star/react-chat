@@ -94,3 +94,32 @@ public final class TensorsInfo implements AutoCloseable, Cloneable {
 
     /**
      * Sets the tensor name.
+     *
+     * @param index The index of the tensor information in the list
+     * @param name  The tensor name
+     *
+     * @throws IndexOutOfBoundsException if the given index is invalid
+     */
+    public void setTensorName(int index, String name) {
+        checkIndexBounds(index);
+        mInfoList.get(index).setName(name);
+    }
+
+    /**
+     * Gets the tensor name of given index.
+     *
+     * @param index The index of the tensor information in the list
+     *
+     * @return The tensor name
+     *
+     * @throws IndexOutOfBoundsException if the given index is invalid
+     */
+    public String getTensorName(int index) {
+        checkIndexBounds(index);
+        return mInfoList.get(index).getName();
+    }
+
+    /**
+     * Sets the tensor data type.
+     *
+     * @param index The index of the te
