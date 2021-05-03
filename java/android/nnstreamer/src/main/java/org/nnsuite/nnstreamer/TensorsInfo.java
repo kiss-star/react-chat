@@ -68,4 +68,29 @@ public final class TensorsInfo implements AutoCloseable, Cloneable {
      * @throws IndexOutOfBoundsException when the maximum number of tensors in the list
      * @throws IllegalArgumentException if given param is null or invalid
      */
-    public voi
+    public void addTensorInfo(NNStreamer.TensorType type, int[] dimension) {
+        addTensorInfo(null, type, dimension);
+    }
+
+    /**
+     * Adds a new tensor information.
+     *
+     * @param name      The tensor name
+     * @param type      The tensor data type
+     * @param dimension The tensor dimension
+     *
+     * @throws IndexOutOfBoundsException when the maximum number of tensors in the list
+     * @throws IllegalArgumentException if given param is null or invalid
+     */
+    public void addTensorInfo(String name, NNStreamer.TensorType type, int[] dimension) {
+        int index = getTensorsCount();
+
+        if (index >= NNStreamer.TENSOR_SIZE_LIMIT) {
+            throw new IndexOutOfBoundsException("Max number of the tensors is " + NNStreamer.TENSOR_SIZE_LIMIT);
+        }
+
+        mInfoList.add(new TensorInfo(name, type, dimension));
+    }
+
+    /**
+     * Sets the tensor name.
