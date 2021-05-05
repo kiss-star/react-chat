@@ -122,4 +122,32 @@ public final class TensorsInfo implements AutoCloseable, Cloneable {
     /**
      * Sets the tensor data type.
      *
-     * @param index The index of the te
+     * @param index The index of the tensor information in the list
+     * @param type  The tensor type
+     *
+     * @throws IndexOutOfBoundsException if the given index is invalid
+     * @throws IllegalArgumentException if the given type is unknown or unsupported type
+     */
+    public void setTensorType(int index, NNStreamer.TensorType type) {
+        checkIndexBounds(index);
+        mInfoList.get(index).setType(type);
+    }
+
+    /**
+     * Gets the tensor data type of given index.
+     *
+     * @param index The index of the tensor information in the list
+     *
+     * @return The tensor data type
+     *
+     * @throws IndexOutOfBoundsException if the given index is invalid
+     */
+    public NNStreamer.TensorType getTensorType(int index) {
+        checkIndexBounds(index);
+        return mInfoList.get(index).getType();
+    }
+
+    /**
+     * Sets the tensor dimension
+     *
+     
