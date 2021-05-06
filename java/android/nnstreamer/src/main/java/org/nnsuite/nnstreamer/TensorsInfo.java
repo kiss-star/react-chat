@@ -176,4 +176,32 @@ public final class TensorsInfo implements AutoCloseable, Cloneable {
     }
 
     /**
-     * Calculat
+     * Calculates the byte size of tensor data.
+     *
+     * @param index The index of the tensor information in the list
+     *
+     * @return The byte size of tensor
+     *
+     * @throws IndexOutOfBoundsException if the given index is invalid
+     * @throws IllegalStateException if data type or dimension is invalid
+     */
+    public int getTensorSize(int index) {
+        checkIndexBounds(index);
+
+        int size = mInfoList.get(index).getSize();
+        if (size <= 0) {
+            throw new IllegalStateException("Unknown data type or invalid dimension");
+        }
+
+        return size;
+    }
+
+    /**
+     * Internal method called from native to add new info.
+     */
+    private void appendInfo(String name, int type, int[] dimension) {
+        addTensorInfo(name, TensorInfo.convertType(type), dimension);
+    }
+
+    /**
+  
