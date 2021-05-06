@@ -150,4 +150,30 @@ public final class TensorsInfo implements AutoCloseable, Cloneable {
     /**
      * Sets the tensor dimension
      *
-     
+     * @param index     The index of the tensor information in the list
+     * @param dimension The tensor dimension
+     *
+     * @throws IndexOutOfBoundsException if the given index is invalid
+     * @throws IllegalArgumentException if the given dimension is null or invalid
+     */
+    public void setTensorDimension(int index, int[] dimension) {
+        checkIndexBounds(index);
+        mInfoList.get(index).setDimension(dimension);
+    }
+
+    /**
+     * Gets the tensor dimension of given index.
+     *
+     * @param index The index of the tensor information in the list
+     *
+     * @return The tensor dimension
+     *
+     * @throws IndexOutOfBoundsException if the given index is invalid
+     */
+    public int[] getTensorDimension(int index) {
+        checkIndexBounds(index);
+        return mInfoList.get(index).getDimension();
+    }
+
+    /**
+     * Calculat
