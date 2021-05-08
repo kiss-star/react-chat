@@ -204,4 +204,32 @@ public final class TensorsInfo implements AutoCloseable, Cloneable {
     }
 
     /**
-  
+     * Internal method called from native to get the array of tensor info.
+     */
+    private Object[] getInfoArray() {
+        return mInfoList.toArray();
+    }
+
+    /**
+     * Internal method to check the index.
+     *
+     * @throws IndexOutOfBoundsException if the given index is invalid
+     */
+    private void checkIndexBounds(int index) {
+        if (index < 0 || index >= getTensorsCount()) {
+            throw new IndexOutOfBoundsException("Invalid index [" + index + "] of the tensors");
+        }
+    }
+
+    @Override
+    public void close() {
+        mInfoList.clear();
+    }
+
+    /**
+     * Internal class for tensor information.
+     */
+    private static class TensorInfo {
+        private String name = null;
+        private int type = NNStreamer.TensorType.UNKNOWN.ordinal();
+        p
