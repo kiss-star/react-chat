@@ -232,4 +232,32 @@ public final class TensorsInfo implements AutoCloseable, Cloneable {
     private static class TensorInfo {
         private String name = null;
         private int type = NNStreamer.TensorType.UNKNOWN.ordinal();
-        p
+        private int[] dimension = new int[NNStreamer.TENSOR_RANK_LIMIT];
+
+        public TensorInfo(String name, NNStreamer.TensorType type, int[] dimension) {
+            setName(name);
+            setType(type);
+            setDimension(dimension);
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return this.name;
+        }
+
+        public void setType(NNStreamer.TensorType type) {
+            if (type == NNStreamer.TensorType.UNKNOWN) {
+                throw new IllegalArgumentException("Given tensor type is unknown or unsupported type");
+            }
+
+            this.type = type.ordinal();
+        }
+
+        public NNStreamer.TensorType getType() {
+            return convertType(this.type);
+        }
+
+       
