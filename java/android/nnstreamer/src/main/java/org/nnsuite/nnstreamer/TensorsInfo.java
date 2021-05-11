@@ -260,4 +260,29 @@ public final class TensorsInfo implements AutoCloseable, Cloneable {
             return convertType(this.type);
         }
 
-       
+        public void setDimension(int[] dimension) {
+            if (dimension == null) {
+                throw new IllegalArgumentException("Given tensor dimension is null");
+            }
+
+            int rank = dimension.length;
+
+            if (rank > NNStreamer.TENSOR_RANK_LIMIT) {
+                throw new IllegalArgumentException("Max size of the tensor rank is " + NNStreamer.TENSOR_RANK_LIMIT);
+            }
+
+            for (int dim : dimension) {
+                if (dim <= 0) {
+                    throw new IllegalArgumentException("The dimension should be a positive value");
+                }
+            }
+
+            System.arraycopy(dimension, 0, this.dimension, 0, rank);
+
+            /* fill default value */
+            for (int i = rank; i < NNStreamer.TENSOR_RANK_LIMIT; i++) {
+                this.dimension[i] = 1;
+            }
+        }
+
+        pub
