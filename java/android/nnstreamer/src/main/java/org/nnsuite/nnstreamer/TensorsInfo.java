@@ -285,4 +285,36 @@ public final class TensorsInfo implements AutoCloseable, Cloneable {
             }
         }
 
-        pub
+        public int[] getDimension() {
+            return this.dimension;
+        }
+
+        public int getSize() {
+            int size;
+
+            switch (convertType(this.type)) {
+                case INT32:
+                case UINT32:
+                case FLOAT32:
+                    size = 4;
+                    break;
+                case INT16:
+                case UINT16:
+                    size = 2;
+                    break;
+                case INT8:
+                case UINT8:
+                    size = 1;
+                    break;
+                case INT64:
+                case UINT64:
+                case FLOAT64:
+                    size = 8;
+                    break;
+                default:
+                    /* unknown type */
+                    return 0;
+            }
+
+            for (int i = 0; i < NNStreamer.TENSOR_RANK_LIMIT; i++) {
+               
