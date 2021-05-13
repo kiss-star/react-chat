@@ -317,4 +317,33 @@ public final class TensorsInfo implements AutoCloseable, Cloneable {
             }
 
             for (int i = 0; i < NNStreamer.TENSOR_RANK_LIMIT; i++) {
-               
+                size *= this.dimension[i];
+            }
+
+            return size;
+        }
+
+        /**
+         * Gets the tensor type from int value.
+         */
+        public static NNStreamer.TensorType convertType(int value) {
+            NNStreamer.TensorType type = NNStreamer.TensorType.UNKNOWN;
+
+            switch (value) {
+                case 0:
+                    type = NNStreamer.TensorType.INT32;
+                    break;
+                case 1:
+                    type = NNStreamer.TensorType.UINT32;
+                    break;
+                case 2:
+                    type = NNStreamer.TensorType.INT16;
+                    break;
+                case 3:
+                    type = NNStreamer.TensorType.UINT16;
+                    break;
+                case 4:
+                    type = NNStreamer.TensorType.INT8;
+                    break;
+                case 5:
+                    t
