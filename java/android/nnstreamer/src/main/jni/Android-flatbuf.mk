@@ -29,4 +29,30 @@ endif
 FLATBUF_DIR := $(LOCAL_PATH)/flatbuffers
 FLATBUF_INCLUDES := $(FLATBUF_DIR)/include
 GEN_FLATBUF_HEADER := $(shell flatc --cpp -o $(LOCAL_PATH) $(NNSTREAMER_ROOT)/ext/nnstreamer/include/nnstreamer.fbs )
-FLATBUF_HEADER_GEN := $(wildcard 
+FLATBUF_HEADER_GEN := $(wildcard $(LOCAL_PATH)/nnstreamer_generated.h)
+ifeq ($(FLATBUF_HEADER_GEN), '')
+$(error Failed to generate the header file, '$(LOCAL_PATH)/nnstreamer_generated.h')
+endif
+
+FLATBUF_LIB_PATH := $(FLATBUF_DIR)/lib/$(TARGET_ARCH_ABI)
+ifeq ($(wildcard $(FLATBUF_LIB_PATH)), )
+$(error The given ABI is not supported by the flatbuffers-module: $(TARGET_ARCH_ABI))
+endif
+
+#------------------------------------------------------
+# libflatbuffers.a (prebuilt static library)
+#------------------------------------------------------
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := flatbuffers-lib
+LOCAL_SRC_FILES := $(FLATBUF_LIB_PATH)/libflatbuffers.a
+
+include $(PREBUILT_STATIC_LIBRARY)
+
+#------------------------------------------------------
+# converter/decoder sub-plugins for flatbuffers
+#------------------------------------------------------
+FLATBUF_SRC_FILES := \
+    $(NNSTREAMER_CONVERTER_FLATBUF_SRCS) \
+    $(NNSTREAMER_CONVERTER_FLEXBUF_SRCS) \
+    $(NNS
