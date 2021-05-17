@@ -39,4 +39,5 @@ GST_REQUIRED_DEPS :=
 GST_REQUIRED_LIBS :=
 else
 $(error Unknown build option: $(NNSTREAMER_API_OPTION))
-en
+endif
+
