@@ -23,4 +23,28 @@ ENABLE_MXNET := false
 #------------------------------------------------------
 NNSTREAMER_LIBS := nnstreamer-native gst-android cpp-shared
 
-#------------------------------
+#------------------------------------------------------
+# nnstreamer-native
+#------------------------------------------------------
+include $(CLEAR_VARS)
+LOCAL_MODULE := nnstreamer-native
+LOCAL_SRC_FILES := $(NNSTREAMER_LIB_PATH)/libnnstreamer-native.so
+include $(PREBUILT_SHARED_LIBRARY)
+
+#------------------------------------------------------
+# gstreamer android
+#------------------------------------------------------
+include $(CLEAR_VARS)
+LOCAL_MODULE := gst-android
+LOCAL_SRC_FILES := $(NNSTREAMER_LIB_PATH)/libgstreamer_android.so
+include $(PREBUILT_SHARED_LIBRARY)
+
+#------------------------------------------------------
+# c++ shared
+#------------------------------------------------------
+include $(CLEAR_VARS)
+LOCAL_MODULE := cpp-shared
+LOCAL_SRC_FILES := $(NNSTREAMER_LIB_PATH)/libc++_shared.so
+include $(PREBUILT_SHARED_LIBRARY)
+
+#--------------------------------------------------
