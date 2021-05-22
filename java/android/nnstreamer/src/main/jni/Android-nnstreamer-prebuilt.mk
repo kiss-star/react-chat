@@ -77,4 +77,15 @@ include $(LOCAL_PATH)/Android-snpe-prebuilt.mk
 NNSTREAMER_LIBS += $(SNPE_PREBUILT_LIBS)
 endif
 
-#-------------------
+#------------------------------------------------------
+# MXNet
+#------------------------------------------------------
+ifeq ($(ENABLE_MXNET),true)
+MXNET_LIB_PATH := $(NNSTREAMER_LIB_PATH)
+include $(LOCAL_PATH)/Android-mxnet-prebuilt.mk
+
+NNSTREAMER_LIBS += $(MXNET_PREBUILT_LIBS)
+endif
+
+# Remove any duplicates.
+NNSTREAMER_LIBS := $(sort $(NNSTREAMER_LIBS))
