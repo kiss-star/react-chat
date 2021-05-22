@@ -47,4 +47,34 @@ LOCAL_MODULE := cpp-shared
 LOCAL_SRC_FILES := $(NNSTREAMER_LIB_PATH)/libc++_shared.so
 include $(PREBUILT_SHARED_LIBRARY)
 
-#--------------------------------------------------
+#------------------------------------------------------
+# SNAP (arm64-v8a only)
+#------------------------------------------------------
+ifeq ($(ENABLE_SNAP),true)
+SNAP_LIB_PATH := $(NNSTREAMER_LIB_PATH)
+include $(LOCAL_PATH)/Android-snap-prebuilt.mk
+
+NNSTREAMER_LIBS += $(SNAP_PREBUILT_LIBS)
+endif
+
+#------------------------------------------------------
+# NNFW (arm64-v8a only)
+#------------------------------------------------------
+ifeq ($(ENABLE_NNFW),true)
+NNFW_LIB_PATH := $(NNSTREAMER_LIB_PATH)
+include $(LOCAL_PATH)/Android-nnfw-prebuilt.mk
+
+NNSTREAMER_LIBS += $(NNFW_PREBUILT_LIBS)
+endif
+
+#------------------------------------------------------
+# SNPE
+#------------------------------------------------------
+ifeq ($(ENABLE_SNPE),true)
+SNPE_LIB_PATH := $(NNSTREAMER_LIB_PATH)
+include $(LOCAL_PATH)/Android-snpe-prebuilt.mk
+
+NNSTREAMER_LIBS += $(SNPE_PREBUILT_LIBS)
+endif
+
+#-------------------
