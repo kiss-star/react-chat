@@ -18,4 +18,29 @@ endif
 include $(NNSTREAMER_ROOT)/jni/nnstreamer.mk
 
 SNPE_DIR := $(LOCAL_PATH)/snpe
-SNPE_IN
+SNPE_INCLUDES := $(SNPE_DIR)/include/zdl/
+
+ifeq ($(TARGET_ARCH_ABI),arm64-v8a)
+SNPE_LIB_PATH := $(SNPE_DIR)/lib
+else
+$(error Target arch ABI not supported: $(TARGET_ARCH_ABI))
+endif
+
+#------------------------------------------------------
+# snpe-sdk (prebuilt shared library)
+#------------------------------------------------------
+include $(LOCAL_PATH)/Android-snpe-prebuilt.mk
+
+#------------------------------------------------------
+# tensor-filter sub-plugin for snpe
+#------------------------------------------------------
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := snpe-subplugin
+LOCAL_SRC_FILES := $(NNSTREAMER_FILTER_SNPE_SRCS)
+LOCAL_CXXFLAGS := -O3 -fPIC -frtti -fexceptions $(NNS_API_FLAGS)
+LOCAL_C_INCLUDES := $(SNPE_INCLUDES) $(NNSTREAMER_INCLUDES) $(GST_HEADERS_COMMON)
+LOCAL_STATIC_LIBRARIES := nnstreamer
+LOCAL_SHARED_LIBRARIES := $(SNPE_PREBUILT_LIBS)
+
+include $(BUILD_STATIC_LIBRA
