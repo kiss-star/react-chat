@@ -58,4 +58,33 @@ ENABLE_PYTORCH := false
 # MXNet
 ENABLE_MXNET := false
 
-# C
+# Converter/decoder sub-plugin for flatbuffers support
+ENABLE_FLATBUF := false
+
+# MQTT (paho.mqtt.c) support
+ENABLE_MQTT := false
+
+ifeq ($(ENABLE_SNAP),true)
+ifeq ($(ENABLE_SNPE),true)
+$(error DO NOT enable SNAP and SNPE both. The app would fail to use DSP or NPU runtime.)
+endif
+endif
+
+NNS_API_FLAGS := -DVERSION=\"$(ML_API_VERSION)\"
+NNS_SUBPLUGINS :=
+
+ifeq ($(NNSTREAMER_API_OPTION),single)
+NNS_API_FLAGS += -DNNS_SINGLE_ONLY=1
+endif
+
+#------------------------------------------------------
+# nnstreamer + ML API build
+#------------------------------------------------------
+include $(LOCAL_PATH)/Android-nnstreamer.mk
+
+#------------------------------------------------------
+# external libs and sub-plugins
+#------------------------------------------------------
+ifeq ($(ENABLE_TF_LITE),true)
+NNS_API_FLAGS += -DENABLE_TENSORFLOW_LITE=1
+NNS_SUBPLUGIN
