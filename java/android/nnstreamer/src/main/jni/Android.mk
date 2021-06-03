@@ -87,4 +87,44 @@ include $(LOCAL_PATH)/Android-nnstreamer.mk
 #------------------------------------------------------
 ifeq ($(ENABLE_TF_LITE),true)
 NNS_API_FLAGS += -DENABLE_TENSORFLOW_LITE=1
-NNS_SUBPLUGIN
+NNS_SUBPLUGINS += tensorflow-lite-subplugin
+
+include $(LOCAL_PATH)/Android-tensorflow-lite.mk
+endif
+
+ifeq ($(ENABLE_SNAP),true)
+NNS_API_FLAGS += -DENABLE_SNAP=1
+NNS_SUBPLUGINS += snap-subplugin
+
+include $(LOCAL_PATH)/Android-snap.mk
+endif
+
+ifeq ($(ENABLE_NNFW),true)
+NNS_API_FLAGS += -DENABLE_NNFW_RUNTIME=1
+NNS_SUBPLUGINS += nnfw-subplugin
+
+include $(LOCAL_PATH)/Android-nnfw.mk
+endif
+
+ifeq ($(ENABLE_SNPE),true)
+NNS_API_FLAGS += -DENABLE_SNPE=1
+NNS_SUBPLUGINS += snpe-subplugin
+
+include $(LOCAL_PATH)/Android-snpe.mk
+endif
+
+ifeq ($(ENABLE_PYTORCH),true)
+NNS_API_FLAGS += -DENABLE_PYTORCH=1
+NNS_SUBPLUGINS += pytorch-subplugin
+
+include $(LOCAL_PATH)/Android-pytorch.mk
+endif
+
+ifeq ($(ENABLE_MXNET), true)
+NNS_API_FLAGS += -DENABLE_MXNET=1
+NNS_SUBPLUGINS += mxnet-subplugin
+
+include $(LOCAL_PATH)/Android-mxnet.mk
+endif
+
+ifneq ($(NNSTREAMER_API_O
