@@ -127,4 +127,36 @@ NNS_SUBPLUGINS += mxnet-subplugin
 include $(LOCAL_PATH)/Android-mxnet.mk
 endif
 
-ifneq ($(NNSTREAMER_API_O
+ifneq ($(NNSTREAMER_API_OPTION),single)
+ifeq ($(ENABLE_FLATBUF),true)
+include $(LOCAL_PATH)/Android-flatbuf.mk
+NNS_API_FLAGS += -DENABLE_FLATBUF=1
+NNS_SUBPLUGINS += flatbuffers-subplugin
+endif
+endif
+
+# Remove any duplicates.
+NNS_SUBPLUGINS := $(sort $(NNS_SUBPLUGINS))
+
+#------------------------------------------------------
+# native code for api
+#------------------------------------------------------
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := nnstreamer-native
+
+LOCAL_SRC_FILES := \
+    nnstreamer-native-api.c \
+    nnstreamer-native-singleshot.c
+
+ifneq ($(NNSTREAMER_API_OPTION),single)
+LOCAL_SRC_FILES += \
+    nnstreamer-native-customfilter.c \
+    nnstreamer-native-pipeline.c
+endif
+
+LOCAL_C_INCLUDES := $(NNSTREAMER_INCLUDES) $(GST_HEADERS_COMMON)
+LOCAL_CFLAGS := -O3 -fPIC $(NNS_API_FLAGS)
+LOCAL_STATIC_LIBRARIES := nnstreamer $(NNS_SUBPLUGINS)
+LOCAL_SHARED_LIBRARIES := gstreamer_android
+LOCAL_LDLIBS :=
