@@ -159,4 +159,34 @@ LOCAL_C_INCLUDES := $(NNSTREAMER_INCLUDES) $(GST_HEADERS_COMMON)
 LOCAL_CFLAGS := -O3 -fPIC $(NNS_API_FLAGS)
 LOCAL_STATIC_LIBRARIES := nnstreamer $(NNS_SUBPLUGINS)
 LOCAL_SHARED_LIBRARIES := gstreamer_android
-LOCAL_LDLIBS :=
+LOCAL_LDLIBS := -llog -landroid
+
+ifneq ($(NNSTREAMER_API_OPTION),single)
+# For amcsrc element
+LOCAL_LDLIBS += -lmediandk
+endif
+
+include $(BUILD_SHARED_LIBRARY)
+
+#------------------------------------------------------
+# gstreamer for android
+#------------------------------------------------------
+GSTREAMER_NDK_BUILD_PATH := $(GSTREAMER_ROOT)/share/gst-android/ndk-build/
+include $(LOCAL_PATH)/Android-gst-plugins.mk
+
+GSTREAMER_PLUGINS        := $(GST_REQUIRED_PLUGINS)
+GSTREAMER_EXTRA_DEPS     := $(GST_REQUIRED_DEPS) glib-2.0 gio-2.0 gmodule-2.0
+GSTREAMER_EXTRA_LIBS     := $(GST_REQUIRED_LIBS) -liconv
+
+ifeq ($(NNSTREAMER_API_OPTION),all)
+GSTREAMER_EXTRA_LIBS += -lcairo
+endif
+
+GSTREAMER_INCLUDE_FONTS := no
+GSTREAMER_INCLUDE_CA_CERTIFICATES := no
+
+include $(GSTREAMER_NDK_BUILD_PATH)/gstreamer-1.0.mk
+
+#------------------------------------------------------
+# NDK cpu-features
+#------------------------
