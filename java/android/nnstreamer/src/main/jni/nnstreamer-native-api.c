@@ -677,3 +677,252 @@ nns_parse_tensors_info (pipeline_info_s * pipe_info, JNIEnv * env,
     /* tensor type */
     info->info[i].type = (ml_tensor_type_e) (*env)->GetIntField (env, item,
         icls_info->fid_info_type);
+
+    /* tensor dimension */
+    dimension = (jintArray) (*env)->GetObjectField (env, item,
+        icls_info->fid_info_dim);
+    (*env)->GetIntArrayRegion (env, dimension, 0, ML_TENSOR_RANK_LIMIT,
+        (jint *) info->info[i].dimension);
+    (*env)->DeleteLocalRef (env, dimension);
+
+    (*env)->DeleteLocalRef (env, item);
+  }
+
+  (*env)->DeleteLocalRef (env, info_arr);
+  return TRUE;
+}
+
+/**
+ * @brief Get NNFW from integer value.
+ */
+gboolean
+nns_get_nnfw_type (jint fw_type, ml_nnfw_type_e * nnfw)
+{
+  if (!nnfw)
+    return FALSE;
+
+  *nnfw = ML_NNFW_TYPE_ANY;
+
+  /* enumeration defined in NNStreamer.java */
+  switch (fw_type) {
+    case 0: /* NNFWType.TENSORFLOW_LITE */
+      *nnfw = ML_NNFW_TYPE_TENSORFLOW_LITE;
+      break;
+    case 1: /* NNFWType.SNAP */
+      *nnfw = ML_NNFW_TYPE_SNAP;
+      break;
+    case 2: /* NNFWType.NNFW */
+      *nnfw = ML_NNFW_TYPE_NNFW;
+      break;
+    case 3: /* NNFWType.SNPE */
+      *nnfw = ML_NNFW_TYPE_SNPE;
+      break;
+    case 4: /* NNFWType.PYTORCH */
+      *nnfw = ML_NNFW_TYPE_PYTORCH;
+      break;
+    case 5: /* NNFWType.MXNET */
+      *nnfw = ML_NNFW_TYPE_MXNET;
+      break;
+    default: /* Unknown */
+      _ml_logw ("Unknown NNFW type (%d).", fw_type);
+      return FALSE;
+  }
+
+  return _ml_nnfw_is_available (*nnfw, ML_NNFW_HW_ANY);
+}
+
+/**
+ * @brief Initialize NNStreamer, register required plugins.
+ */
+jboolean
+nnstreamer_native_initialize (JNIEnv * env, jobject context)
+{
+  jboolean result = JNI_FALSE;
+  gchar *gst_ver, *nns_ver;
+  static gboolean nns_is_initilaized = FALSE;
+
+  _ml_logi ("Called native initialize.");
+
+  G_LOCK (nns_native_lock);
+
+#if !defined (NNS_SINGLE_ONLY)
+  /* single-shot does not require gstreamer */
+  if (!gst_is_initialized ()) {
+#if defined(__ANDROID__)
+    if (env && context) {
+      gst_android_init (env, context);
+    } else {
+#else
+    if (_ml_initialize_gstreamer () != ML_ERROR_NONE) {
+#endif
+      _ml_loge ("Invalid params, cannot initialize GStreamer.");
+      goto done;
+    }
+  }
+
+  if (!gst_is_initialized ()) {
+    _ml_loge ("GStreamer is not initialized.");
+    goto done;
+  }
+#endif
+
+  if (nns_is_initilaized == FALSE) {
+#if defined(__ANDROID__)
+    /* register nnstreamer plugins */
+#if !defined (NNS_SINGLE_ONLY)
+    GST_PLUGIN_STATIC_REGISTER (nnstreamer);
+
+    /* Android MediaCodec */
+    GST_PLUGIN_STATIC_REGISTER (amcsrc);
+
+    /* GStreamer join element */
+    GST_PLUGIN_STATIC_REGISTER (join);
+
+#if defined (ENABLE_MQTT)
+    /* GStreamer MQTT element */
+    GST_PLUGIN_STATIC_REGISTER (mqtt);
+#endif
+
+    /* tensor-decoder sub-plugins */
+    init_dv ();
+    init_bb ();
+    init_il ();
+    init_pose ();
+    init_is ();
+#if defined (ENABLE_FLATBUF)
+    init_fbd ();
+    init_fbc ();
+    init_flxc ();
+    init_flxd ();
+#endif /* ENABLE_FLATBUF */
+#endif
+
+    /* tensor-filter sub-plugins */
+    init_filter_cpp ();
+    init_filter_custom ();
+    init_filter_custom_easy ();
+
+#if defined (ENABLE_TENSORFLOW_LITE)
+    init_filter_tflite ();
+#endif
+#if defined (ENABLE_SNAP)
+    init_filter_snap ();
+#endif
+#if defined (ENABLE_NNFW_RUNTIME)
+    init_filter_nnfw ();
+#endif
+#if defined (ENABLE_SNPE)
+    init_filter_snpe (env, context);
+#endif
+#if defined (ENABLE_PYTORCH)
+    init_filter_torch ();
+#endif
+#if defined (ENABLE_MXNET)
+    init_filter_mxnet ();
+#endif
+#endif /* __ANDROID__ */
+    nns_is_initilaized = TRUE;
+  }
+
+  result = JNI_TRUE;
+
+  /* print version info */
+  gst_ver = gst_version_string ();
+  nns_ver = nnstreamer_version_string ();
+
+  _ml_logi ("%s %s GLib %d.%d.%d", nns_ver, gst_ver, GLIB_MAJOR_VERSION,
+      GLIB_MINOR_VERSION, GLIB_MICRO_VERSION);
+
+  g_free (gst_ver);
+  g_free (nns_ver);
+
+done:
+  G_UNLOCK (nns_native_lock);
+  return result;
+}
+
+/**
+ * @brief Native method to initialize NNStreamer.
+ */
+static jboolean
+nns_native_initialize (JNIEnv * env, jclass clazz, jobject context)
+{
+  return nnstreamer_native_initialize (env, context);
+}
+
+/**
+ * @brief Native method to check the availability of NNFW.
+ */
+static jboolean
+nns_native_check_nnfw_availability (JNIEnv * env, jclass clazz, jint fw_type)
+{
+  ml_nnfw_type_e nnfw;
+
+  if (!nns_get_nnfw_type (fw_type, &nnfw)) {
+    return JNI_FALSE;
+  }
+
+  return JNI_TRUE;
+}
+
+/**
+ * @brief Native method to get the version string of NNStreamer.
+ */
+static jstring
+nns_native_get_version (JNIEnv * env, jclass clazz)
+{
+  gchar *nns_ver = nnstreamer_version_string ();
+  jstring version = (*env)->NewStringUTF (env, nns_ver);
+
+  g_free (nns_ver);
+  return version;
+}
+
+/**
+ * @brief List of implemented native methods for NNStreamer class.
+ */
+static JNINativeMethod native_methods_nnstreamer[] = {
+  {(char *) "nativeInitialize", (char *) "(Ljava/lang/Object;)Z",
+      (void *) nns_native_initialize},
+  {(char *) "nativeCheckNNFWAvailability", (char *) "(I)Z",
+      (void *) nns_native_check_nnfw_availability},
+  {(char *) "nativeGetVersion", (char *) "()Ljava/lang/String;",
+      (void *) nns_native_get_version}
+};
+
+/**
+ * @brief Initialize native library.
+ */
+jint
+JNI_OnLoad (JavaVM * vm, void *reserved)
+{
+  JNIEnv *env = NULL;
+  jclass klass;
+
+  if ((*vm)->GetEnv (vm, (void **) &env, JNI_VERSION_1_4) != JNI_OK) {
+    _ml_loge ("On initializing, failed to get JNIEnv.");
+    return 0;
+  }
+
+  klass = (*env)->FindClass (env, NNS_CLS_NNSTREAMER);
+  if (klass) {
+    if ((*env)->RegisterNatives (env, klass, native_methods_nnstreamer,
+            G_N_ELEMENTS (native_methods_nnstreamer))) {
+      _ml_loge ("Failed to register native methods for NNStreamer class.");
+      return 0;
+    }
+  }
+
+  if (!nns_native_single_register_natives (env)) {
+    return 0;
+  }
+
+#if !defined (NNS_SINGLE_ONLY)
+  if (!nns_native_pipe_register_natives (env) ||
+      !nns_native_custom_register_natives (env)) {
+    return 0;
+  }
+#endif
+
+  return JNI_VERSION_1_4;
+}
