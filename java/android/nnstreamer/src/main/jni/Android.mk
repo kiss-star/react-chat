@@ -189,4 +189,5 @@ include $(GSTREAMER_NDK_BUILD_PATH)/gstreamer-1.0.mk
 
 #------------------------------------------------------
 # NDK cpu-features
-#------------------------
+#------------------------------------------------------
+$(call import-module, android/cpufeatures)
