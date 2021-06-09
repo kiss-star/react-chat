@@ -42,4 +42,32 @@ if get_option('enable-ml-service')
   endif
 endif
 
-# Set ver
+# Set version info
+api_version = meson.project_version()
+api_version_split = api_version.split('.')
+
+add_project_arguments('-DVERSION="' + api_version + '"', language: ['c', 'cpp'])
+add_project_arguments('-DVERSION_MAJOR="' + api_version_split[0] + '"', language: ['c', 'cpp'])
+add_project_arguments('-DVERSION_MINOR="' + api_version_split[1] + '"', language: ['c', 'cpp'])
+add_project_arguments('-DVERSION_MICRO="' + api_version_split[2] + '"', language: ['c', 'cpp'])
+
+# Define warning flags for c and cpp
+warning_flags = [
+  '-Wwrite-strings',
+  '-Wformat',
+  '-Wformat-nonliteral',
+  '-Wformat-security',
+  '-Winit-self',
+  '-Waddress',
+  '-Wno-multichar',
+  '-Wvla',
+  '-Wpointer-arith'
+]
+
+warning_c_flags = [
+  '-Wmissing-declarations',
+  '-Wmissing-include-dirs',
+  '-Wmissing-prototypes',
+  '-Wnested-externs',
+  '-Waggregate-return',
+  '-Wold-style
