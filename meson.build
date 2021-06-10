@@ -98,4 +98,29 @@ if get_option('enable-tizen')
   tizenVmajor = get_option('tizen-version-major')
   tizenVminor = get_option('tizen-version-minor')
   add_project_arguments('-DTIZENVERSION='+tizenVmajor.to_string(), language: ['c', 'cpp'])
-  add_project_arguments('-DTIZENVERSIONMINOR='+tizenVminor.to_string
+  add_project_arguments('-DTIZENVERSIONMINOR='+tizenVminor.to_string(), language: ['c', 'cpp'])
+
+  if get_option('enable-tizen-feature-check')
+    add_project_arguments('-D__FEATURE_CHECK_SUPPORT__', language: ['c', 'cpp'])
+  endif
+
+  if get_option('enable-tizen-privilege-check')
+    add_project_arguments('-D__PRIVILEGE_CHECK_SUPPORT__', language: ['c', 'cpp'])
+  endif
+endif
+
+serviceDBPath = get_option('service-db-path')
+add_project_arguments('-DSYS_DB_DIR="' + serviceDBPath + '"', language: ['c', 'cpp'])
+
+# Check neural network framework
+# TODO: add frameworks required to build and run test
+# tendorflow
+tf_dep = dependency('tensorflow', required: false)
+if tf_dep.found()
+  add_project_arguments('-DENABLE_TENSORFLOW=1', language: ['c', 'cpp'])
+endif
+
+# tendorflow-lite
+tf1lite_dep = dependency('tensorflow-lite', required: false)
+if tf1lite_dep.found()
+  add_project_arguments('-DENABLE_TENSORFLOW_LITE=1', language: [
