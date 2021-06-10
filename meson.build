@@ -70,4 +70,32 @@ warning_c_flags = [
   '-Wmissing-prototypes',
   '-Wnested-externs',
   '-Waggregate-return',
-  '-Wold-style
+  '-Wold-style-definition',
+  '-Wdeclaration-after-statement'
+]
+
+# Setup warning flags for c and cpp
+foreach extra_arg : warning_flags
+  if cc.has_argument (extra_arg)
+    add_project_arguments([extra_arg], language: 'c')
+  endif
+  if cxx.has_argument (extra_arg)
+    add_project_arguments([extra_arg], language: 'cpp')
+  endif
+endforeach
+
+foreach extra_arg : warning_c_flags
+  if cc.has_argument (extra_arg)
+    add_project_arguments([extra_arg], language: 'c')
+  endif
+endforeach
+
+# Set project args
+if get_option('enable-tizen')
+  # Pass __TIZEN__ to the compiler
+  add_project_arguments('-D__TIZEN__=1', language: ['c', 'cpp'])
+
+  tizenVmajor = get_option('tizen-version-major')
+  tizenVminor = get_option('tizen-version-minor')
+  add_project_arguments('-DTIZENVERSION='+tizenVmajor.to_string(), language: ['c', 'cpp'])
+  add_project_arguments('-DTIZENVERSIONMINOR='+tizenVminor.to_string
