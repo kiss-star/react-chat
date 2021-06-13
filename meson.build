@@ -123,4 +123,32 @@ endif
 # tendorflow-lite
 tf1lite_dep = dependency('tensorflow-lite', required: false)
 if tf1lite_dep.found()
-  add_project_arguments('-DENABLE_TENSORFLOW_LITE=1', language: [
+  add_project_arguments('-DENABLE_TENSORFLOW_LITE=1', language: ['c', 'cpp'])
+endif
+
+tf2lite_dep = dependency('tensorflow2-lite', required: false)
+if tf2lite_dep.found()
+  add_project_arguments('-DENABLE_TENSORFLOW2_LITE=1', language: ['c', 'cpp'])
+endif
+
+# NNFW (ONE)
+nnfw_dep = dependency('nnfw', required: false)
+if not nnfw_dep.found()
+  nnfw_dep = cc.find_library('nnfw-dev', required: false)
+endif
+if nnfw_dep.found()
+  add_project_arguments('-DENABLE_NNFW_RUNTIME=1', language: ['c', 'cpp'])
+endif
+
+# ArmNN
+armnn_dep = dependency('armnn', required: false)
+if armnn_dep.found()
+  add_project_arguments('-DENABLE_ARMNN=1', language: ['c', 'cpp'])
+endif
+
+# Set install path
+api_install_prefix = get_option('prefix')
+api_install_libdir = join_paths(api_install_prefix, get_option('libdir'))
+api_install_bindir = join_paths(api_install_prefix, get_option('bindir'))
+api_install_includedir = join_paths(api_install_prefix, get_option('includedir'))
+api_install_inidir = get_option('sysconfdi
