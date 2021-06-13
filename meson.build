@@ -151,4 +151,29 @@ api_install_prefix = get_option('prefix')
 api_install_libdir = join_paths(api_install_prefix, get_option('libdir'))
 api_install_bindir = join_paths(api_install_prefix, get_option('bindir'))
 api_install_includedir = join_paths(api_install_prefix, get_option('includedir'))
-api_install_inidir = get_option('sysconfdi
+api_install_inidir = get_option('sysconfdir')
+dbus_policy_dir = join_paths(get_option('sysconfdir'), 'dbus-1', 'system.d')
+dbus_system_service_dir = join_paths(api_install_prefix, 'share', 'dbus-1', 'system-services')
+systemd_service_dir = join_paths(api_install_prefix, 'lib', 'systemd', 'system')
+
+# Set default configuration
+api_conf = configuration_data()
+api_conf.set('VERSION', api_version)
+api_conf.set('PREFIX', api_install_prefix)
+api_conf.set('EXEC_PREFIX', api_install_bindir)
+api_conf.set('LIB_INSTALL_DIR', api_install_libdir)
+api_conf.set('INCLUDE_INSTALL_DIR', api_install_includedir)
+
+if get_option('enable-ml-service')
+  subdir('dbus')
+  subdir('daemon')
+endif
+
+# Build C-API
+subdir('c')
+
+# Build JNI wrapper when developer sets java-home
+# (e.g., -Djava-home=$JAVA_HOME from environment variables)
+java_home = get_option('java-home').strip()
+if java_home != ''
+  message('Java home ' + java_home
