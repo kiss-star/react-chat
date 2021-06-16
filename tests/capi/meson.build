@@ -11,4 +11,27 @@ unittest_capi_inference_single = executable('unittest_capi_inference_single',
   install_dir: unittest_install_dir,
   include_directories: nns_capi_include,
 )
-test('unittest_capi_inference_single', unittest_c
+test('unittest_capi_inference_single', unittest_capi_inference_single, env: testenv, timeout: 100)
+
+unittest_common_dep = declare_dependency(
+  link_with: [unittest_util_static],
+  dependencies: [nns_capi_dep, gtest_dep],
+  compile_args: ['-DFAKEDLOG=1'],
+  include_directories: nns_capi_include,
+)
+
+unittest_capi_inference = executable('unittest_capi_inference',
+  'unittest_capi_inference.cc',
+  dependencies: [unittest_common_dep],
+  install: get_option('install-test'),
+  install_dir: unittest_install_dir
+)
+test('unittest_capi_inference', unittest_capi_inference, env: testenv, timeout: 100)
+
+unittest_capi_inference_latency = executable('unittest_capi_inference_latency',
+  'unittest_capi_inference_latency.cc',
+  dependencies: [unittest_common_dep],
+  install: get_option('install-test'),
+  install_dir: unittest_install_dir
+)
+test('unittest_capi_inference_latency', unittest_capi_inference_latency, env: tes
