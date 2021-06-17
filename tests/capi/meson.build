@@ -55,4 +55,11 @@ if get_option('enable-ml-service')
 endif
 
 if nnfw_dep.found()
-  unittes
+  unittest_capi_inference_nnfw_runtime = executable('unittest_capi_inference_nnfw_runtime',
+    'unittest_capi_inference_nnfw_runtime.cc',
+    dependencies: [unittest_common_dep],
+    install: get_option('install-test'),
+    install_dir: unittest_install_dir
+  )
+  test('unittest_capi_inference_nnfw_runtime', unittest_capi_inference_nnfw_runtime, env: testenv, timeout: 100)
+endif
