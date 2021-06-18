@@ -44,4 +44,33 @@ typedef struct {
  * @brief Macro to wait for pipeline state.
  */
 #define wait_for_start(handle, state, status) do { \
-    in
+    int counter = 0; \
+    while ((state == ML_PIPELINE_STATE_PAUSED || state == ML_PIPELINE_STATE_READY) \
+           && counter < 20) { \
+      g_usleep (50000); \
+      counter++; \
+      status = ml_pipeline_get_state (handle, &state); \
+      EXPECT_EQ (status, ML_ERROR_NONE); \
+    } \
+  } while (0)
+
+/**
+ * @brief Macro to wait for expected buffers to arrive.
+ */
+#define wait_pipeline_process_buffers(received, expected) do { \
+    guint timer = 0; \
+    while (received < expected) { \
+      g_usleep (10000); \
+      timer += 10; \
+      if (timer > SINGLE_DEF_TIMEOUT_MSEC) \
+        break; \
+    } \
+  } while (0)
+
+#if defined (__TIZEN__)
+#if TIZENPPM
+/**
+ * @brief Test NNStreamer pipeline construct with Tizen cam
+ * @details Failure case to check permission (camera privilege)
+ */
+TEST (nnstreamer_capi_construct_destruct, tizen_
