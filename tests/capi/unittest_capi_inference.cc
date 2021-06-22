@@ -166,4 +166,23 @@ TEST (nnstreamer_capi_construct_destruct, dummy_01)
 }
 
 /**
- * @brief Test
+ * @brief Test NNStreamer pipeline construct & destruct
+ */
+TEST (nnstreamer_capi_construct_destruct, dummy_02)
+{
+  const char *pipeline = "videotestsrc num_buffers=2 ! videoconvert ! videoscale ! video/x-raw,format=RGBx,width=224,height=224 ! tensor_converter ! fakesink";
+  ml_pipeline_h handle;
+  int status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test NNStreamer pipeline construct & destruct
+ */
+TEST (nnstreamer_capi_construct_destruct, dummy_03)
+{
+  const char *pipeline = "videotestsrc num_buffers=2 ! videoconvert ! videoscale ! video/x-raw,format=RGBx,width=224,height=224 ! tensor_converter ! valve name=valvex ! tensor_sink name=sinkx";
+  ml_pipeline_h handle;
