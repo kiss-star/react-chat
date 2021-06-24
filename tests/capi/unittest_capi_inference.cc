@@ -186,3 +186,30 @@ TEST (nnstreamer_capi_construct_destruct, dummy_03)
 {
   const char *pipeline = "videotestsrc num_buffers=2 ! videoconvert ! videoscale ! video/x-raw,format=RGBx,width=224,height=224 ! tensor_converter ! valve name=valvex ! tensor_sink name=sinkx";
   ml_pipeline_h handle;
+  int status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test NNStreamer pipeline construct with non-existent filter
+ */
+TEST (nnstreamer_capi_construct_destruct, failure_01_n)
+{
+  const char *pipeline = "nonexistsrc ! fakesink";
+  ml_pipeline_h handle;
+  int status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+  EXPECT_EQ (status, ML_ERROR_STREAMS_PIPE);
+}
+
+/**
+ * @brief Test NNStreamer pipeline construct with erroneous pipeline
+ */
+TEST (nnstreamer_capi_construct_destruct, failure_02_n)
+{
+  const char *pipeline = "videotestsrc num_buffers=2 ! audioconvert ! fakesink";
+  ml_pipeline_h handle;
+  int status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+  EXP
