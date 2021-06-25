@@ -212,4 +212,24 @@ TEST (nnstreamer_capi_construct_destruct, failure_02_n)
   const char *pipeline = "videotestsrc num_buffers=2 ! audioconvert ! fakesink";
   ml_pipeline_h handle;
   int status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
-  EXP
+  EXPECT_EQ (status, ML_ERROR_STREAMS_PIPE);
+}
+
+/**
+ * @brief Test NNStreamer pipeline construct & destruct
+ */
+TEST (nnstreamer_capi_playstop, dummy_01)
+{
+  const char *pipeline = "videotestsrc is-live=true ! videoconvert ! videoscale ! video/x-raw,format=RGBx,width=224,height=224,framerate=60/1 ! tensor_converter ! valve name=valvex ! valve name=valvey ! input-selector name=is01 ! tensor_sink name=sinkx";
+  ml_pipeline_h handle;
+  ml_pipeline_state_e state;
+  int status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_start (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  status = ml_pipeline_get_state (handle, &state);
+  EXPECT_EQ (status,
+      ML_ERROR_NONE); /* At this moment, it can be READY, PAUSED, or PLAYING */
+  EXPECT_NE (state, ML_PIPELINE_STATE_UNKNOWN);
+  EXPECT
