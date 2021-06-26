@@ -232,4 +232,31 @@ TEST (nnstreamer_capi_playstop, dummy_01)
   EXPECT_EQ (status,
       ML_ERROR_NONE); /* At this moment, it can be READY, PAUSED, or PLAYING */
   EXPECT_NE (state, ML_PIPELINE_STATE_UNKNOWN);
-  EXPECT
+  EXPECT_NE (state, ML_PIPELINE_STATE_NULL);
+
+  g_usleep (50000); /** 50ms is good for general systems, but not enough for
+                       emulators to start gst pipeline. Let a few frames flow.
+                       */
+  status = ml_pipeline_get_state (handle, &state);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  wait_for_start (handle, state, status);
+  EXPECT_EQ (state, ML_PIPELINE_STATE_PLAYING);
+
+  status = ml_pipeline_stop (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  g_usleep (50000); /* 50ms. Let a few frames flow. */
+
+  status = ml_pipeline_get_state (handle, &state);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (state, ML_PIPELINE_STATE_PAUSED);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test NNStreamer pipeline construct & destruct
+ */
+TEST (nnstreamer_capi_playstop, dummy_02)
+{
+  const char *pipeline = "videotestsrc is-live=true !
