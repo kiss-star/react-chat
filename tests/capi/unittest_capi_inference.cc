@@ -303,4 +303,27 @@ TEST (nnstreamer_capi_playstop, dummy_02)
   EXPECT_EQ (status, ML_ERROR_NONE);
   EXPECT_EQ (state, ML_PIPELINE_STATE_PAUSED);
 
- 
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test NNStreamer pipeline construct & destruct
+ */
+TEST (nnstreamer_capi_valve, test01)
+{
+  const gchar *_tmpdir = g_get_tmp_dir ();
+  const gchar *_dirname = "nns-tizen-XXXXXX";
+  gchar *fullpath = g_build_path ("/", _tmpdir, _dirname, NULL);
+  gchar *dir = g_mkdtemp ((gchar *)fullpath);
+  gchar *file1 = g_build_path ("/", dir, "valve1", NULL);
+  gchar *pipeline = g_strdup_printf (
+      "videotestsrc is-live=true ! videoconvert ! videoscale ! video/x-raw,format=RGBx,width=16,height=16,framerate=10/1 ! tensor_converter ! queue ! valve name=valve1 ! filesink location=\"%s\"",
+      file1);
+  GStatBuf buf;
+
+  ml_pipeline_h handle;
+  ml_pipeline_state_e state;
+  ml_pipeline_valve_h valve1;
+
+  int status = ml_pipeline_con
