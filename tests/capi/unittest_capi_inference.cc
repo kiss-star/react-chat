@@ -326,4 +326,27 @@ TEST (nnstreamer_capi_valve, test01)
   ml_pipeline_state_e state;
   ml_pipeline_valve_h valve1;
 
-  int status = ml_pipeline_con
+  int status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  EXPECT_TRUE (dir != NULL);
+
+  status = ml_pipeline_valve_get_handle (handle, "valve1", &valve1);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_valve_set_open (valve1, false); /* close */
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_start (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_usleep (50000); /* 50ms. Wait for the pipeline stgart. */
+  status = ml_pipeline_get_state (handle, &state);
+  EXPECT_EQ (status,
+      ML_ERROR_NONE); /* At this moment, it can be READY, PAUSED, or PLAYING */
+  EXPECT_NE (state, ML_PIPELINE_STATE_UNKNOWN);
+  EXPECT_NE (state, ML_PIPELINE_STATE_NULL);
+
+  wait_for_start (handle, state, status);
+  status = ml_pipeline_stop (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE)
