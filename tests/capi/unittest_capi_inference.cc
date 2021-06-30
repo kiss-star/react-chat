@@ -349,4 +349,31 @@ TEST (nnstreamer_capi_valve, test01)
 
   wait_for_start (handle, state, status);
   status = ml_pipeline_stop (handle);
-  EXPECT_EQ (status, ML_ERROR_NONE)
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = g_lstat (file1, &buf);
+  EXPECT_EQ (status, 0);
+  EXPECT_EQ (buf.st_size, 0);
+
+  status = ml_pipeline_start (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_valve_set_open (valve1, true); /* open */
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_valve_release_handle (valve1); /* release valve handle */
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_usleep (500000); /* 500ms. Let a few frames flow. (10Hz x 0.5s --> 5)*/
+
+  status = ml_pipeline_stop (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = g_lstat (file1, &buf);
+  EXPECT_EQ (status, 0);
+  EXPECT_GE (buf.st_size, 2048); /* At least two frames during 500ms */
+  EXPECT_LE (buf.st_size, 6144); /* At most six frames during 500ms */
+  EXPECT_EQ (buf.st_size % 1024, 0); /* It should be divided b
