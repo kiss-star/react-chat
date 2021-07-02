@@ -376,4 +376,36 @@ TEST (nnstreamer_capi_valve, test01)
   EXPECT_EQ (status, 0);
   EXPECT_GE (buf.st_size, 2048); /* At least two frames during 500ms */
   EXPECT_LE (buf.st_size, 6144); /* At most six frames during 500ms */
-  EXPECT_EQ (buf.st_size % 1024, 0); /* It should be divided b
+  EXPECT_EQ (buf.st_size % 1024, 0); /* It should be divided by 1024 */
+
+  g_free (fullpath);
+  g_free (file1);
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test NNStreamer pipeline valve
+ * @detail Failure case to handle valve element with invalid param.
+ */
+TEST (nnstreamer_capi_valve, failure_01_n)
+{
+  ml_pipeline_valve_h valve_h;
+  int status;
+
+  /* invalid param : pipe */
+  status = ml_pipeline_valve_get_handle (NULL, "valvex", &valve_h);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+}
+
+/**
+ * @brief Test NNStreamer pipeline valve
+ * @detail Failure case to handle valve element with invalid param.
+ */
+TEST (nnstreamer_capi_valve, failure_02_n)
+{
+  ml_pipeline_h handle;
+  ml_pipeline_valve_h valve_h;
+  gchar *pipeline;
+  int status;
+
+  pipeline = g_strdup ("videotestsrc num-buffers=3 ! videoconvert ! valve name=valvex ! ten
