@@ -465,4 +465,35 @@ TEST (nnstreamer_capi_valve, failure_04_n)
   EXPECT_EQ (status, ML_ERROR_NONE);
 
   /* invalid param : invalid type */
-  status = ml_pipeline_valve_get_handle (handle, "sinkx",
+  status = ml_pipeline_valve_get_handle (handle, "sinkx", &valve_h);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test NNStreamer pipeline valve
+ * @detail Failure case to handle valve element with invalid param.
+ */
+TEST (nnstreamer_capi_valve, failure_05_n)
+{
+  ml_pipeline_h handle;
+  gchar *pipeline;
+  int status;
+
+  pipeline = g_strdup ("videotestsrc num-buffers=3 ! videoconvert ! valve name=valvex ! tensor_converter ! tensor_sink name=sinkx");
+
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* invalid param : handle */
+  status = ml_pipeline_valve_get_handle (handle, "valvex", NULL);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline
