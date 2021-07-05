@@ -496,4 +496,43 @@ TEST (nnstreamer_capi_valve, failure_05_n)
   status = ml_pipeline_destroy (handle);
   EXPECT_EQ (status, ML_ERROR_NONE);
 
-  g_free (pipeline
+  g_free (pipeline);
+}
+
+G_LOCK_DEFINE_STATIC (callback_lock);
+/**
+ * @brief A tensor-sink callback for sink handle in a pipeline
+ */
+static void
+test_sink_callback_dm01 (
+    const ml_tensors_data_h data, const ml_tensors_info_h info, void *user_data)
+{
+  gchar *filepath = (gchar *)user_data;
+  unsigned int i, num = 0;
+  void *data_ptr;
+  size_t data_size;
+  int status;
+  FILE *fp = g_fopen (filepath, "a");
+
+  if (fp == NULL)
+    return;
+
+  G_LOCK (callback_lock);
+  ml_tensors_info_get_count (info, &num);
+
+  for (i = 0; i < num; i++) {
+    status = ml_tensors_data_get_tensor_data (data, i, &data_ptr, &data_size);
+    if (status == ML_ERROR_NONE)
+      fwrite (data_ptr, data_size, 1, fp);
+  }
+  G_UNLOCK (callback_lock);
+
+  fclose (fp);
+}
+
+/**
+ * @brief A tensor-sink callback for sink handle in a pipeline
+ */
+static void
+test_sink_callback_count (
+    const ml_tensors_data_h data, const 
