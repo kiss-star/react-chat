@@ -535,4 +535,50 @@ test_sink_callback_dm01 (
  */
 static void
 test_sink_callback_count (
-    const ml_tensors_data_h data, const 
+    const ml_tensors_data_h data, const ml_tensors_info_h info, void *user_data)
+{
+  guint *count = (guint *)user_data;
+
+  G_LOCK (callback_lock);
+  *count = *count + 1;
+  G_UNLOCK (callback_lock);
+}
+
+/**
+ * @brief Pipeline state changed callback
+ */
+static void
+test_pipe_state_callback (ml_pipeline_state_e state, void *user_data)
+{
+  TestPipeState *pipe_state;
+
+  G_LOCK (callback_lock);
+  pipe_state = (TestPipeState *)user_data;
+
+  switch (state) {
+  case ML_PIPELINE_STATE_PAUSED:
+    pipe_state->paused = TRUE;
+    break;
+  case ML_PIPELINE_STATE_PLAYING:
+    pipe_state->playing = TRUE;
+    break;
+  default:
+    break;
+  }
+  G_UNLOCK (callback_lock);
+}
+
+/**
+ * @brief compare the two files.
+ */
+static int
+file_cmp (const gchar *f1, const gchar *f2)
+{
+  gboolean r;
+  gchar *content1 = NULL;
+  gchar *content2 = NULL;
+  gsize len1, len2;
+  int cmp = 0;
+
+  r = g_file_get_contents (f1, &content1, &len1, NULL);
+  if (r
