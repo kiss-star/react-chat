@@ -581,4 +581,41 @@ file_cmp (const gchar *f1, const gchar *f2)
   int cmp = 0;
 
   r = g_file_get_contents (f1, &content1, &len1, NULL);
-  if (r
+  if (r != TRUE)
+    return -1;
+
+  r = g_file_get_contents (f2, &content2, &len2, NULL);
+  if (r != TRUE) {
+    g_free (content1);
+    return -2;
+  }
+
+  if (len1 == len2) {
+    cmp = memcmp (content1, content2, len1);
+  } else {
+    cmp = 1;
+  }
+
+  g_free (content1);
+  g_free (content2);
+
+  return cmp;
+}
+
+/**
+ * @brief Wait until the change in pipeline status is done
+ * @return ML_ERROR_NONE success, ML_ERROR_UNKNOWN if failed, ML_ERROR_TIMED_OUT if timeout happens.
+ */
+static int
+waitPipelineStateChange (ml_pipeline_h handle, ml_pipeline_state_e state, guint timeout_ms)
+{
+  int status = ML_ERROR_UNKNOWN;
+  guint counter = 0;
+  ml_pipeline_state_e cur_state = ML_PIPELINE_STATE_NULL;
+
+  do {
+    status = ml_pipeline_get_state (handle, &cur_state);
+    EXPECT_EQ (status, ML_ERROR_NONE);
+    if (cur_state == ML_PIPELINE_STATE_UNKNOWN)
+      return ML_ERROR_UNKNOWN;
+    if (cur_
