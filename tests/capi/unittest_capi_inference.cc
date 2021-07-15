@@ -618,4 +618,27 @@ waitPipelineStateChange (ml_pipeline_h handle, ml_pipeline_state_e state, guint 
     EXPECT_EQ (status, ML_ERROR_NONE);
     if (cur_state == ML_PIPELINE_STATE_UNKNOWN)
       return ML_ERROR_UNKNOWN;
-    if (cur_
+    if (cur_state == state)
+      return ML_ERROR_NONE;
+    g_usleep (10000);
+  } while ((timeout_ms / 10) >= counter++);
+
+  return ML_ERROR_TIMED_OUT;
+}
+
+/**
+ * @brief Test NNStreamer pipeline sink
+ */
+TEST (nnstreamer_capi_sink, dummy_01)
+{
+  const gchar *_tmpdir = g_get_tmp_dir ();
+  const gchar *_dirname = "nns-tizen-XXXXXX";
+  gchar *fullpath = g_build_path ("/", _tmpdir, _dirname, NULL);
+  gchar *dir = g_mkdtemp ((gchar *)fullpath);
+
+  ASSERT_NE (dir, (gchar *)NULL);
+
+  gchar *file1 = g_build_path ("/", dir, "original", NULL);
+  gchar *file2 = g_build_path ("/", dir, "sink", NULL);
+  gchar *pipeline = g_strdup_printf (
+      "videotestsrc num-buffers=3 ! videoconvert ! videoscale ! video/x-raw,format=BGRx,width=64,height=48,famerate=30/1 ! tee name=t t. ! queue ! filesink location=\"%s\" buffer-mode=unbuffered t. ! queue ! tensor_converter ! tensor_sink name=sink
