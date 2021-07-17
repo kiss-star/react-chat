@@ -785,4 +785,41 @@ TEST (nnstreamer_capi_sink, register_duplicated)
   status = ml_pipeline_start (handle);
   EXPECT_EQ (status, ML_ERROR_NONE);
 
-  g_usleep (100000); /* 100ms. Let a few frames flow
+  g_usleep (100000); /* 100ms. Let a few frames flow. */
+
+  status = ml_pipeline_sink_unregister (sinkhandle0);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_sink_unregister (sinkhandle1);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  EXPECT_TRUE (*count_sink0 > 0U);
+  EXPECT_TRUE (*count_sink1 > 0U);
+  EXPECT_TRUE (pipe_state->paused);
+  EXPECT_TRUE (pipe_state->playing);
+
+  g_free (pipeline);
+  g_free (count_sink0);
+  g_free (count_sink1);
+  g_free (pipe_state);
+}
+
+/**
+ * @brief Test NNStreamer pipeline sink
+ * @detail Failure case to register callback with invalid param.
+ */
+TEST (nnstreamer_capi_sink, failure_01_n)
+{
+  ml_pipeline_sink_h sinkhandle;
+  int status;
+  guint *count_sink;
+
+  count_sink = (guint *)g_malloc (sizeof (guint));
+  ASSERT_TRUE (count_sink != NULL);
+  *count_sink = 0;
+
+  /* invalid param : pipe */
+  status = ml_pipeline_sink_regi
