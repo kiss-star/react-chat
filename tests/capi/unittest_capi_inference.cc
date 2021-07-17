@@ -702,4 +702,28 @@ TEST (nnstreamer_capi_sink, dummy_02)
   ASSERT_TRUE (count_sink != NULL);
   *count_sink = 0;
 
-  pipe_state = (TestPipeState *)
+  pipe_state = (TestPipeState *)g_new0 (TestPipeState, 1);
+  ASSERT_TRUE (pipe_state != NULL);
+
+  status = ml_pipeline_construct (pipeline, test_pipe_state_callback, pipe_state, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_sink_register (
+      handle, "sinkx", test_sink_callback_count, count_sink, &sinkhandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (sinkhandle != NULL);
+
+  status = ml_pipeline_start (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_usleep (100000); /* 100ms. Let a few frames flow. */
+  status = ml_pipeline_get_state (handle, &state);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (state, ML_PIPELINE_STATE_PLAYING);
+
+  status = ml_pipeline_stop (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  g_usleep (10000); /* 10ms. Wait a bit. */
+
+  status = ml_pipeline_get_state (handle, &state);
+  EXPECT_EQ (status, ML_ER
