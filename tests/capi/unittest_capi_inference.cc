@@ -758,4 +758,31 @@ TEST (nnstreamer_capi_sink, register_duplicated)
 
   /* pipeline with appsink */
   pipeline = g_strdup ("videotestsrc num-buffers=3 ! videoconvert ! tensor_converter ! appsink name=sinkx sync=false");
-  count_sink0 = (guint *)g_malloc (sizeof (g
+  count_sink0 = (guint *)g_malloc (sizeof (guint));
+  ASSERT_TRUE (count_sink0 != NULL);
+  *count_sink0 = 0;
+
+  count_sink1 = (guint *)g_malloc (sizeof (guint));
+  ASSERT_TRUE (count_sink1 != NULL);
+  *count_sink1 = 0;
+
+  pipe_state = (TestPipeState *)g_new0 (TestPipeState, 1);
+  ASSERT_TRUE (pipe_state != NULL);
+
+  status = ml_pipeline_construct (pipeline, test_pipe_state_callback, pipe_state, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_sink_register (
+      handle, "sinkx", test_sink_callback_count, count_sink0, &sinkhandle0);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (sinkhandle0 != NULL);
+
+  status = ml_pipeline_sink_register (
+      handle, "sinkx", test_sink_callback_count, count_sink1, &sinkhandle1);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (sinkhandle1 != NULL);
+
+  status = ml_pipeline_start (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_usleep (100000); /* 100ms. Let a few frames flow
