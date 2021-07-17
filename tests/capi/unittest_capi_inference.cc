@@ -726,4 +726,36 @@ TEST (nnstreamer_capi_sink, dummy_02)
   g_usleep (10000); /* 10ms. Wait a bit. */
 
   status = ml_pipeline_get_state (handle, &state);
-  EXPECT_EQ (status, ML_ER
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (state, ML_PIPELINE_STATE_PAUSED);
+
+  status = ml_pipeline_sink_unregister (sinkhandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  EXPECT_TRUE (*count_sink > 0U);
+  EXPECT_TRUE (pipe_state->paused);
+  EXPECT_TRUE (pipe_state->playing);
+
+  g_free (pipeline);
+  g_free (count_sink);
+  g_free (pipe_state);
+}
+
+/**
+ * @brief Test NNStreamer pipeline sink
+ */
+TEST (nnstreamer_capi_sink, register_duplicated)
+{
+  ml_pipeline_h handle;
+  ml_pipeline_sink_h sinkhandle0, sinkhandle1;
+  gchar *pipeline;
+  int status;
+  guint *count_sink0, *count_sink1;
+  TestPipeState *pipe_state;
+
+  /* pipeline with appsink */
+  pipeline = g_strdup ("videotestsrc num-buffers=3 ! videoconvert ! tensor_converter ! appsink name=sinkx sync=false");
+  count_sink0 = (guint *)g_malloc (sizeof (g
