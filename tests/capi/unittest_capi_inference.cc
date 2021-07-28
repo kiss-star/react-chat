@@ -998,4 +998,35 @@ TEST (nnstreamer_capi_src, dummy_01)
   ml_tensors_data_h data1, data2;
   unsigned int count = 0;
   ml_tensor_type_e type = ML_TENSOR_TYPE_UNKNOWN;
-  ml
+  ml_tensor_dimension dim = {
+    0,
+  };
+
+  int i;
+  uint8_t *uintarray1[10];
+  uint8_t *uintarray2[10];
+  uint8_t *content = NULL;
+  gsize len;
+
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (dir != NULL);
+  for (i = 0; i < 10; i++) {
+    uintarray1[i] = (uint8_t *)g_malloc (4);
+    ASSERT_TRUE (uintarray1[i] != NULL);
+    uintarray1[i][0] = i + 4;
+    uintarray1[i][1] = i + 1;
+    uintarray1[i][2] = i + 3;
+    uintarray1[i][3] = i + 2;
+
+    uintarray2[i] = (uint8_t *)g_malloc (4);
+    ASSERT_TRUE (uintarray2[i] != NULL);
+    uintarray2[i][0] = i + 3;
+    uintarray2[i][1] = i + 2;
+    uintarray2[i][2] = i + 1;
+    uintarray2[i][3] = i + 4;
+    /* These will be free'ed by gstreamer (ML_PIPELINE_BUF_POLICY_AUTO_FREE) */
+    /** @todo Check whether gstreamer really deallocates this */
+  }
+
+  status = ml_pipel
