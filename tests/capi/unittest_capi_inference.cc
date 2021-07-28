@@ -971,4 +971,31 @@ TEST (nnstreamer_capi_sink, failure_06_n)
   /* invalid param : handle */
   status = ml_pipeline_sink_register (
       handle, "sinkx", test_sink_callback_count, count_sink, NULL);
-  EXPECT_EQ (status, ML_ERROR_INVALID_PARAME
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  g_free (pipeline);
+  g_free (count_sink);
+}
+
+/**
+ * @brief Test NNStreamer pipeline src
+ */
+TEST (nnstreamer_capi_src, dummy_01)
+{
+  const gchar *_tmpdir = g_get_tmp_dir ();
+  const gchar *_dirname = "nns-tizen-XXXXXX";
+  gchar *fullpath = g_build_path ("/", _tmpdir, _dirname, NULL);
+  gchar *dir = g_mkdtemp ((gchar *)fullpath);
+  gchar *file1 = g_build_path ("/", dir, "output", NULL);
+  gchar *pipeline = g_strdup_printf (
+      "appsrc name=srcx ! other/tensor,dimension=(string)4:1:1:1,type=(string)uint8,framerate=(fraction)0/1 ! filesink location=\"%s\" buffer-mode=unbuffered",
+      file1);
+  ml_pipeline_h handle;
+  ml_pipeline_state_e state;
+  ml_pipeline_src_h srchandle;
+  int status;
+  ml_tensors_info_h info;
+  ml_tensors_data_h data1, data2;
+  unsigned int count = 0;
+  ml_tensor_type_e type = ML_TENSOR_TYPE_UNKNOWN;
+  ml
