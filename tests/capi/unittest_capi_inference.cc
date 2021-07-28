@@ -912,4 +912,33 @@ TEST (nnstreamer_capi_sink, failure_04_n)
 
   /* invalid param : invalid type */
   status = ml_pipeline_sink_register (
-      handle, "valv
+      handle, "valvex", test_sink_callback_count, count_sink, &sinkhandle);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  g_free (pipeline);
+  g_free (count_sink);
+}
+
+/**
+ * @brief Test NNStreamer pipeline sink
+ * @detail Failure case to register callback with invalid param.
+ */
+TEST (nnstreamer_capi_sink, failure_05_n)
+{
+  ml_pipeline_h handle;
+  ml_pipeline_sink_h sinkhandle;
+  gchar *pipeline;
+  int status;
+  guint *count_sink;
+
+  pipeline = g_strdup ("videotestsrc num-buffers=3 ! videoconvert ! valve name=valvex ! tensor_converter ! tensor_sink name=sinkx");
+
+  count_sink = (guint *)g_malloc (sizeof (guint));
+  ASSERT_TRUE (count_sink != NULL);
+  *count_sink = 0;
+
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* invalid param : callback */
+  status = ml_pipeline_sink_register (handle, "sinkx", NULL, count_sink, &sinkhan
