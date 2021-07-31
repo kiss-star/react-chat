@@ -1029,4 +1029,29 @@ TEST (nnstreamer_capi_src, dummy_01)
     /** @todo Check whether gstreamer really deallocates this */
   }
 
-  status = ml_pipel
+  status = ml_pipeline_start (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  g_usleep (10000); /* 10ms. Wait a bit. */
+  status = ml_pipeline_get_state (handle, &state);
+  EXPECT_EQ (status,
+      ML_ERROR_NONE); /* At this moment, it can be READY, PAUSED, or PLAYING */
+  EXPECT_NE (state, ML_PIPELINE_STATE_UNKNOWN);
+  EXPECT_NE (state, ML_PIPELINE_STATE_NULL);
+
+  status = ml_pipeline_src_get_handle (handle, "srcx", &srchandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_src_get_tensors_info (srchandle, &info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  ml_tensors_info_get_count (info, &count);
+  EXPECT_EQ (count, 1U);
+
+  ml_tensors_info_get_tensor_type (info, 0, &type);
+  EXPECT_EQ (type, ML_TENSOR_TYPE_UINT8);
+
+  ml_tensors_info_get_tensor_dimension (info, 0, dim);
+  EXPECT_EQ (dim[0], 4U);
+  EXPECT_EQ (dim[1], 1U);
+  EXPECT_EQ (dim[2], 1U);
+  EXP
