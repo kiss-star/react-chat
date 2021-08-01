@@ -1054,4 +1054,28 @@ TEST (nnstreamer_capi_src, dummy_01)
   EXPECT_EQ (dim[0], 4U);
   EXPECT_EQ (dim[1], 1U);
   EXPECT_EQ (dim[2], 1U);
-  EXP
+  EXPECT_EQ (dim[3], 1U);
+
+  status = ml_tensors_data_create (info, &data1);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  ml_tensors_info_destroy (info);
+
+  status = ml_tensors_data_set_tensor_data (data1, 0, uintarray1[0], 4);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_src_input_data (srchandle, data1, ML_PIPELINE_BUF_POLICY_DO_NOT_FREE);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  g_usleep (50000); /* 50ms. Wait a bit. */
+
+  status = ml_pipeline_src_input_data (srchandle, data1, ML_PIPELINE_BUF_POLICY_DO_NOT_FREE);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  g_usleep (50000); /* 50ms. Wait a bit. */
+
+  status = ml_pipeline_src_release_handle (srchandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_src_get_handle (handle, "srcx", &srchandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_src_get_tensors_info (s
