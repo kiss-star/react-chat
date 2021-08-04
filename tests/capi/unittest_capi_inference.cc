@@ -1078,4 +1078,30 @@ TEST (nnstreamer_capi_src, dummy_01)
   status = ml_pipeline_src_get_handle (handle, "srcx", &srchandle);
   EXPECT_EQ (status, ML_ERROR_NONE);
 
-  status = ml_pipeline_src_get_tensors_info (s
+  status = ml_pipeline_src_get_tensors_info (srchandle, &info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  ml_tensors_info_get_count (info, &count);
+  EXPECT_EQ (count, 1U);
+
+  ml_tensors_info_get_tensor_type (info, 0, &type);
+  EXPECT_EQ (type, ML_TENSOR_TYPE_UINT8);
+
+  ml_tensors_info_get_tensor_dimension (info, 0, dim);
+  EXPECT_EQ (dim[0], 4U);
+  EXPECT_EQ (dim[1], 1U);
+  EXPECT_EQ (dim[2], 1U);
+  EXPECT_EQ (dim[3], 1U);
+
+  for (i = 0; i < 10; i++) {
+    status = ml_tensors_data_set_tensor_data (data1, 0, uintarray1[i], 4);
+    EXPECT_EQ (status, ML_ERROR_NONE);
+
+    status = ml_pipeline_src_input_data (srchandle, data1, ML_PIPELINE_BUF_POLICY_DO_NOT_FREE);
+    EXPECT_EQ (status, ML_ERROR_NONE);
+
+    status = ml_tensors_data_create (info, &data2);
+    EXPECT_EQ (status, ML_ERROR_NONE);
+
+    status = ml_tensors_data_set_tensor_data (data2, 0, uintarray2[i], 4);
+    EXPECT_EQ (status
