@@ -1167,4 +1167,29 @@ TEST (nnstreamer_capi_src, failure_01_n)
 
 /**
  * @brief Test NNStreamer pipeline src
- * @detail Failure case when the name of source node is wr
+ * @detail Failure case when the name of source node is wrong.
+ */
+TEST (nnstreamer_capi_src, failure_02_n)
+{
+  const char *pipeline = "appsrc name=mysource ! other/tensor,dimension=(string)4:1:1:1,type=(string)uint8,framerate=(fraction)0/1 ! valve name=valvex ! tensor_sink";
+  ml_pipeline_h handle;
+  ml_pipeline_src_h srchandle;
+
+  int status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* invalid param : name */
+  status = ml_pipeline_src_get_handle (handle, NULL, &srchandle);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test NNStreamer pipeline src
+ * @detail Failure case when the name of source node is wrong.
+ */
+TEST (nnstreamer_capi_src, failure_03_n)
+{
+  const char *pipeline = "appsrc name=mysource ! other/tensor,dimension=(string)4:1:1:1,type=(string)uint8,framerate=(fraction)0/1 ! valve name=valvex ! ten
