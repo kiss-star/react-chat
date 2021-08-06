@@ -1104,4 +1104,31 @@ TEST (nnstreamer_capi_src, dummy_01)
     EXPECT_EQ (status, ML_ERROR_NONE);
 
     status = ml_tensors_data_set_tensor_data (data2, 0, uintarray2[i], 4);
-    EXPECT_EQ (status
+    EXPECT_EQ (status, ML_ERROR_NONE);
+
+    status = ml_pipeline_src_input_data (srchandle, data2, ML_PIPELINE_BUF_POLICY_AUTO_FREE);
+    EXPECT_EQ (status, ML_ERROR_NONE);
+
+    g_usleep (50000); /* 50ms. Wait a bit. */
+  }
+
+  status = ml_pipeline_src_release_handle (srchandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_usleep (50000); /* Wait for the pipeline to flush all */
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+
+  EXPECT_TRUE (g_file_get_contents (file1, (gchar **)&content, &len, NULL));
+  EXPECT_EQ (len, 8U * 11);
+  EXPECT_TRUE (content != nullptr);
+
+  if (content && len == 88U) {
+    for (i = 0; i < 10; i++) {
+      EXPECT_EQ (content[i * 8 + 0 + 8], i + 4);
+      EXPECT_EQ (content[i * 8 + 1 + 8], i + 1);
+      EXPECT_EQ (content[i * 8 + 2 + 8], i + 3);
+ 
