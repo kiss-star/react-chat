@@ -1131,4 +1131,40 @@ TEST (nnstreamer_capi_src, dummy_01)
       EXPECT_EQ (content[i * 8 + 0 + 8], i + 4);
       EXPECT_EQ (content[i * 8 + 1 + 8], i + 1);
       EXPECT_EQ (content[i * 8 + 2 + 8], i + 3);
- 
+      EXPECT_EQ (content[i * 8 + 3 + 8], i + 2);
+      EXPECT_EQ (content[i * 8 + 4 + 8], i + 3);
+      EXPECT_EQ (content[i * 8 + 5 + 8], i + 2);
+      EXPECT_EQ (content[i * 8 + 6 + 8], i + 1);
+      EXPECT_EQ (content[i * 8 + 7 + 8], i + 4);
+    }
+  }
+
+  g_free (content);
+  ml_tensors_info_destroy (info);
+  ml_tensors_data_destroy (data1);
+
+  for (i = 0; i < 10; i++) {
+    g_free (uintarray1[i]);
+    g_free (uintarray2[i]);
+  }
+
+  g_free (fullpath);
+  g_free (file1);
+}
+
+/**
+ * @brief Test NNStreamer pipeline src
+ * @detail Failure case when pipeline is NULL.
+ */
+TEST (nnstreamer_capi_src, failure_01_n)
+{
+  int status;
+  ml_pipeline_src_h srchandle;
+
+  status = ml_pipeline_src_get_handle (NULL, "dummy", &srchandle);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+}
+
+/**
+ * @brief Test NNStreamer pipeline src
+ * @detail Failure case when the name of source node is wr
