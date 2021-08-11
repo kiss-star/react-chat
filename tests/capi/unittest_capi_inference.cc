@@ -1269,4 +1269,36 @@ TEST (nnstreamer_capi_src, failure_06_n)
   status = ml_pipeline_src_get_handle (handle, "srcx", &srchandle);
   EXPECT_EQ (status, ML_ERROR_NONE);
 
-  status = ml_pipeline_src_get_tensors_info (srcha
+  status = ml_pipeline_src_get_tensors_info (srchandle, &info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_data_create (info, &data);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* null data */
+  status = ml_pipeline_src_input_data (srchandle, NULL, ML_PIPELINE_BUF_POLICY_DO_NOT_FREE);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_pipeline_src_release_handle (srchandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_stop (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_data_destroy (data);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_destroy (info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Internal function to push dummy into appsrc.
+ */
+static void
+test_src_cb_push_dummy (ml_pipeline_src_h src_handle)
+{
+  ml_t
