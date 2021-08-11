@@ -1244,4 +1244,29 @@ TEST (nnstreamer_capi_src, failure_05_n)
   status = ml_pipeline_src_get_handle (handle, "mysource", NULL);
   EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
 
-  status = ml_pip
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test NNStreamer pipeline src
+ * @detail Failure case when the number of tensors is 0 or bigger than ML_TENSOR_SIZE_LIMIT;
+ */
+TEST (nnstreamer_capi_src, failure_06_n)
+{
+  const char *pipeline = "appsrc name=srcx ! other/tensor,dimension=(string)4:1:1:1,type=(string)uint8,framerate=(fraction)0/1 ! tensor_sink";
+  ml_pipeline_h handle;
+  ml_pipeline_src_h srchandle;
+  ml_tensors_data_h data;
+  ml_tensors_info_h info;
+
+  int status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_start (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_src_get_handle (handle, "srcx", &srchandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_src_get_tensors_info (srcha
