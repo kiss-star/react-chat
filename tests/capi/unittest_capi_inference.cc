@@ -1329,4 +1329,32 @@ test_src_cb_need_data (ml_pipeline_src_h src_handle, unsigned int length,
 TEST (nnstreamer_capi_src, callback_replace)
 {
   const char pipeline[] = "appsrc name=srcx ! other/tensor,dimension=(string)4:1:1:1,type=(string)uint8,framerate=(fraction)0/1 ! tensor_sink name=sinkx";
-  ml_pipeline_h h
+  ml_pipeline_h handle;
+  ml_pipeline_src_h srchandle1, srchandle2;
+  ml_pipeline_sink_h sinkhandle;
+  ml_pipeline_src_callbacks_s callback = { 0, };
+  guint *count_sink;
+  int status;
+
+  callback.need_data = test_src_cb_need_data;
+
+  count_sink = (guint *) g_malloc0 (sizeof (guint));
+  ASSERT_TRUE (count_sink != NULL);
+
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_src_get_handle (handle, "srcx", &srchandle1);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_src_set_event_cb (srchandle1, &callback, srchandle1);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_sink_register (
+    handle, "sinkx", test_sink_callback_count, count_sink, &sinkhandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_start (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  test_src_cb_
