@@ -1301,4 +1301,32 @@ TEST (nnstreamer_capi_src, failure_06_n)
 static void
 test_src_cb_push_dummy (ml_pipeline_src_h src_handle)
 {
-  ml_t
+  ml_tensors_data_h data;
+  ml_tensors_info_h info;
+
+  if (ml_pipeline_src_get_tensors_info (src_handle, &info) == ML_ERROR_NONE) {
+    ml_tensors_data_create (info, &data);
+    ml_pipeline_src_input_data (src_handle, data, ML_PIPELINE_BUF_POLICY_AUTO_FREE);
+    ml_tensors_info_destroy (info);
+  }
+}
+
+/**
+ * @brief appsrc callback - need_data.
+ */
+static void
+test_src_cb_need_data (ml_pipeline_src_h src_handle, unsigned int length,
+    void *user_data)
+{
+  /* For test, push dummy if given src handles are same. */
+  if (src_handle == user_data)
+    test_src_cb_push_dummy (src_handle);
+}
+
+/**
+ * @brief Test NNStreamer pipeline src callback.
+ */
+TEST (nnstreamer_capi_src, callback_replace)
+{
+  const char pipeline[] = "appsrc name=srcx ! other/tensor,dimension=(string)4:1:1:1,type=(string)uint8,framerate=(fraction)0/1 ! tensor_sink name=sinkx";
+  ml_pipeline_h h
