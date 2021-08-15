@@ -1357,4 +1357,36 @@ TEST (nnstreamer_capi_src, callback_replace)
   status = ml_pipeline_start (handle);
   EXPECT_EQ (status, ML_ERROR_NONE);
 
-  test_src_cb_
+  test_src_cb_push_dummy (srchandle1);
+  g_usleep (100000);
+
+  status = ml_pipeline_stop (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  EXPECT_TRUE (*count_sink > 1U);
+
+  /* Set new callback with new handle. */
+  status = ml_pipeline_src_get_handle (handle, "srcx", &srchandle2);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* New callback will not push dummy. */
+  status = ml_pipeline_src_set_event_cb (srchandle2, &callback, srchandle1);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_start (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_usleep (100000);
+  *count_sink = 0;
+  test_src_cb_push_dummy (srchandle2);
+  g_usleep (100000);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  EXPECT_TRUE (*count_sink == 1U);
+  g_free (count_sink);
+}
+
+/**
+ * @brief Test NNStreamer pipeline src callback
