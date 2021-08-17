@@ -1389,4 +1389,33 @@ TEST (nnstreamer_capi_src, callback_replace)
 }
 
 /**
- * @brief Test NNStreamer pipeline src callback
+ * @brief Test NNStreamer pipeline src callback.
+ */
+TEST (nnstreamer_capi_src, callback_invalid_param_01_n)
+{
+  const char pipeline[] = "appsrc name=srcx ! other/tensor,dimension=(string)4:1:1:1,type=(string)uint8,framerate=(fraction)0/1 ! tensor_sink";
+  ml_pipeline_h handle;
+  ml_pipeline_src_h srchandle;
+  ml_pipeline_src_callbacks_s callback = { 0, };
+  int status;
+
+  callback.need_data = test_src_cb_need_data;
+
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_src_get_handle (handle, "srcx", &srchandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* invalid param */
+  status = ml_pipeline_src_set_event_cb (NULL, &callback, NULL);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test NNStreamer pipeline src callback.
+ */
+TEST (n
