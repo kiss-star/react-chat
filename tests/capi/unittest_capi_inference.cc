@@ -1445,3 +1445,28 @@ TEST (nnstreamer_capi_src, callback_invalid_param_02_n)
 static void
 check_orange_output (const ml_tensors_data_h data, const ml_tensors_info_h info, void *user_data)
 {
+  int status;
+  size_t data_size;
+  uint8_t *raw_content;
+  gsize raw_content_len;
+  gchar *orange_raw_file;
+
+  const gchar *root_path = g_getenv ("MLAPI_SOURCE_ROOT_PATH");
+  /* supposed to run test in build directory */
+  if (root_path == NULL)
+    root_path = "..";
+
+  orange_raw_file = g_build_filename (
+      root_path, "tests", "test_models", "data", "orange.raw", NULL);
+  ASSERT_TRUE (g_file_test (orange_raw_file, G_FILE_TEST_EXISTS));
+
+  EXPECT_TRUE (g_file_get_contents (orange_raw_file, (gchar **) &raw_content, &raw_content_len, NULL));
+
+  status = ml_tensors_data_get_tensor_data (data, 0, (void **) &data, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  EXPECT_EQ (raw_content_len, data_size);
+
+  status = 0;
+  for (size_t i = 0; i < data_size; ++i) {
+    if (*(((uint8_t *) data) + i) != *(raw_co
