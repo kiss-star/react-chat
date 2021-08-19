@@ -1469,4 +1469,42 @@ check_orange_output (const ml_tensors_data_h data, const ml_tensors_info_h info,
 
   status = 0;
   for (size_t i = 0; i < data_size; ++i) {
-    if (*(((uint8_t *) data) + i) != *(raw_co
+    if (*(((uint8_t *) data) + i) != *(raw_content + i)) {
+      status = 1;
+      break;
+    }
+  }
+
+  EXPECT_EQ (status, 0);
+
+  g_free (raw_content);
+  g_free (orange_raw_file);
+}
+
+/**
+ * @brief Test NNStreamer pipeline src (appsrc with png file)
+ */
+TEST (nnstreamer_capi_src, pngfile)
+{
+  int status;
+
+  ml_pipeline_h handle;
+  ml_pipeline_sink_h sinkhandle;
+  ml_pipeline_src_h srchandle;
+  ml_pipeline_state_e state;
+
+  ml_tensors_info_h in_info;
+  ml_tensor_dimension in_dim;
+  ml_tensors_data_h input = NULL;
+
+  gchar *orange_png_file, *pipeline;
+  uint8_t *content;
+  gsize content_len;
+  const gchar *root_path = g_getenv ("MLAPI_SOURCE_ROOT_PATH");
+  /* supposed to run test in build directory */
+  if (root_path == NULL)
+    root_path = "..";
+
+  /* start pipeline test with valid model file */
+  orange_png_file = g_build_filename (
+      root_path, "tests", "test_models", "data", "orange
