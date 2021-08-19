@@ -1507,4 +1507,24 @@ TEST (nnstreamer_capi_src, pngfile)
 
   /* start pipeline test with valid model file */
   orange_png_file = g_build_filename (
-      root_path, "tests", "test_models", "data", "orange
+      root_path, "tests", "test_models", "data", "orange.png", NULL);
+  ASSERT_TRUE (g_file_test (orange_png_file, G_FILE_TEST_EXISTS));
+
+  pipeline = g_strdup_printf (
+    "appsrc name=srcx caps=image/png ! pngdec ! videoconvert ! videoscale ! video/x-raw,format=RGB,width=224,height=224,framerate=0/1 ! tensor_converter ! tensor_sink name=sinkx sync=false async=false"
+  );
+
+  /* construct pipeline */
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* set sink callback */
+  status = ml_pipeline_sink_register (handle, "sinkx", check_orange_output, NULL, &sinkhandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* set src_handle */
+  status = ml_pipeline_src_get_handle (handle, "srcx", &srchandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* get the data of input png file */
+  EXPECT_TRUE (g_file_g
