@@ -1527,4 +1527,33 @@ TEST (nnstreamer_capi_src, pngfile)
   EXPECT_EQ (status, ML_ERROR_NONE);
 
   /* get the data of input png file */
-  EXPECT_TRUE (g_file_g
+  EXPECT_TRUE (g_file_get_contents (orange_png_file, (gchar **) &content, &content_len, NULL));
+
+  /* set ml_tensors_info */
+  ml_tensors_info_create (&in_info);
+  in_dim[0] = content_len;
+  in_dim[1] = 1;
+  in_dim[2] = 1;
+  in_dim[3] = 1;
+
+  ml_tensors_info_set_count (in_info, 1);
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_UINT8);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+
+  status = ml_tensors_data_create (in_info, &input);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (input != NULL);
+
+  status = ml_pipeline_start (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_get_state (handle, &state);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  wait_for_start (handle, state, status);
+  EXPECT_EQ (state, ML_PIPELINE_STATE_PLAYING);
+
+  status = ml_tensors_data_set_tensor_data (input, 0, content, content_len);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipel
