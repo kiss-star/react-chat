@@ -1556,4 +1556,36 @@ TEST (nnstreamer_capi_src, pngfile)
   status = ml_tensors_data_set_tensor_data (input, 0, content, content_len);
   EXPECT_EQ (status, ML_ERROR_NONE);
 
-  status = ml_pipel
+  status = ml_pipeline_src_input_data (srchandle, input, ML_PIPELINE_BUF_POLICY_DO_NOT_FREE);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_usleep (1000 * 1000);
+
+  status = ml_pipeline_stop (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_usleep (1000 * 1000);
+
+  status = ml_pipeline_get_state (handle, &state);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (state, ML_PIPELINE_STATE_PAUSED);
+
+  /* release handles and allocated memory */
+  status = ml_pipeline_src_release_handle (srchandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_sink_unregister (sinkhandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  ml_tensors_data_destroy (input);
+  ml_tensors_info_destroy (in_info);
+  g_free (content);
+  g_free (orange_png_file);
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test NNStreamer pipeline switc
