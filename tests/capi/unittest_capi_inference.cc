@@ -1644,4 +1644,30 @@ TEST (nnstreamer_capi_switch, dummy_01)
   EXPECT_EQ (status, ML_ERROR_NONE);
   EXPECT_TRUE (sinkhandle != NULL);
 
-  status = ml_pip
+  status = ml_pipeline_switch_select (switchhandle, "sink_1");
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_start (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_usleep (50000);
+  status = ml_pipeline_get_state (handle, &state);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  wait_for_start (handle, state, status);
+  EXPECT_EQ (state, ML_PIPELINE_STATE_PLAYING);
+
+  wait_pipeline_process_buffers (*count_sink, 3);
+  g_usleep (300000); /* To check if more frames are coming in  */
+  EXPECT_EQ (*count_sink, 3U);
+
+  status = ml_pipeline_stop (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_sink_unregister (sinkhandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_switch_release_handle (switchhandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
