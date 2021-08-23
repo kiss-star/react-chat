@@ -1588,4 +1588,31 @@ TEST (nnstreamer_capi_src, pngfile)
 }
 
 /**
- * @brief Test NNStreamer pipeline switc
+ * @brief Test NNStreamer pipeline switch
+ */
+TEST (nnstreamer_capi_switch, dummy_01)
+{
+  ml_pipeline_h handle;
+  ml_pipeline_switch_h switchhandle;
+  ml_pipeline_sink_h sinkhandle;
+  ml_pipeline_switch_e type;
+  ml_pipeline_state_e state;
+  gchar *pipeline;
+  int status;
+  guint *count_sink;
+  TestPipeState *pipe_state;
+  gchar **node_list = NULL;
+
+  pipeline = g_strdup (
+      "input-selector name=ins ! tensor_converter ! tensor_sink name=sinkx "
+      "videotestsrc is-live=true ! videoconvert ! ins.sink_0 "
+      "videotestsrc num-buffers=3 is-live=true ! videoconvert ! ins.sink_1");
+
+  count_sink = (guint *)g_malloc (sizeof (guint));
+  ASSERT_TRUE (count_sink != NULL);
+  *count_sink = 0;
+
+  pipe_state = (TestPipeState *)g_new0 (TestPipeState, 1);
+  ASSERT_TRUE (pipe_state != NULL);
+
+  status = ml_pipeline_construct (pipeline, test_
