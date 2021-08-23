@@ -1615,4 +1615,33 @@ TEST (nnstreamer_capi_switch, dummy_01)
   pipe_state = (TestPipeState *)g_new0 (TestPipeState, 1);
   ASSERT_TRUE (pipe_state != NULL);
 
-  status = ml_pipeline_construct (pipeline, test_
+  status = ml_pipeline_construct (pipeline, test_pipe_state_callback, pipe_state, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_switch_get_handle (handle, "ins", &type, &switchhandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (type, ML_PIPELINE_SWITCH_INPUT_SELECTOR);
+
+  status = ml_pipeline_switch_get_pad_list (switchhandle, &node_list);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  if (node_list) {
+    gchar *name = NULL;
+    guint idx = 0;
+
+    while ((name = node_list[idx]) != NULL) {
+      EXPECT_TRUE (g_str_equal (name, "sink_0") || g_str_equal (name, "sink_1"));
+      idx++;
+      g_free (name);
+    }
+
+    EXPECT_EQ (idx, 2U);
+    g_free (node_list);
+  }
+
+  status = ml_pipeline_sink_register (
+      handle, "sinkx", test_sink_callback_count, count_sink, &sinkhandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (sinkhandle != NULL);
+
+  status = ml_pip
