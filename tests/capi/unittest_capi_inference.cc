@@ -1755,4 +1755,37 @@ TEST (nnstreamer_capi_switch, dummy_02)
 
   g_usleep (200000); /* 200ms. Let a few frames flow. */
 
-  status = ml_pipe
+  status = ml_pipeline_stop (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_sink_unregister (sinkhandle0);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_sink_unregister (sinkhandle1);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_switch_release_handle (switchhandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  EXPECT_EQ (*count_sink0, 0U);
+  EXPECT_TRUE (*count_sink1 > 0U);
+
+  g_free (pipeline);
+  g_free (count_sink0);
+  g_free (count_sink1);
+}
+
+/**
+ * @brief Test NNStreamer pipeline switch
+ * @detail Failure case to handle input-selector element with invalid param.
+ */
+TEST (nnstreamer_capi_switch, failure_01_n)
+{
+  ml_pipeline_switch_h switchhandle;
+  ml_pipeline_switch_e type;
+  int status;
+
+  /* invalid p
