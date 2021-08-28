@@ -1726,3 +1726,33 @@ TEST (nnstreamer_capi_switch, dummy_02)
   if (node_list) {
     gchar *name = NULL;
     guint idx = 0;
+
+    while ((name = node_list[idx]) != NULL) {
+      EXPECT_TRUE (g_str_equal (name, "src_0") || g_str_equal (name, "src_1"));
+      idx++;
+      g_free (name);
+    }
+
+    EXPECT_EQ (idx, 2U);
+    g_free (node_list);
+  }
+
+  status = ml_pipeline_sink_register (
+      handle, "sink0", test_sink_callback_count, count_sink0, &sinkhandle0);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (sinkhandle0 != NULL);
+
+  status = ml_pipeline_sink_register (
+      handle, "sink1", test_sink_callback_count, count_sink1, &sinkhandle1);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (sinkhandle1 != NULL);
+
+  status = ml_pipeline_switch_select (switchhandle, "src_1");
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_start (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_usleep (200000); /* 200ms. Let a few frames flow. */
+
+  status = ml_pipe
