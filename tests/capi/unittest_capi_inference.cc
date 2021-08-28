@@ -1671,3 +1671,34 @@ TEST (nnstreamer_capi_switch, dummy_01)
 
   status = ml_pipeline_destroy (handle);
   EXPECT_EQ (status, ML_ERROR_NONE);
+
+  EXPECT_TRUE (pipe_state->paused);
+  EXPECT_TRUE (pipe_state->playing);
+
+  g_free (pipeline);
+  g_free (count_sink);
+  g_free (pipe_state);
+}
+
+/**
+ * @brief Test NNStreamer pipeline switch
+ */
+TEST (nnstreamer_capi_switch, dummy_02)
+{
+  ml_pipeline_h handle;
+  ml_pipeline_switch_h switchhandle;
+  ml_pipeline_sink_h sinkhandle0, sinkhandle1;
+  ml_pipeline_switch_e type;
+  gchar *pipeline;
+  int status;
+  guint *count_sink0, *count_sink1;
+  gchar **node_list = NULL;
+
+  /**
+   * Prerolling problem
+   * For running the test, set async=false in the sink element
+   * when using an output selector.
+   * The pipeline state can be changed to paused
+   * after all sink element receive buffer.
+   */
+  pipeline = g_strdup ("videotestsrc is-live=true ! videoconvert ! tensor_converter ! output-selector name=outs "
