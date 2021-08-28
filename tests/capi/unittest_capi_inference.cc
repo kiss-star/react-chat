@@ -1702,3 +1702,27 @@ TEST (nnstreamer_capi_switch, dummy_02)
    * after all sink element receive buffer.
    */
   pipeline = g_strdup ("videotestsrc is-live=true ! videoconvert ! tensor_converter ! output-selector name=outs "
+                       "outs.src_0 ! tensor_sink name=sink0 async=false "
+                       "outs.src_1 ! tensor_sink name=sink1 async=false");
+
+  count_sink0 = (guint *)g_malloc (sizeof (guint));
+  ASSERT_TRUE (count_sink0 != NULL);
+  *count_sink0 = 0;
+
+  count_sink1 = (guint *)g_malloc (sizeof (guint));
+  ASSERT_TRUE (count_sink1 != NULL);
+  *count_sink1 = 0;
+
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_switch_get_handle (handle, "outs", &type, &switchhandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (type, ML_PIPELINE_SWITCH_OUTPUT_SELECTOR);
+
+  status = ml_pipeline_switch_get_pad_list (switchhandle, &node_list);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  if (node_list) {
+    gchar *name = NULL;
+    guint idx = 0;
