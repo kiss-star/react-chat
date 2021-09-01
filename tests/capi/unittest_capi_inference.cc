@@ -1839,4 +1839,32 @@ TEST (nnstreamer_capi_switch, failure_03_n)
                        "videotestsrc num-buffers=3 ! videoconvert ! ins.sink_1");
 
   status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
-  EXPECT_
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* invalid param : wrong name */
+  status = ml_pipeline_switch_get_handle (handle, "wrongname", &type, &switchhandle);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test NNStreamer pipeline switch
+ * @detail Failure case to handle input-selector element with invalid param.
+ */
+TEST (nnstreamer_capi_switch, failure_04_n)
+{
+  ml_pipeline_h handle;
+  ml_pipeline_switch_h switchhandle;
+  ml_pipeline_switch_e type;
+  gchar *pipeline;
+  int status;
+
+  pipeline = g_strdup ("input-selector name=ins ! tensor_converter ! tensor_sink name=sinkx "
+                       "videotestsrc is-live=true ! videoconvert ! ins.sink_0 "
+                       "videotestsrc num-buffers=3 ! videoconvert ! ins.sink_1");
+
+  status = ml_pipeline_construct (p
