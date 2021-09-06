@@ -1973,4 +1973,28 @@ TEST (nnstreamer_capi_switch, failure_07_n)
   EXPECT_EQ (status, ML_ERROR_NONE);
 
   status = ml_pipeline_destroy (handle);
-  EX
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test NNStreamer pipeline switch
+ * @detail Failure case to handle input-selector element with invalid param.
+ */
+TEST (nnstreamer_capi_switch, failure_08_n)
+{
+  ml_pipeline_h handle;
+  ml_pipeline_switch_h switchhandle;
+  gchar *pipeline;
+  int status;
+
+  pipeline = g_strdup ("input-selector name=ins ! tensor_converter ! tensor_sink name=sinkx "
+                       "videotestsrc is-live=true ! videoconvert ! ins.sink_0 "
+                       "videotestsrc num-buffers=3 ! videoconvert ! ins.sink_1");
+
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* succesfully get switch handle if the param type is null */
+  status = ml_pipeline_switch_get_handle (handle, "ins", NULL, &swit
