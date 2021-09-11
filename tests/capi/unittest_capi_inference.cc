@@ -1997,4 +1997,38 @@ TEST (nnstreamer_capi_switch, failure_08_n)
   EXPECT_EQ (status, ML_ERROR_NONE);
 
   /* succesfully get switch handle if the param type is null */
-  status = ml_pipeline_switch_get_handle (handle, "ins", NULL, &swit
+  status = ml_pipeline_switch_get_handle (handle, "ins", NULL, &switchhandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* invalid param : wrong pad name */
+  status = ml_pipeline_switch_select (switchhandle, "wrongpadname");
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_pipeline_switch_release_handle (switchhandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test NNStreamer Utility for checking plugin availability (invalid param)
+ */
+TEST (nnstreamer_capi_util, plugin_availability_fail_invalid_01_n)
+{
+  int status;
+
+  status = _ml_check_plugin_availability (NULL, "tensor_filter");
+  EXPECT_NE (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test NNStreamer Utility for checking plugin availability (invalid param)
+ */
+TEST (nnstreamer_capi_util, plugin_availability_fail_invalid_02_n)
+{
+  int status;
+
+  status = _ml_check_plug
