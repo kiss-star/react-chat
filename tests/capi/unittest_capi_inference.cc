@@ -2061,4 +2061,37 @@ TEST (nnstreamer_capi_util, nnfw_availability_full_02_n)
 
 /**
  * @brief Test NNStreamer Utility for checking nnfw availability (invalid param)
+ */
+TEST (nnstreamer_capi_util, nnfw_availability_fail_invalid_01_n)
+{
+  int status;
+
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_TENSORFLOW_LITE, ML_NNFW_HW_ANY, NULL);
+  EXPECT_NE (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test NNStreamer Utility for checking nnfw availability (invalid param)
+ */
+TEST (nnstreamer_capi_util, nnfw_availability_fail_invalid_02_n)
+{
+  bool result;
+  int status;
+
+  /* any is unknown nnfw type */
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_ANY, ML_NNFW_HW_ANY, &result);
+  EXPECT_NE (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test NNStreamer Utility for checking availability of Tensorflow-lite backend
+ */
+TEST (nnstreamer_capi_util, availability_01)
+{
+  bool result;
+  int status;
+
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_TENSORFLOW_LITE,
+      ML_NNFW_HW_ANY, &result);
+  EXPECT_EQ (status, ML_ERROR_NONE);
  
