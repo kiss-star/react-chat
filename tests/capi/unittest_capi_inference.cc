@@ -2094,4 +2094,27 @@ TEST (nnstreamer_capi_util, availability_01)
   status = ml_check_nnfw_availability (ML_NNFW_TYPE_TENSORFLOW_LITE,
       ML_NNFW_HW_ANY, &result);
   EXPECT_EQ (status, ML_ERROR_NONE);
- 
+  EXPECT_EQ (result, is_enabled_tensorflow_lite);
+
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_TENSORFLOW_LITE,
+      ML_NNFW_HW_AUTO, &result);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (result, is_enabled_tensorflow_lite);
+
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_TENSORFLOW_LITE,
+      ML_NNFW_HW_CPU, &result);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (result, is_enabled_tensorflow_lite);
+
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_TENSORFLOW_LITE,
+      ML_NNFW_HW_CPU_NEON, &result);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (result, is_enabled_tensorflow_lite);
+
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_TENSORFLOW_LITE,
+      ML_NNFW_HW_CPU_SIMD, &result);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (result, is_enabled_tensorflow_lite);
+
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_TENSORFLOW_LITE,
+      ML_NNFW_HW_GPU, &r
