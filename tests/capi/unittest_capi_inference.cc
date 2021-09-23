@@ -2171,4 +2171,37 @@ TEST (nnstreamer_capi_util, availability_02)
   EXPECT_EQ (result, true);
 
   status = ml_check_nnfw_availability (ML_NNFW_TYPE_TENSORFLOW,
- 
+      ML_NNFW_HW_AUTO, &result);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (result, true);
+}
+
+/**
+ * @brief Test NNStreamer Utility for checking availability of Tensorflow backend
+ */
+TEST (nnstreamer_capi_util, availability_fail_02_n)
+{
+  bool result;
+  int status;
+
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_TENSORFLOW,
+      ML_NNFW_HW_NPU_VIVANTE, &result);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (result, false);
+
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_TENSORFLOW,
+      ML_NNFW_HW_NPU_MOVIDIUS, &result);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (result, false);
+}
+#endif /* ENABLE_TENSORFLOW */
+
+/**
+ * @brief Test NNStreamer Utility for checking availability of custom backend
+ */
+TEST (nnstreamer_capi_util, availability_03)
+{
+  bool result;
+  int status;
+
+  status = ml_check_nnfw_availability (ML_NNF
