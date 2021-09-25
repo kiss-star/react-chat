@@ -2261,4 +2261,38 @@ TEST (nnstreamer_capi_util, availability_04)
 
   status = ml_check_nnfw_availability (ML_NNFW_TYPE_NNFW, ML_NNFW_HW_NPU, &result);
   EXPECT_EQ (status, ML_ERROR_NONE);
-  EXPECT_EQ (result, tru
+  EXPECT_EQ (result, true);
+}
+
+/**
+ * @brief Test NNStreamer Utility for checking availability of NNFW
+ */
+TEST (nnstreamer_capi_util, availability_fail_04_n)
+{
+  bool result;
+  int status;
+
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_NNFW,
+      ML_NNFW_HW_NPU_SR, &result);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (result, false);
+
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_NNFW,
+      ML_NNFW_HW_NPU_MOVIDIUS, &result);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (result, false);
+}
+#endif /* ENABLE_NNFW_RUNTIME */
+
+#ifdef ENABLE_MOVIDIUS_NCSDK2
+/**
+ * @brief Test NNStreamer Utility for checking availability of NCSDK2
+ */
+TEST (nnstreamer_capi_util, availability_05)
+{
+  bool result;
+  int status;
+
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_MVNC,
+      ML_NNFW_HW_ANY, &result);
+  EXPECT_EQ (status, 
