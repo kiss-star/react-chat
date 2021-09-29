@@ -2327,4 +2327,35 @@ TEST (nnstreamer_capi_util, availability_fail_05_n)
   EXPECT_EQ (status, ML_ERROR_NONE);
   EXPECT_EQ (result, false);
 
-  status = ml_chec
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_MVNC,
+      ML_NNFW_HW_GPU, &result);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (result, false);
+}
+#endif /* ENABLE_MOVIDIUS_NCSDK2 */
+
+#ifdef ENABLE_ARMNN
+/**
+ * @brief Test NNStreamer Utility for checking availability of ARMNN
+ */
+TEST (nnstreamer_capi_util, availability_06)
+{
+  bool result;
+  int status;
+
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_ARMNN,
+      ML_NNFW_HW_ANY, &result);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (result, true);
+
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_ARMNN,
+      ML_NNFW_HW_AUTO, &result);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (result, true);
+
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_ARMNN,
+      ML_NNFW_HW_CPU, &result);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (result, true);
+
+  status = ml_check_nnfw_availa
