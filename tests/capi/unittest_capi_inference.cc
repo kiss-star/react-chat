@@ -2358,4 +2358,36 @@ TEST (nnstreamer_capi_util, availability_06)
   EXPECT_EQ (status, ML_ERROR_NONE);
   EXPECT_EQ (result, true);
 
-  status = ml_check_nnfw_availa
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_ARMNN,
+      ML_NNFW_HW_CPU_NEON, &result);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (result, true);
+
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_ARMNN,
+      ML_NNFW_HW_GPU, &result);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (result, true);
+}
+
+/**
+ * @brief Test NNStreamer Utility for checking availability of ARMNN
+ */
+TEST (nnstreamer_capi_util, availability_fail_06_n)
+{
+  bool result;
+  int status;
+
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_ARMNN,
+      ML_NNFW_HW_NPU, &result);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (result, false);
+
+  status = ml_check_nnfw_availability (ML_NNFW_TYPE_ARMNN,
+      ML_NNFW_HW_NPU_EDGE_TPU, &result);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (result, false);
+}
+#endif /** ENABLE_ARMNN */
+
+/**
+ * @brief Test NNStreamer Utility for chec
