@@ -2400,4 +2400,10 @@ TEST (nnstreamer_capi_util, element_available_01_p)
    * If the allowed element list of nnstreamer is changed, this should also be changed.
    * https://github.com/nnstreamer/nnstreamer/blob/main/packaging/nnstreamer.spec#L642 (# Element allowance in Tizen)
    */
-  const gchar *allowed = "tensor_converter tensor_filter tensor_query_serversrc capsfilter input-selector output-selector queue tee valve appsink appsrc audioconvert audiorate audioresample audiomixer videoconvert videocrop videorate videoscale videoflip videomixer compositor fakesrc fakesink filesrc filesink audiotestsrc videotestsrc jpegparse jpegenc jpegdec pngenc pngdec tcpclientsink tcpclientsrc tcpserversink tcpserversrc xvimagesink ximagesink evasimagesink evaspixmapsink glimagesink theoraenc lame vorbisenc w
+  const gchar *allowed = "tensor_converter tensor_filter tensor_query_serversrc capsfilter input-selector output-selector queue tee valve appsink appsrc audioconvert audiorate audioresample audiomixer videoconvert videocrop videorate videoscale videoflip videomixer compositor fakesrc fakesink filesrc filesink audiotestsrc videotestsrc jpegparse jpegenc jpegdec pngenc pngdec tcpclientsink tcpclientsrc tcpserversink tcpserversrc xvimagesink ximagesink evasimagesink evaspixmapsink glimagesink theoraenc lame vorbisenc wavenc volume oggmux avimux matroskamux v4l2src avsysvideosrc camerasrc tvcamerasrc pulsesrc fimcconvert tizenwlsink gdppay gdpdepay join rtpdec rtspsrc rtspclientsink zmqsrc zmqsink mqttsrc mqttsink udpsrc udpsink multiudpsink audioamplify audiochebband audiocheblimit audiodynamic audioecho audiofirfilter audioiirfilter audioinvert audiokaraoke audiopanorama audiowsincband audiowsinclimit scaletempo stereo";
+  /** This not_allowed list is written only for testing. */
+  const gchar *not_allowed = "videobox videobalance aasink adder alpha alsasink x264enc ximagesrc webpenc wavescope v4l2sink v4l2radio urisourcebin uridecodebin typefind timeoverlay rtpstreampay rtpsession rtpgstpay queue2 fdsink fdsrc chromium capssetter cairooverlay autovideosink";
+  gchar **elements;
+  gboolean restricted;
+
+  restricted = nnsconf_get_custom_value_bool ("element-
