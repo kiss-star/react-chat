@@ -2390,4 +2390,14 @@ TEST (nnstreamer_capi_util, availability_fail_06_n)
 #endif /** ENABLE_ARMNN */
 
 /**
- * @brief Test NNStreamer Utility for chec
+ * @brief Test NNStreamer Utility for checking an element availability
+ */
+TEST (nnstreamer_capi_util, element_available_01_p)
+{
+  bool available;
+  int status, n_elems,  i;
+  /**
+   * If the allowed element list of nnstreamer is changed, this should also be changed.
+   * https://github.com/nnstreamer/nnstreamer/blob/main/packaging/nnstreamer.spec#L642 (# Element allowance in Tizen)
+   */
+  const gchar *allowed = "tensor_converter tensor_filter tensor_query_serversrc capsfilter input-selector output-selector queue tee valve appsink appsrc audioconvert audiorate audioresample audiomixer videoconvert videocrop videorate videoscale videoflip videomixer compositor fakesrc fakesink filesrc filesink audiotestsrc videotestsrc jpegparse jpegenc jpegdec pngenc pngdec tcpclientsink tcpclientsrc tcpserversink tcpserversrc xvimagesink ximagesink evasimagesink evaspixmapsink glimagesink theoraenc lame vorbisenc w
