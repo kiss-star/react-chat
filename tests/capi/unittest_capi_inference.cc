@@ -2433,4 +2433,38 @@ TEST (nnstreamer_capi_util, element_available_01_p)
   n_elems = g_strv_length (elements);
 
   for (i = 0; i < n_elems; i++) {
-    GstElementFactory *factory = gst_element_factory_find (e
+    GstElementFactory *factory = gst_element_factory_find (elements[i]);
+    if (factory) {
+      status = ml_check_element_availability (elements[i], &available);
+      EXPECT_EQ (status, ML_ERROR_NONE);
+      EXPECT_EQ (available, false);
+      gst_object_unref (factory);
+    }
+  }
+  g_strfreev (elements);
+}
+
+/**
+ * @brief Test NNStreamer Utility for checking an element availability (null param)
+ */
+TEST (nnstreamer_capi_util, element_available_02_n)
+{
+  bool available;
+  int status;
+
+  status = ml_check_element_availability (nullptr, &available);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_check_element_availability ("tensor_filter", nullptr);
+  EXPECT_NE (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test NNStreamer Utility for checking an element availability (invalid element name)
+ */
+TEST (nnstreamer_capi_util, element_available_03_n)
+{
+  bool available;
+  int status;
+
+  status = ml_check_element_availability
