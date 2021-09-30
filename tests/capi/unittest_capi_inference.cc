@@ -2406,4 +2406,31 @@ TEST (nnstreamer_capi_util, element_available_01_p)
   gchar **elements;
   gboolean restricted;
 
-  restricted = nnsconf_get_custom_value_bool ("element-
+  restricted = nnsconf_get_custom_value_bool ("element-restriction",
+      "enable_element_restriction", FALSE);
+
+  /* element restriction is disabled */
+  if (!restricted)
+    return;
+
+  elements = g_strsplit (allowed, " ", -1);
+  n_elems = g_strv_length (elements);
+
+  for (i = 0; i < n_elems; i++) {
+    /** If the plugin is not installed, the availability of the element cannot be tested. */
+    GstElementFactory *factory = gst_element_factory_find (elements[i]);
+
+    if (factory) {
+      status = ml_check_element_availability (elements[i], &available);
+      EXPECT_EQ (status, ML_ERROR_NONE);
+      EXPECT_EQ (available, true);
+      gst_object_unref (factory);
+    }
+  }
+  g_strfreev (elements);
+
+  elements = g_strsplit (not_allowed, " ", -1);
+  n_elems = g_strv_length (elements);
+
+  for (i = 0; i < n_elems; i++) {
+    GstElementFactory *factory = gst_element_factory_find (e
