@@ -2467,4 +2467,38 @@ TEST (nnstreamer_capi_util, element_available_03_n)
   bool available;
   int status;
 
-  status = ml_check_element_availability
+  status = ml_check_element_availability ("invalid-elem", &available);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (available, false);
+}
+
+/**
+ * @brief Test NNStreamer Utility for checking tensors info handle
+ */
+TEST (nnstreamer_capi_util, tensors_info)
+{
+  ml_tensors_info_h info;
+  ml_tensor_dimension in_dim, out_dim;
+  ml_tensor_type_e out_type;
+  gchar *out_name;
+  size_t data_size;
+  int status;
+
+  status = ml_tensors_info_create (&info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  in_dim[0] = 3;
+  in_dim[1] = 300;
+  in_dim[2] = 300;
+  in_dim[3] = 1;
+
+  /* add tensor info */
+  status = ml_tensors_info_set_count (info, 2);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_set_tensor_type (info, 0, ML_TENSOR_TYPE_UINT8);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_set_tensor_dimension (info, 0, in_dim);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  
