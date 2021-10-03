@@ -2501,4 +2501,23 @@ TEST (nnstreamer_capi_util, tensors_info)
   status = ml_tensors_info_set_tensor_dimension (info, 0, in_dim);
   EXPECT_EQ (status, ML_ERROR_NONE);
 
-  
+  status = ml_tensors_info_set_tensor_type (info, 1, ML_TENSOR_TYPE_FLOAT64);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_set_tensor_dimension (info, 1, in_dim);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_set_tensor_name (info, 1, "tensor-name-test");
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_set_tensor_type (info, 2, ML_TENSOR_TYPE_UINT64);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+  status = ml_tensors_info_set_tensor_dimension (info, 2, in_dim);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  /* get tensor info */
+  status = ml_tensors_info_get_tensor_type (info, 0, &out_type);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (out_type, ML_TENSOR_TYPE_UINT8);
+
+  status = ml_tensors_info_get_tensor_dimension (info, 0, out_dim);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (out_dim[0], 3
