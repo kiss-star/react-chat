@@ -2546,4 +2546,26 @@ TEST (nnstreamer_capi_util, tensors_info)
   g_free (out_name);
 
   status = ml_tensors_info_get_tensor_type (info, 2, &out_type);
-  EXPECT_EQ 
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_tensors_info_get_tensor_dimension (info, 2, out_dim);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_tensors_info_get_tensor_name (info, 2, &out_name);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  /* get tensor size */
+  status = ml_tensors_info_get_tensor_size (info, 0, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (data_size == (3 * 300 * 300));
+
+  status = ml_tensors_info_get_tensor_size (info, 1, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (data_size == (3 * 300 * 300 * 8));
+
+  status = ml_tensors_info_get_tensor_size (info, -1, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (data_size == ((3 * 300 * 300) + (3 * 300 * 300 * 8)));
+
+  status = ml_tensors_info_get_tensor_size (info, 2, &data_size);
+  EXPECT_EQ (status, ML_ERROR
