@@ -2568,4 +2568,35 @@ TEST (nnstreamer_capi_util, tensors_info)
   EXPECT_TRUE (data_size == ((3 * 300 * 300) + (3 * 300 * 300 * 8)));
 
   status = ml_tensors_info_get_tensor_size (info, 2, &data_size);
-  EXPECT_EQ (status, ML_ERROR
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_tensors_info_destroy (info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test NNStreamer Utility for checking extended tensors info handle
+ */
+TEST (nnstreamer_capi_util, tensors_info_extended)
+{
+  ml_tensors_info_h info;
+  ml_tensor_dimension in_dim, out_dim;
+  ml_tensor_type_e out_type;
+  gchar *out_name;
+  size_t data_size;
+  int status, i;
+
+  status = ml_tensors_info_create_extended (&info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  for (i = 0 ;i < ML_TENSOR_RANK_LIMIT ; i++) {
+    in_dim[i] = i % 4 + 1;
+  }
+
+  /* add tensor info */
+  status = ml_tensors_info_set_count (info, 2);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_set_tensor_type (info, 0, ML_TENSOR_TYPE_UINT8);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  status 
