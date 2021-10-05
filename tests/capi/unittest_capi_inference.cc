@@ -2621,4 +2621,29 @@ TEST (nnstreamer_capi_util, tensors_info_extended)
     EXPECT_EQ (out_dim[i], i % 4 + 1);
   }
 
-  status = ml_tensors_info_get_tensor_name (info, 0, &ou
+  status = ml_tensors_info_get_tensor_name (info, 0, &out_name);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (out_name == NULL);
+
+  status = ml_tensors_info_get_tensor_type (info, 1, &out_type);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (out_type, ML_TENSOR_TYPE_FLOAT64);
+
+  status = ml_tensors_info_get_tensor_dimension (info, 1, out_dim);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  for (i = 0 ;i < ML_TENSOR_RANK_LIMIT ; i++) {
+    EXPECT_EQ (out_dim[i], i % 4 + 1);
+  }
+
+  status = ml_tensors_info_get_tensor_name (info, 1, &out_name);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (out_name && g_str_equal (out_name, "tensor-name-test"));
+  g_free (out_name);
+
+  /* get tensor size */
+  status = ml_tensors_info_get_tensor_size (info, 0, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (data_size == (2 * 3 * 4) * (2 * 3 * 4) * (2 * 3 * 4) * (2 * 3 * 4));
+
+  status = ml_tensors_info_get_tensor_s
