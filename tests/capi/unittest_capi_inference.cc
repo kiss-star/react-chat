@@ -2646,4 +2646,36 @@ TEST (nnstreamer_capi_util, tensors_info_extended)
   EXPECT_EQ (status, ML_ERROR_NONE);
   EXPECT_TRUE (data_size == (2 * 3 * 4) * (2 * 3 * 4) * (2 * 3 * 4) * (2 * 3 * 4));
 
-  status = ml_tensors_info_get_tensor_s
+  status = ml_tensors_info_get_tensor_size (info, 1, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (data_size == ((2 * 3 * 4) * (2 * 3 * 4) * (2 * 3 * 4) * (2 * 3 * 4)* 8));
+
+  status = ml_tensors_info_get_tensor_size (info, -1, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (data_size == (((2 * 3 * 4) * (2 * 3 * 4) * (2 * 3 * 4) * (2 * 3 * 4)) + ((2 * 3 * 4) * (2 * 3 * 4) * (2 * 3 * 4) * (2 * 3 * 4)* 8)));
+
+  status = ml_tensors_info_destroy (info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test utility functions
+ */
+TEST (nnstreamer_capi_util, compare_info)
+{
+  ml_tensors_info_h info1, info2;
+  ml_tensor_dimension dim;
+  int status;
+
+  status = ml_tensors_info_create (&info1);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_create (&info2);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  dim[0] = 3;
+  dim[1] = 4;
+  dim[2] = 4;
+  dim[3] = 1;
+
+  ml_tensors_info_set
