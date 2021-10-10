@@ -2767,4 +2767,39 @@ TEST (nnstreamer_capi_util, compare_info_extended_n)
   int status, i;
 
   status = ml_tensors_info_create_extended (&info1);
-  EXPECT_EQ (status, ML
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_create (&info2);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  for (i = 0 ;i < ML_TENSOR_RANK_LIMIT ; i++) {
+    dim[i] = i + 1;
+  }
+
+  ml_tensors_info_set_count (info1, 1);
+  ml_tensors_info_set_tensor_type (info1, 0, ML_TENSOR_TYPE_UINT8);
+  ml_tensors_info_set_tensor_dimension (info1, 0, dim);
+
+  ml_tensors_info_set_count (info2, 1);
+  ml_tensors_info_set_tensor_type (info2, 0, ML_TENSOR_TYPE_UINT8);
+  ml_tensors_info_set_tensor_dimension (info2, 0, dim);
+
+  /* compare info */
+  EXPECT_FALSE (ml_tensors_info_is_equal (info1, info2));
+}
+
+/**
+ * @brief Test utility functions (public)
+ */
+TEST (nnstreamer_capi_util, info_create_1_n)
+{
+  int status = ml_tensors_info_create (nullptr);
+  ASSERT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+}
+
+/**
+ * @brief Test utility functions (internal)
+ */
+TEST (nnstreamer_capi_util, info_create_2_n)
+{
+  ml_tensors_i
