@@ -2704,4 +2704,33 @@ TEST (nnstreamer_capi_util, compare_info)
   status = ml_tensors_info_destroy (info1);
   EXPECT_EQ (status, ML_ERROR_NONE);
 
-  st
+  status = ml_tensors_info_destroy (info2);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test utility functions
+ */
+TEST (nnstreamer_capi_util, compare_info_extended)
+{
+  ml_tensors_info_h info1, info2;
+  ml_tensor_dimension dim;
+  int status, i;
+
+  status = ml_tensors_info_create_extended (&info1);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_create_extended (&info2);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  for (i = 0 ;i < ML_TENSOR_RANK_LIMIT ; i++) {
+    dim[i] = i + 1;
+  }
+
+  ml_tensors_info_set_count (info1, 1);
+  ml_tensors_info_set_tensor_type (info1, 0, ML_TENSOR_TYPE_UINT8);
+  ml_tensors_info_set_tensor_dimension (info1, 0, dim);
+
+  ml_tensors_info_set_count (info2, 1);
+  ml_tensors_info_set_tensor_type (info2, 0, ML_TENSOR_TYPE_UINT8);
+  ml_tensors_info_set_tensor_dimension (i
