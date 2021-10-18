@@ -2838,4 +2838,37 @@ TEST (nnstreamer_capi_util, info_destroy_n)
 /**
  * @brief Test utility functions (internal)
  */
-TEST (nnstreamer_capi_
+TEST (nnstreamer_capi_util, info_init_n)
+{
+  int status = _ml_tensors_info_initialize (nullptr);
+  ASSERT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+}
+
+/**
+ * @brief Test utility functions (public)
+ */
+TEST (nnstreamer_capi_util, info_valid_01_n)
+{
+  bool valid;
+  int status = ml_tensors_info_validate (nullptr, &valid);
+  ASSERT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+}
+
+/**
+ * @brief Test utility functions (public)
+ */
+TEST (nnstreamer_capi_util, info_valid_02_n)
+{
+  ml_tensors_info_h info;
+  ml_tensor_dimension dim = { 2, 2, 2, 2 };
+  int status;
+
+  status = ml_tensors_info_create (&info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  ml_tensors_info_set_count (info, 1);
+  ml_tensors_info_set_tensor_type (info, 0, ML_TENSOR_TYPE_UINT8);
+  ml_tensors_info_set_tensor_dimension (info, 0, dim);
+
+  status = ml_tensors_info_validate (info, nullptr);
+  ASSERT_EQ (status, ML_ERROR_INVALID_
