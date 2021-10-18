@@ -2802,4 +2802,40 @@ TEST (nnstreamer_capi_util, info_create_1_n)
  */
 TEST (nnstreamer_capi_util, info_create_2_n)
 {
-  ml_tensors_i
+  ml_tensors_info_h i;
+  int status = _ml_tensors_info_create_from_gst (&i, nullptr);
+  ASSERT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+}
+
+/**
+ * @brief Test utility functions (internal)
+ */
+TEST (nnstreamer_capi_util, info_create_3_n)
+{
+  GstTensorsInfo gi;
+  int status = _ml_tensors_info_create_from_gst (nullptr, &gi);
+  ASSERT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+}
+
+/**
+ * @brief Test utility functions (public)
+ */
+TEST (nnstreamer_capi_util, info_create_4_n)
+{
+  int status = ml_tensors_info_create_extended (nullptr);
+  ASSERT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+}
+
+/**
+ * @brief Test utility functions (public)
+ */
+TEST (nnstreamer_capi_util, info_destroy_n)
+{
+  int status = ml_tensors_info_destroy (nullptr);
+  ASSERT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+}
+
+/**
+ * @brief Test utility functions (internal)
+ */
+TEST (nnstreamer_capi_
