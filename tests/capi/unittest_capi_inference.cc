@@ -2966,4 +2966,35 @@ TEST (nnstreamer_capi_util, info_comp_0)
 {
   bool equal;
   ml_tensors_info_h info1, info2;
-  ml_te
+  ml_tensors_info_s *is;
+  int status = ml_tensors_info_create (&info1);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_create (&info2);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+
+  is = (ml_tensors_info_s *)info1;
+  is->num_tensors = 1;
+  is = (ml_tensors_info_s *)info2;
+  is->num_tensors = 2;
+
+  status = _ml_tensors_info_compare (info1, info2, &equal);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+  ASSERT_FALSE (equal);
+
+  status = ml_tensors_info_destroy (info1);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_destroy (info2);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test utility functions (internal)
+ */
+TEST (nnstreamer_capi_util, info_comp_1)
+{
+  ml_tensors_info_h info1, info2;
+  ml_tensor_dimension dim = { 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1 };
+  int status;
+  bool equal;
+
+  status = ml_tensors_info_create (&info1)
