@@ -3097,4 +3097,35 @@ TEST (nnstreamer_capi_util, info_set_tname_1)
   status = ml_tensors_info_set_count (info, 1);
   ASSERT_EQ (status, ML_ERROR_NONE);
 
- 
+  status = ml_tensors_info_set_tensor_name (info, 0, "first");
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_set_tensor_name (info, 0, "second");
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_destroy (info);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test utility functions (public)
+ */
+TEST (nnstreamer_capi_util, info_get_tname_01_n)
+{
+  int status;
+  ml_tensors_info_h info;
+  char *name = NULL;
+
+  status = ml_tensors_info_create (&info);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_set_count (info, 1);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_get_tensor_name (nullptr, 0, &name);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_tensors_info_destroy (info);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test utili
