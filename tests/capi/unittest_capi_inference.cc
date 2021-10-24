@@ -3236,4 +3236,34 @@ TEST (nnstreamer_capi_util, info_get_ttype_01_n)
  */
 TEST (nnstreamer_capi_util, info_get_ttype_02_n)
 {
-  int
+  int status;
+  ml_tensors_info_h info;
+
+  status = ml_tensors_info_create (&info);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_set_count (info, 1);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_get_tensor_type (info, 0, nullptr);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_tensors_info_destroy (info);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test utility functions (public)
+ */
+TEST (nnstreamer_capi_util, info_get_ttype_03_n)
+{
+  int status;
+  ml_tensors_info_h info;
+  ml_tensor_type_e type;
+
+  status = ml_tensors_info_create (&info);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_set_count (info, 1);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_get_tensor_type (info, 2, &type);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMET
