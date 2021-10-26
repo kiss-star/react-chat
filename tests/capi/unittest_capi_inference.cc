@@ -3266,4 +3266,39 @@ TEST (nnstreamer_capi_util, info_get_ttype_03_n)
   ASSERT_EQ (status, ML_ERROR_NONE);
 
   status = ml_tensors_info_get_tensor_type (info, 2, &type);
-  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMET
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_tensors_info_destroy (info);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test utility functions (public)
+ */
+TEST (nnstreamer_capi_util, info_set_tdimension_01_n)
+{
+  int status;
+  ml_tensor_dimension dim = { 2, 2, 2, 2 };
+
+  status = ml_tensors_info_set_tensor_dimension (nullptr, 0, dim);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+}
+
+/**
+ * @brief Test utility functions (public)
+ */
+TEST (nnstreamer_capi_util, info_set_tdimension_02_n)
+{
+  int status;
+  ml_tensors_info_h info;
+  ml_tensor_dimension dim = { 1, 2, 3, 4 };
+
+  status = ml_tensors_info_create (&info);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_set_count (info, 1);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_set_tensor_dimension (info, 2, dim);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  statu
