@@ -3373,4 +3373,35 @@ TEST (nnstreamer_capi_util, info_get_tsize_02_n)
 /**
  * @brief Test utility functions (public)
  */
-TEST (nnstreamer_capi_u
+TEST (nnstreamer_capi_util, info_get_tsize_03_n)
+{
+  int status;
+  size_t data_size;
+  ml_tensors_info_h info;
+
+  status = ml_tensors_info_create (&info);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_set_count (info, 1);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_get_tensor_size (info, 2, &data_size);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+  status = ml_tensors_info_get_tensor_size (info, 0, &data_size);
+  EXPECT_TRUE (data_size == 0);
+
+  status = ml_tensors_info_destroy (info);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test utility functions (public)
+ */
+TEST (nnstreamer_capi_util, info_clone)
+{
+  gint status;
+  guint count = 0;
+  ml_tensors_info_h in_info, out_info;
+  ml_tensor_dimension in_dim, out_dim;
+  ml_tensor_type_e type = ML_TENSOR_TYPE_UNKNOWN;
+
+  status = ml_tensors_info_create (&in_in
