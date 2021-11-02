@@ -3404,4 +3404,30 @@ TEST (nnstreamer_capi_util, info_clone)
   ml_tensor_dimension in_dim, out_dim;
   ml_tensor_type_e type = ML_TENSOR_TYPE_UNKNOWN;
 
-  status = ml_tensors_info_create (&in_in
+  status = ml_tensors_info_create (&in_info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_create (&out_info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  in_dim[0] = 5;
+  in_dim[1] = 1;
+  in_dim[2] = 1;
+  in_dim[3] = 1;
+
+  status = ml_tensors_info_set_count (in_info, 1);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_UINT8);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_clone (out_info, in_info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_get_count (out_info, &count);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (count, 1U);
+
+  status = ml_tensors_info_get_tensor_type (out_info, 0, &type);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (type, 
