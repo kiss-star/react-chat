@@ -3430,4 +3430,32 @@ TEST (nnstreamer_capi_util, info_clone)
 
   status = ml_tensors_info_get_tensor_type (out_info, 0, &type);
   EXPECT_EQ (status, ML_ERROR_NONE);
-  EXPECT_EQ (type, 
+  EXPECT_EQ (type, ML_TENSOR_TYPE_UINT8);
+
+  status = ml_tensors_info_get_tensor_dimension (out_info, 0, out_dim);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (in_dim[0] == out_dim[0]);
+  EXPECT_TRUE (in_dim[1] == out_dim[1]);
+  EXPECT_TRUE (in_dim[2] == out_dim[2]);
+  EXPECT_TRUE (in_dim[3] == out_dim[3]);
+
+  status = ml_tensors_info_destroy (in_info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_destroy (out_info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test utility functions (public)
+ */
+TEST (nnstreamer_capi_util, info_clone_extended)
+{
+  gint status, i;
+  guint count = 0;
+  ml_tensors_info_h in_info, out_info;
+  ml_tensor_dimension in_dim, out_dim;
+  ml_tensor_type_e type = ML_TENSOR_TYPE_UNKNOWN;
+
+  status = ml_tensors_info_create_extended (&in_info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  status = ml_t
