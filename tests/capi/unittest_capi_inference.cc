@@ -3557,3 +3557,45 @@ TEST (nnstreamer_capi_util, data_create_02_n)
 
   status = ml_tensors_data_create (info, nullptr);
   EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_tensors_info_destroy (info);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test utility functions (public)
+ */
+TEST (nnstreamer_capi_util, data_create_03_n)
+{
+  int status;
+  ml_tensors_info_h info;
+  ml_tensors_data_h data = nullptr;
+
+  status = ml_tensors_info_create (&info);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+
+  /* invalid info */
+  status = ml_tensors_data_create (info, &data);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_tensors_info_destroy (info);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_data_destroy (data);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+}
+
+/**
+ * @brief Test utility functions (internal)
+ */
+TEST (nnstreamer_capi_util, data_create_internal_n)
+{
+  int status;
+
+  status = _ml_tensors_data_create_no_alloc (NULL, NULL);
+  EXPECT_NE (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test utility functions (public)
+ 
