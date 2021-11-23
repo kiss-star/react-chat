@@ -3800,4 +3800,34 @@ TEST (nnstreamer_capi_util, data_set_tdata_04_n)
   ASSERT_EQ (status, ML_ERROR_NONE);
   status = ml_tensors_info_set_count (info, 1);
   ASSERT_EQ (status, ML_ERROR_NONE);
-  status = ml_tensors_info_set_tensor_type (info, 0, ML_T
+  status = ml_tensors_info_set_tensor_type (info, 0, ML_TENSOR_TYPE_UINT8);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_set_tensor_dimension (info, 0, dim);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_data_create (info, &data);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_data_set_tensor_data (data, 0, raw_data, 0);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_tensors_data_destroy (data);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_destroy (info);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+  g_free (raw_data);
+}
+
+/**
+ * @brief Test utility functions (public)
+ */
+TEST (nnstreamer_capi_util, data_set_tdata_05_n)
+{
+  int status;
+  void *raw_data;
+  ml_tensors_info_h info;
+  ml_tensors_data_h data;
+  ml_tensor_dimension dim = { 2, 2, 2, 2 };
+
+  raw_data = g_malloc (1024); /* larger than tensor */
+
+  status = ml_tensors_info_create (&inf
