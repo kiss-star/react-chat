@@ -3830,4 +3830,28 @@ TEST (nnstreamer_capi_util, data_set_tdata_05_n)
 
   raw_data = g_malloc (1024); /* larger than tensor */
 
-  status = ml_tensors_info_create (&inf
+  status = ml_tensors_info_create (&info);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_set_count (info, 1);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_set_tensor_type (info, 0, ML_TENSOR_TYPE_UINT8);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_set_tensor_dimension (info, 0, dim);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_data_create (info, &data);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_data_set_tensor_data (data, 0, raw_data, 1024);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_tensors_data_destroy (data);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_destroy (info);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+  g_free (raw_data);
+}
+
+/**
+ * @brief Test utility functions - clone data.
+ */
+TEST (nnstr
