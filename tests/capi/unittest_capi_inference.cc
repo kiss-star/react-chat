@@ -3912,4 +3912,36 @@ TEST (nnstreamer_capi_util, data_clone_02_n)
 }
 
 /**
- * @brief Test utility functions - clone d
+ * @brief Test utility functions - clone data.
+ */
+TEST (nnstreamer_capi_util, data_clone_03_n)
+{
+  int status;
+  ml_tensors_data_h data_out;
+
+  status = ml_tensors_data_clone (nullptr, &data_out);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+}
+
+/**
+ * @brief Test utility functions - clone data.
+ */
+TEST (nnstreamer_capi_util, data_clone_04_p)
+{
+  int status, i;
+  ml_tensors_info_h info;
+  ml_tensors_data_h data;
+  ml_tensors_data_h data_out;
+  ml_tensor_dimension dim = { 5, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+  int raw_data[25];
+  int *result = nullptr;
+  size_t data_size, result_size;
+
+  for (i = 0; i < 25; i++)
+    raw_data[i] = i;
+
+  ml_tensors_info_create_extended (&info);
+  ml_tensors_info_set_count (info, 1);
+  ml_tensors_info_set_tensor_type (info, 0, ML_TENSOR_TYPE_INT32);
+  ml_tensors_info_set_tensor_dimension (info, 0, dim);
+  ml_tensors_info_get_tensor_size (info, 0, &data_size
