@@ -3944,4 +3944,33 @@ TEST (nnstreamer_capi_util, data_clone_04_p)
   ml_tensors_info_set_count (info, 1);
   ml_tensors_info_set_tensor_type (info, 0, ML_TENSOR_TYPE_INT32);
   ml_tensors_info_set_tensor_dimension (info, 0, dim);
-  ml_tensors_info_get_tensor_size (info, 0, &data_size
+  ml_tensors_info_get_tensor_size (info, 0, &data_size);
+
+  ml_tensors_data_create (info, &data);
+  ml_tensors_data_set_tensor_data (data, 0, (const void *) raw_data, data_size);
+
+  /* test code : clone data and compare raw value. */
+  status = ml_tensors_data_clone (data, &data_out);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_data_get_tensor_data (data_out, 0, (void **) &result, &result_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  for (unsigned int i = 0; i < 25; i++)
+    EXPECT_EQ (result[i], raw_data[i]);
+
+  ml_tensors_info_destroy (info);
+  ml_tensors_data_destroy (data);
+  ml_tensors_data_destroy (data_out);
+}
+
+/**
+ * @brief Test to replace string.
+ */
+TEST (nnstreamer_capi_util, replaceStr01)
+{
+  gchar *result;
+  guint changed;
+
+  result = g_strdup ("sourceelement ! parser ! converter ! format ! converter ! format ! converter ! sink");
+
+  result = _ml_replace_string (result, "sourceelement", "src", NUL
