@@ -3973,4 +3973,31 @@ TEST (nnstreamer_capi_util, replaceStr01)
 
   result = g_strdup ("sourceelement ! parser ! converter ! format ! converter ! format ! converter ! sink");
 
-  result = _ml_replace_string (result, "sourceelement", "src", NUL
+  result = _ml_replace_string (result, "sourceelement", "src", NULL, &changed);
+  EXPECT_EQ (changed, 1U);
+  EXPECT_STREQ (result, "src ! parser ! converter ! format ! converter ! format ! converter ! sink");
+
+  result = _ml_replace_string (result, "format", "fmt", NULL, &changed);
+  EXPECT_EQ (changed, 2U);
+  EXPECT_STREQ (result, "src ! parser ! converter ! fmt ! converter ! fmt ! converter ! sink");
+
+  result = _ml_replace_string (result, "converter", "conv", NULL, &changed);
+  EXPECT_EQ (changed, 3U);
+  EXPECT_STREQ (result, "src ! parser ! conv ! fmt ! conv ! fmt ! conv ! sink");
+
+  result = _ml_replace_string (result, "invalidname", "invalid", NULL, &changed);
+  EXPECT_EQ (changed, 0U);
+  EXPECT_STREQ (result, "src ! parser ! conv ! fmt ! conv ! fmt ! conv ! sink");
+
+  g_free (result);
+}
+
+/**
+ * @brief Test to replace string.
+ */
+TEST (nnstreamer_capi_util, replaceStr02)
+{
+  gchar *result;
+  guint changed;
+
+  result = g_strdup ("source! pa
