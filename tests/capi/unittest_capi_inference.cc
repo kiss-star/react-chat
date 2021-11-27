@@ -4000,4 +4000,20 @@ TEST (nnstreamer_capi_util, replaceStr02)
   gchar *result;
   guint changed;
 
-  result = g_strdup ("source! pa
+  result = g_strdup ("source! parser ! sources ! mysource ! source ! format !source! conv source");
+
+  result = _ml_replace_string (result, "source", "src", " !", &changed);
+  EXPECT_EQ (changed, 4U);
+  EXPECT_STREQ (result, "src! parser ! sources ! mysource ! src ! format !src! conv src");
+
+  result = _ml_replace_string (result, "src", "mysource", "! ", &changed);
+  EXPECT_EQ (changed, 4U);
+  EXPECT_STREQ (result, "mysource! parser ! sources ! mysource ! mysource ! format !mysource! conv mysource");
+
+  result = _ml_replace_string (result, "source", "src", NULL, &changed);
+  EXPECT_EQ (changed, 6U);
+  EXPECT_STREQ (result, "mysrc! parser ! srcs ! mysrc ! mysrc ! format !mysrc! conv mysrc");
+
+  result = _ml_replace_string (result, "mysrc", "src", ";", &changed);
+  EXPECT_EQ (changed, 0U);
+  EXPECT_STREQ (result, "mysrc! parser ! srcs ! mysrc ! mysrc ! format !
