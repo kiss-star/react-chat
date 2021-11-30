@@ -4016,4 +4016,35 @@ TEST (nnstreamer_capi_util, replaceStr02)
 
   result = _ml_replace_string (result, "mysrc", "src", ";", &changed);
   EXPECT_EQ (changed, 0U);
-  EXPECT_STREQ (result, "mysrc! parser ! srcs ! mysrc ! mysrc ! format !
+  EXPECT_STREQ (result, "mysrc! parser ! srcs ! mysrc ! mysrc ! format !mysrc! conv mysrc");
+
+  g_free (result);
+}
+
+/**
+ * @brief Test to replace string.
+ */
+TEST (nnstreamer_capi_util, replaceStr03)
+{
+  gchar *result;
+  guint changed;
+
+  result = g_strdup ("source! parser name=source ! sources ! mysource ! source prop=temp ! source. ! filter model=\"source\" ! sink");
+
+  result = _ml_replace_string (result, "source", "CHANGED", " !", &changed);
+  EXPECT_EQ (changed, 2U);
+  EXPECT_STREQ (result, "CHANGED! parser name=source ! sources ! mysource ! CHANGED prop=temp ! source. ! filter model=\"source\" ! sink");
+
+  g_free (result);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_get_handle()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, get_handle_00_p)
+{
+  ml_pipeline_h handle = nullptr;
+  ml_pipeline_element_h vsrc_h = nullptr;
+  int status;
+  gchar
