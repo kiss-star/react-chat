@@ -4072,4 +4072,26 @@ TEST (nnstreamer_capi_element, get_handle_00_p)
 
 /**
  * @brief Test case of Element Property Control.
- * @detail Run the `ml_pipeline_element_get_handle()` API
+ * @detail Run the `ml_pipeline_element_get_handle()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, get_handle_01_n)
+{
+  ml_pipeline_h handle = nullptr;
+  ml_pipeline_element_h vsrc_h = nullptr;
+  int status;
+  gchar *pipeline;
+
+  pipeline = g_strdup (
+      "videotestsrc name=vsrc is-live=true ! videoconvert ! videoscale name=vscale ! "
+      "video/x-raw,format=RGBx,width=224,height=224,framerate=60/1 ! tensor_converter ! "
+      "valve name=valvex ! input-selector name=is01 ! tensor_sink name=sinkx");
+
+  status = ml_pipeline_construct (pipeline, nullptr, nullptr, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Test Code */
+  status = ml_pipeline_element_get_handle (handle, nullptr, &vsrc_h);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_handle (handle, "WRONG_PROPERTY_NAME", &vsrc_h);
+  EXPE
