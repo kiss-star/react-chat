@@ -4279,4 +4279,30 @@ TEST (nnstreamer_capi_element, set_property_bool_04_n)
   EXPECT_EQ (status, ML_ERROR_NONE);
 
   /* Test Code */
-  status = ml_pipeline_elemen
+  status = ml_pipeline_element_set_property_bool (vscale_h, "sharpness", 10);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_release_handle (vscale_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_get_property_bool()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, get_property_bool_01_p)
+{
+  ml_pipeline_h handle = nullptr;
+  ml_pipeline_element_h selector_h = nullptr;
+  gchar *pipeline;
+  int ret_sync_streams;
+  int status;
+
+  pipeline = g_strdup (
+      "videotestsrc name=vsrc is-live=true ! videoconvert ! videoscale name=vscale ! "
+      "video/x-raw,format=RGBx,width=224,height=224,framerate=60/
