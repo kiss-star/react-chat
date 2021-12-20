@@ -4359,4 +4359,27 @@ TEST (nnstreamer_capi_element, get_property_bool_02_n)
 TEST (nnstreamer_capi_element, get_property_bool_03_n)
 {
   ml_pipeline_h handle = nullptr;
-  ml_pipeline_element
+  ml_pipeline_element_h selector_h = nullptr;
+  gchar *pipeline;
+  int ret_sync_streams;
+  int status;
+
+  pipeline = g_strdup (
+      "videotestsrc name=vsrc is-live=true ! videoconvert ! videoscale name=vscale ! "
+      "video/x-raw,format=RGBx,width=224,height=224,framerate=60/1 ! tensor_converter ! "
+      "valve name=valvex ! input-selector name=is01 ! tensor_sink name=sinkx");
+
+  status = ml_pipeline_construct (pipeline, nullptr, nullptr, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_handle (handle, "is01", &selector_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_set_property_bool (selector_h, "sync-streams", FALSE);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Test Code */
+  status = ml_pipeline_element_get_property_bool (selector_h, "WRONG_NAME", &ret_sync_streams);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  st
