@@ -4327,4 +4327,36 @@ TEST (nnstreamer_capi_element, get_property_bool_01_p)
 
   status = ml_pipeline_element_get_property_bool (selector_h, "sync-streams", &ret_sync_streams);
   EXPECT_EQ (status, ML_ERROR_NONE);
-  EX
+  EXPECT_EQ (ret_sync_streams, TRUE);
+
+  status = ml_pipeline_element_release_handle (selector_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_get_property_bool()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, get_property_bool_02_n)
+{
+  int ret_sync_streams;
+  int status;
+
+  /* Test Code */
+  status = ml_pipeline_element_get_property_bool (nullptr, "sync-streams", &ret_sync_streams);
+  ASSERT_NE (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_get_property_bool()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, get_property_bool_03_n)
+{
+  ml_pipeline_h handle = nullptr;
+  ml_pipeline_element
