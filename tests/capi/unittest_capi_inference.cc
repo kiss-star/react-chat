@@ -4408,4 +4408,34 @@ TEST (nnstreamer_capi_element, get_property_bool_04_n)
       "valve name=valvex ! input-selector name=is01 ! tensor_sink name=sinkx");
 
   status = ml_pipeline_construct (pipeline, nullptr, nullptr, &handle);
-  EX
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_handle (handle, "is01", &selector_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_set_property_bool (selector_h, "sync-streams", FALSE);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Test Code */
+  status = ml_pipeline_element_get_property_bool (selector_h, "sync-streams", nullptr);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_release_handle (selector_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_get_property_bool()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, get_property_bool_05_n)
+{
+  ml_pipeline_h handle = nullptr;
+  ml_pipeline_element_h udpsrc_h = nullptr;
+  int status;
+  
