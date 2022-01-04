@@ -4491,4 +4491,30 @@ TEST (nnstreamer_capi_element, set_property_string_01_p)
   EXPECT_TRUE (g_file_test (test_model, G_FILE_TEST_EXISTS));
 
   pipeline = g_strdup_printf (
-      "appsr
+      "appsrc name=appsrc ! "
+      "other/tensor,dimension=(string)1:1:1:1,type=(string)float32,framerate=(fraction)0/1 ! "
+      "tensor_filter name=filter_h framework=tensorflow-lite model=%s ! tensor_sink name=tensor_sink",
+      test_model);
+
+  status = ml_pipeline_construct (pipeline, nullptr, nullptr, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_handle (handle, "filter_h", &filter_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Test Code */
+  status = ml_pipeline_element_set_property_string (filter_h, "framework", "nnfw");
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_release_handle (filter_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+  g_free (test_model);
+}
+
+/**
+ * @brief Te
