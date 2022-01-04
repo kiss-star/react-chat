@@ -4466,4 +4466,29 @@ TEST (nnstreamer_capi_element, get_property_bool_05_n)
 }
 
 /**
- * @brief Test case
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_set_property_string()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, set_property_string_01_p)
+{
+  ml_pipeline_h handle = nullptr;
+  ml_pipeline_element_h filter_h = nullptr;
+  gchar *pipeline, *test_model;
+  int status;
+  const gchar *root_path = g_getenv ("MLAPI_SOURCE_ROOT_PATH");
+
+  /* Skip this test if enable-tensorflow-lite is false */
+  if (!is_enabled_tensorflow_lite)
+    return;
+
+  /* supposed to run test in build directory */
+  if (root_path == NULL)
+    root_path = "..";
+
+  /* start pipeline test with valid model file */
+  test_model = g_build_filename (
+      root_path, "tests", "test_models", "models", "add.tflite", NULL);
+  EXPECT_TRUE (g_file_test (test_model, G_FILE_TEST_EXISTS));
+
+  pipeline = g_strdup_printf (
+      "appsr
