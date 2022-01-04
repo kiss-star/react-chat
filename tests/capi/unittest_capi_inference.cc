@@ -4517,4 +4517,32 @@ TEST (nnstreamer_capi_element, set_property_string_01_p)
 }
 
 /**
- * @brief Te
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_set_property_string()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, set_property_string_02_n)
+{
+  int status;
+
+  /* Test Code */
+  status = ml_pipeline_element_set_property_string (nullptr, "framework", "nnfw");
+  EXPECT_NE (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_set_property_string()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, set_property_string_03_n)
+{
+  ml_pipeline_h handle = nullptr;
+  ml_pipeline_element_h filter_h = nullptr;
+  gchar *pipeline, *test_model;
+  int status;
+  const gchar *root_path = g_getenv ("MLAPI_SOURCE_ROOT_PATH");
+
+  /* Skip this test if enable-tensorflow-lite is false */
+  if (!is_enabled_tensorflow_lite)
+    return;
+
+  /* supposed to run tes
