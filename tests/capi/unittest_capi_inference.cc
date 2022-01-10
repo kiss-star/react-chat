@@ -4567,4 +4567,33 @@ TEST (nnstreamer_capi_element, set_property_string_03_n)
   EXPECT_EQ (status, ML_ERROR_NONE);
 
   /* Test Code */
-  status = ml_pipeline_element_set_property_string (filter_h, "WRONG_NAME", "in
+  status = ml_pipeline_element_set_property_string (filter_h, "WRONG_NAME", "invalid");
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_release_handle (filter_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+  g_free (test_model);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_set_property_string()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, set_property_string_04_n)
+{
+  ml_pipeline_h handle = nullptr;
+  ml_pipeline_element_h selector_h = nullptr;
+  gchar *pipeline;
+  int status;
+
+  pipeline = g_strdup (
+      "videotestsrc name=vsrc is-live=true ! videoconvert ! videoscale name=vscale ! "
+      "video/x-raw,format=RGBx,width=224,height=224,framerate=60/1 ! tensor_converter ! "
+      "valve name=valvex ! input-selector name=is01 ! tensor_sink name=sinkx");
+
+  status = ml_pipeline_construct (pipeline,
