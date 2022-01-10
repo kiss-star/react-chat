@@ -4596,4 +4596,31 @@ TEST (nnstreamer_capi_element, set_property_string_04_n)
       "video/x-raw,format=RGBx,width=224,height=224,framerate=60/1 ! tensor_converter ! "
       "valve name=valvex ! input-selector name=is01 ! tensor_sink name=sinkx");
 
-  status = ml_pipeline_construct (pipeline,
+  status = ml_pipeline_construct (pipeline, nullptr, nullptr, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_handle (handle, "is01", &selector_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Test Code */
+  status = ml_pipeline_element_set_property_string (selector_h, "sync-streams", "TRUE");
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_release_handle (selector_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_get_property_string()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, get_property_string_01_p)
+{
+  ml_pipeline_h handle = nullptr;
+  ml_pipeline_element_h filter_h = nullptr;
+  gchar *pipeli
