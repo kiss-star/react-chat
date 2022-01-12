@@ -4648,3 +4648,27 @@ TEST (nnstreamer_capi_element, get_property_string_01_p)
       test_model);
 
   status = ml_pipeline_construct (pipeline, nullptr, nullptr, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_handle (handle, "filter_h", &filter_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Test Code */
+  status = ml_pipeline_element_get_property_string (filter_h, "framework", &ret_prop);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (g_str_equal (ret_prop, "tensorflow-lite"));
+  g_free (ret_prop);
+
+#ifdef ENABLE_NNFW_RUNTIME
+  status = ml_pipeline_element_set_property_string (filter_h, "framework", "nnfw");
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Test Code */
+  status = ml_pipeline_element_get_property_string (filter_h, "framework", &ret_prop);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (g_str_equal (ret_prop, "nnfw"));
+  g_free (ret_prop);
+#endif
+
+  status = ml_pipeline_element_release_handle (filter_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
