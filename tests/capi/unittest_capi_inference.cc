@@ -4672,3 +4672,37 @@ TEST (nnstreamer_capi_element, get_property_string_01_p)
 
   status = ml_pipeline_element_release_handle (filter_h);
   EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+  g_free (test_model);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_get_property_string()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, get_property_string_02_n)
+{
+  int status;
+  gchar *ret_prop;
+
+  /* Test Code */
+  status = ml_pipeline_element_get_property_string (nullptr, "framework", &ret_prop);
+  EXPECT_NE (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_get_property_string()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, get_property_string_03_n)
+{
+  ml_pipeline_h handle = nullptr;
+  ml_pipeline_element_h filter_h = nullptr;
+  gchar *pipeline, *test_model;
+  gchar *ret_prop;
+  int status;
+  const 
