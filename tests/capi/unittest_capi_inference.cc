@@ -4777,4 +4777,32 @@ TEST (nnstreamer_capi_element, get_property_string_04_n)
       "tensor_filter name=filter_h framework=tensorflow-lite model=%s ! tensor_sink name=tensor_sink",
       test_model);
 
-  status = ml_pipeline_construct (pipeline, nullptr, nullptr, 
+  status = ml_pipeline_construct (pipeline, nullptr, nullptr, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_handle (handle, "filter_h", &filter_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Test Code */
+  status = ml_pipeline_element_get_property_string (filter_h, "framework", nullptr);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_release_handle (filter_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+  g_free (test_model);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_get_property_string()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, get_property_string_05_n)
+{
+  ml_pipeline_h handle = nullptr;
+  ml_pipeline_element_h selector_h = nullptr;
+  gchar *p
