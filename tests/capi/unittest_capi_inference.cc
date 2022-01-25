@@ -4910,4 +4910,31 @@ TEST (nnstreamer_capi_element, set_property_int32_03_n)
   EXPECT_EQ (status, ML_ERROR_NONE);
 
   /* Test Code */
-  status = ml_pipe
+  status = ml_pipeline_element_set_property_int32 (vsrc_h, "WRONG_NAME", 10);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_release_handle (vsrc_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_set_property_int32()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, set_property_int32_04_n)
+{
+  ml_pipeline_h handle = nullptr;
+  ml_pipeline_element_h demux_h = nullptr;
+  gchar *pipeline;
+  int status;
+
+  pipeline = g_strdup (
+      "videotestsrc ! video/x-raw,format=RGB,width=640,height=480 ! videorate max-rate=1 ! "
+      "tensor_converter ! tensor_mux ! tensor_demux name=demux ! tensor_sink");
+
+  status = ml_pipeline_construct (pipeline, nullptr, nullptr, &ha
