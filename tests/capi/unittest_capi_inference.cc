@@ -4937,4 +4937,35 @@ TEST (nnstreamer_capi_element, set_property_int32_04_n)
       "videotestsrc ! video/x-raw,format=RGB,width=640,height=480 ! videorate max-rate=1 ! "
       "tensor_converter ! tensor_mux ! tensor_demux name=demux ! tensor_sink");
 
-  status = ml_pipeline_construct (pipeline, nullptr, nullptr, &ha
+  status = ml_pipeline_construct (pipeline, nullptr, nullptr, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_handle (handle, "demux", &demux_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Test Code */
+  status = ml_pipeline_element_set_property_int32 (demux_h, "tensorpick", 1);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_release_handle (demux_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_get_property_int32()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, get_property_int32_01_p)
+{
+  ml_pipeline_h handle = nullptr;
+  ml_pipeline_element_h vsrc_h = nullptr;
+  int status;
+  int32_t ret_kx;
+  gchar *pipeline;
+
+  pipeline = g_strdup (
