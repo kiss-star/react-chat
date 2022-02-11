@@ -4988,4 +4988,35 @@ TEST (nnstreamer_capi_element, get_property_int32_01_p)
   EXPECT_TRUE (ret_kx == 10);
 
   status = ml_pipeline_element_set_property_int32 (vsrc_h, "kx", -1234);
-  EXPECT_EQ (sta
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_property_int32 (vsrc_h, "kx", &ret_kx);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (ret_kx == -1234);
+
+  status = ml_pipeline_element_release_handle (vsrc_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_get_property_int32()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, get_property_int32_02_n)
+{
+  int status;
+  int32_t ret_kx;
+
+  /* Test Code */
+  status = ml_pipeline_element_get_property_int32 (nullptr, "kx", &ret_kx);
+  EXPECT_NE (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_get_prope
