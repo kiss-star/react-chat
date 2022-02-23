@@ -5200,4 +5200,35 @@ TEST (nnstreamer_capi_element, set_property_int64_03_n)
       "video/x-raw,format=RGBx,width=224,height=224,framerate=60/1 ! tensor_converter ! "
       "valve name=valvex ! input-selector name=is01 ! tensor_sink name=sinkx");
 
-  status = ml_pip
+  status = ml_pipeline_construct (pipeline, nullptr, nullptr, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_handle (handle, "vsrc", &vsrc_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Test Code */
+  status = ml_pipeline_element_set_property_int64 (vsrc_h, "WRONG_NAME", 1234567891234LL);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_release_handle (vsrc_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_set_property_int64()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, set_property_int64_04_n)
+{
+  ml_pipeline_h handle = nullptr;
+  ml_pipeline_element_h vsrc_h = nullptr;
+  int status;
+  gchar *pipeline;
+
+  pipeline = g_strdup (
+     
