@@ -5277,4 +5277,31 @@ TEST (nnstreamer_capi_element, get_property_int64_01_p)
   status = ml_pipeline_element_get_handle (handle, "vsrc", &vsrc_h);
   EXPECT_EQ (status, ML_ERROR_NONE);
 
-  status = ml_pipeline_element_set_property_int64 (vsrc_h, "timest
+  status = ml_pipeline_element_set_property_int64 (vsrc_h, "timestamp-offset", 1234567891234LL);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Test Code */
+  status = ml_pipeline_element_get_property_int64 (
+      vsrc_h, "timestamp-offset", &ret_timestame_offset);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (ret_timestame_offset == 1234567891234LL);
+
+  status = ml_pipeline_element_set_property_int64 (vsrc_h, "timestamp-offset", 10LL);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_property_int64 (
+      vsrc_h, "timestamp-offset", &ret_timestame_offset);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (ret_timestame_offset == 10LL);
+
+  status = ml_pipeline_element_release_handle (vsrc_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test case of Element Property 
