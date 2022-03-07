@@ -5380,4 +5380,32 @@ TEST (nnstreamer_capi_element, get_property_int64_04_n)
   status = ml_pipeline_element_get_handle (handle, "vsrc", &vsrc_h);
   EXPECT_EQ (status, ML_ERROR_NONE);
 
-  sta
+  status = ml_pipeline_element_set_property_uint32 (vsrc_h, "foreground-color", 123456U);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Test Code */
+  status = ml_pipeline_element_get_property_int64 (vsrc_h, "foreground-color", &wrong_type);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_release_handle (vsrc_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_get_property_int64()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, get_property_int64_05_n)
+{
+  ml_pipeline_h handle = nullptr;
+  ml_pipeline_element_h vsrc_h = nullptr;
+  int status;
+  gchar *pipeline;
+
+  pipeline = g_strdup (
+      "videotestsrc name=vsrc is-live=true ! videoconvert ! videoscale
