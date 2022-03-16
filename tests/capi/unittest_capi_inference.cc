@@ -5585,4 +5585,33 @@ TEST (nnstreamer_capi_element, get_property_uint32_01_p)
   status = ml_pipeline_element_get_property_uint32 (
       vsrc_h, "foreground-color", &ret_foreground_color);
   EXPECT_EQ (status, ML_ERROR_NONE);
-  EXPECT_TRUE (ret_foreground_color ==
+  EXPECT_TRUE (ret_foreground_color == 123456U);
+
+  status = ml_pipeline_element_set_property_uint32 (vsrc_h, "foreground-color", 4294967295U);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_property_uint32 (
+      vsrc_h, "foreground-color", &ret_foreground_color);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (ret_foreground_color == 4294967295U);
+
+  status = ml_pipeline_element_release_handle (vsrc_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_get_property_uint32()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, get_property_uint32_02_n)
+{
+  int status;
+  uint32_t ret_foreground_color;
+
+  /* Test Code */
+  status = ml_pipeline_elem
