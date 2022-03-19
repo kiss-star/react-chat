@@ -5614,4 +5614,26 @@ TEST (nnstreamer_capi_element, get_property_uint32_02_n)
   uint32_t ret_foreground_color;
 
   /* Test Code */
-  status = ml_pipeline_elem
+  status = ml_pipeline_element_get_property_uint32 (
+      nullptr, "foreground-color", &ret_foreground_color);
+  EXPECT_NE (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_get_property_uint32()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, get_property_uint32_03_n)
+{
+  ml_pipeline_h handle = nullptr;
+  ml_pipeline_element_h vsrc_h = nullptr;
+  int status;
+  uint32_t ret_foreground_color;
+  gchar *pipeline;
+
+  pipeline = g_strdup (
+      "videotestsrc name=vsrc is-live=true ! videoconvert ! videoscale name=vscale ! "
+      "video/x-raw,format=RGBx,width=224,height=224,framerate=60/1 ! tensor_converter ! "
+      "valve name=valvex ! input-selector name=is01 ! tensor_sink name=sinkx");
+
+  status = ml_pipeline_construct (pipeline, nullptr, nullptr, &handle)
