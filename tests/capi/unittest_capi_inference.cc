@@ -5713,4 +5713,30 @@ TEST (nnstreamer_capi_element, get_property_uint32_05_n)
       "video/x-raw,format=RGBx,width=224,height=224,framerate=60/1 ! tensor_converter ! "
       "valve name=valvex ! input-selector name=is01 ! tensor_sink name=sinkx");
 
-  status = ml_pipeline_co
+  status = ml_pipeline_construct (pipeline, nullptr, nullptr, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_handle (handle, "vsrc", &vsrc_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_set_property_uint32 (vsrc_h, "foreground-color", 123456U);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Test Code */
+  status = ml_pipeline_element_get_property_uint32 (vsrc_h, "foreground-color", nullptr);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_release_handle (vsrc_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_set_property_uint64()` API and check its results.
+ */
+TEST 
