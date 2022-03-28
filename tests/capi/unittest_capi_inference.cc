@@ -5762,4 +5762,36 @@ TEST (nnstreamer_capi_element, set_property_uint64_01_p)
   EXPECT_EQ (status, ML_ERROR_NONE);
 
   status = ml_pipeline_element_release_handle (udpsrc_h);
-  EXPE
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_set_property_uint64()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, set_property_uint64_02_n)
+{
+  int status;
+
+  /* Test Code */
+  status = ml_pipeline_element_set_property_uint64 (nullptr, "timeout", 123456789123456789ULL);
+  EXPECT_NE (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_set_property_uint64()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, set_property_uint64_03_n)
+{
+  ml_pipeline_h handle = nullptr;
+  ml_pipeline_element_h udpsrc_h = nullptr;
+  int status;
+  gchar *pipeline;
+
+  pipeline = g_strdup ("udpsrc name=usrc port=5555 caps=application/x-rtp 
