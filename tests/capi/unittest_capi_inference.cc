@@ -5873,4 +5873,29 @@ TEST (nnstreamer_capi_element, get_property_uint64_01_p)
   status = ml_pipeline_element_set_property_uint64 (udpsrc_h, "timeout", 123456789123456789ULL);
   EXPECT_EQ (status, ML_ERROR_NONE);
 
-  /* Test Code *
+  /* Test Code */
+  status = ml_pipeline_element_get_property_uint64 (udpsrc_h, "timeout", &ret_timeout);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (ret_timeout == 123456789123456789ULL);
+
+  status = ml_pipeline_element_set_property_uint64 (udpsrc_h, "timeout", 987654321ULL);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_property_uint64 (udpsrc_h, "timeout", &ret_timeout);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (ret_timeout == 987654321ULL);
+
+  status = ml_pipeline_element_release_handle (udpsrc_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_get_property_uint64()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, get
