@@ -5957,4 +5957,24 @@ TEST (nnstreamer_capi_element, get_property_uint64_04_n)
   gchar *pipeline;
 
   pipeline = g_strdup (
-      "videotestsrc name=vs
+      "videotestsrc name=vsrc is-live=true ! videoconvert ! videoscale name=vscale ! "
+      "video/x-raw,format=RGBx,width=224,height=224,framerate=60/1 ! tensor_converter ! "
+      "valve name=valvex ! input-selector name=is01 ! tensor_sink name=sinkx");
+
+  status = ml_pipeline_construct (pipeline, nullptr, nullptr, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_handle (handle, "vsrc", &vsrc_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_set_property_int64 (vsrc_h, "timestamp-offset", 1234567891234LL);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Test Code */
+  status = ml_pipeline_element_get_property_uint64 (vsrc_h, "timestamp-offset", &wrong_type);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_release_handle (vsrc_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeli
