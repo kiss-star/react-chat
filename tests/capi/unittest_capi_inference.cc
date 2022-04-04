@@ -6166,4 +6166,28 @@ TEST (nnstreamer_capi_element, get_property_double_01_p)
   EXPECT_EQ (status, ML_ERROR_NONE);
 
   /* Test Code */
-  status = ml_pipeline_el
+  status = ml_pipeline_element_get_property_double (vscale_h, "sharpness", &ret_sharpness);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (ret_sharpness, 0.72);
+
+  status = ml_pipeline_element_set_property_double (vscale_h, "sharpness", 1.43);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_property_double (vscale_h, "sharpness", &ret_sharpness);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (ret_sharpness, 1.43);
+
+  status = ml_pipeline_element_release_handle (vscale_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_get_property_double()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, get_property_doubl
