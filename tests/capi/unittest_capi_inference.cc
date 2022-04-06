@@ -6269,4 +6269,30 @@ TEST (nnstreamer_capi_element, get_property_double_04_n)
   status = ml_pipeline_element_get_property_double (vscale_h, "method", &wrong_type);
   EXPECT_NE (status, ML_ERROR_NONE);
 
-  status = ml_pipeline_ele
+  status = ml_pipeline_element_release_handle (vscale_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_get_property_double()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, get_property_double_05_n)
+{
+  ml_pipeline_h handle = nullptr;
+  ml_pipeline_element_h vscale_h = nullptr;
+  int status;
+  gchar *pipeline;
+
+  pipeline = g_strdup (
+      "videotestsrc name=vsrc is-live=true ! videoconvert ! videoscale name=vscale ! "
+      "video/x-raw,format=RGBx,width=224,height=224,framerate=60/1 ! tensor_converter ! "
+      "valve name=valvex ! input-selector name=is01 ! tensor_sink name=sinkx");
+
+  status = ml_pipeline_construct (pipeline, nullptr, nullptr, &handle);
+  EXPECT_EQ (status, ML_ERROR
