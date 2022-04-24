@@ -6323,4 +6323,26 @@ TEST (nnstreamer_capi_element, get_property_double_05_n)
 TEST (nnstreamer_capi_element, set_property_enum_01_p)
 {
   ml_pipeline_h handle = nullptr;
-  ml_pi
+  ml_pipeline_element_h vscale_h = nullptr;
+  int status;
+  gchar *pipeline;
+
+  pipeline = g_strdup (
+      "videotestsrc name=vsrc is-live=true ! videoconvert ! videoscale name=vscale ! "
+      "video/x-raw,format=RGBx,width=224,height=224,framerate=60/1 ! tensor_converter ! "
+      "valve name=valvex ! input-selector name=is01 ! tensor_sink name=sinkx");
+
+  status = ml_pipeline_construct (pipeline, nullptr, nullptr, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_handle (handle, "vscale", &vscale_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Test Code */
+  status = ml_pipeline_element_set_property_enum (vscale_h, "method", 3U);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_set_property_enum (vscale_h, "method", 5U);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_set_property_int32 (vscale_h, "method", 4);
