@@ -6346,3 +6346,35 @@ TEST (nnstreamer_capi_element, set_property_enum_01_p)
   EXPECT_EQ (status, ML_ERROR_NONE);
 
   status = ml_pipeline_element_set_property_int32 (vscale_h, "method", 4);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_set_property_uint32 (vscale_h, "method", 2U);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_release_handle (vscale_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_set_property_enum()` API and check its results.
+ */
+TEST (nnstreamer_capi_element, set_property_enum_02_n)
+{
+  int status;
+
+  /* Test Code */
+  status = ml_pipeline_element_set_property_enum (nullptr, "method", 3U);
+  EXPECT_NE (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test case of Element Property Control.
+ * @detail Run the `ml_pipeline_element_set_property_enum()` API and check its results.
+ */
+TEST (nnstrea
