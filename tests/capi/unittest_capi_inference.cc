@@ -6456,4 +6456,27 @@ TEST (nnstreamer_capi_element, get_property_enum_01_p)
   pipeline = g_strdup (
       "videotestsrc name=vsrc is-live=true ! videoconvert ! videoscale name=vscale ! "
       "video/x-raw,format=RGBx,width=224,height=224,framerate=60/1 ! tensor_converter ! "
-      "valve name=valvex ! input-selector name=is01 ! tensor_
+      "valve name=valvex ! input-selector name=is01 ! tensor_sink name=sinkx");
+
+  status = ml_pipeline_construct (pipeline, nullptr, nullptr, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_handle (handle, "vscale", &vscale_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_set_property_enum (vscale_h, "method", 3U);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Test Code */
+  status = ml_pipeline_element_get_property_enum (vscale_h, "method", &ret_method);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (ret_method, 3U);
+
+  status = ml_pipeline_element_set_property_enum (vscale_h, "method", 5U);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_property_enum (vscale_h, "method", &ret_method);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (ret_method, 5U);
+
+  status = ml_pipeline_element_set_property_uint32 (
