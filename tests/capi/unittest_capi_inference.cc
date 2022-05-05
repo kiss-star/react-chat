@@ -6560,4 +6560,29 @@ TEST (nnstreamer_capi_element, get_property_enum_03_n)
  * @brief Test case of Element Property Control.
  * @detail Run the `ml_pipeline_element_get_property_enum()` API and check its results.
  */
-TEST (nnstreamer_capi_element, get_property_enum_04_n
+TEST (nnstreamer_capi_element, get_property_enum_04_n)
+{
+  ml_pipeline_h handle = nullptr;
+  ml_pipeline_element_h demux_h = nullptr;
+  gchar *pipeline;
+  uint32_t ret_wrong_type;
+  int status;
+
+  pipeline = g_strdup (
+      "videotestsrc ! video/x-raw,format=RGB,width=640,height=480 ! videorate max-rate=1 ! "
+      "tensor_converter ! tensor_mux ! tensor_demux name=demux ! tensor_sink");
+
+  status = ml_pipeline_construct (pipeline, nullptr, nullptr, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_handle (handle, "demux", &demux_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_set_property_string (demux_h, "tensorpick", "1,2");
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Test Code */
+  status = ml_pipeline_element_get_property_enum (demux_h, "tensorpick", &ret_wrong_type);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_r
