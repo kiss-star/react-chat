@@ -6638,4 +6638,27 @@ TEST (nnstreamer_capi_element, get_property_enum_05_n)
  */
 TEST (nnstreamer_capi_element, scenario_01_p)
 {
-  ml_p
+  ml_pipeline_h handle = nullptr;
+  ml_pipeline_element_h vsrc_h = nullptr;
+  ml_pipeline_state_e state;
+  gchar *pipeline;
+  int status;
+
+  pipeline = g_strdup ("videotestsrc name=vsrc is-live=true ! videoconvert ! videoscale ! video/x-raw,format=RGBx,width=224,height=224,framerate=60/1 ! "
+                       "tensor_converter ! tensor_sink name=sinkx");
+
+  status = ml_pipeline_construct (pipeline, nullptr, nullptr, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_get_handle (handle, "vsrc", &vsrc_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Test code: Set the videotestsrc pattern */
+  status = ml_pipeline_element_set_property_enum (vsrc_h, "pattern", 4);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_start (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  g_usleep (50000);
+
+  status = ml_pipeline_get_state (handle, &state)
