@@ -6661,4 +6661,32 @@ TEST (nnstreamer_capi_element, scenario_01_p)
   EXPECT_EQ (status, ML_ERROR_NONE);
   g_usleep (50000);
 
-  status = ml_pipeline_get_state (handle, &state)
+  status = ml_pipeline_get_state (handle, &state);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  wait_for_start (handle, state, status);
+  EXPECT_EQ (state, ML_PIPELINE_STATE_PLAYING);
+
+  /* Stop playing */
+  status = ml_pipeline_stop (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  g_usleep (50000);
+
+  /* Test code: Set the new videotestsrc pattern */
+  status = ml_pipeline_element_set_property_enum (vsrc_h, "pattern", 12);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Resume playing */
+  status = ml_pipeline_start (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  g_usleep (50000);
+
+  status = ml_pipeline_get_state (handle, &state);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  wait_for_start (handle, state, status);
+  EXPECT_EQ (state, ML_PIPELINE_STATE_PLAYING);
+
+  status = ml_pipeline_stop (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  g_usleep (50000);
+
+  status = ml_pipeline_element_release_handle (vsrc_h);
