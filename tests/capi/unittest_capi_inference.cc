@@ -6721,4 +6721,35 @@ TEST (nnstreamer_capi_element, scenario_02_p)
   EXPECT_EQ (status, ML_ERROR_NONE);
 
   status = ml_pipeline_element_get_handle (handle, "sinkx", &asink_h);
-  EXPE
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_sink_register (
+      handle, "sinkx", test_sink_callback_count, count_sink, &sinkhandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (sinkhandle != NULL);
+
+  status = ml_pipeline_start (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_usleep (100000);
+
+  status = ml_pipeline_stop (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (*count_sink > 0U);
+
+  /* Test Code */
+  *count_sink = 0;
+
+  status = ml_pipeline_element_set_property_bool (asink_h, "emit-signals", FALSE);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_start (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_usleep (100000);
+
+  /** Since `emit-signals` property of appsink is set as FALSE, *count_sink
+   * should be 0 */
+  EXPECT_TRUE (*count_sink == 0U);
+
+  status = 
