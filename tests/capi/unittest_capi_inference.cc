@@ -6752,4 +6752,41 @@ TEST (nnstreamer_capi_element, scenario_02_p)
    * should be 0 */
   EXPECT_TRUE (*count_sink == 0U);
 
-  status = 
+  status = ml_pipeline_stop (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_sink_unregister (sinkhandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_element_release_handle (asink_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+  g_free (count_sink);
+}
+
+/**
+ * @brief Test for internal function '_ml_tensors_info_copy_from_gst'.
+ */
+TEST (nnstreamer_capi_internal, copy_from_gst)
+{
+  int status;
+  ml_tensors_info_h ml_info;
+  ml_tensor_type_e type;
+  ml_tensor_dimension dim;
+  char *name;
+  unsigned int count;
+  GstTensorsInfo gst_info;
+  guint i;
+
+  gst_tensors_info_init (&gst_info);
+  gst_info.num_tensors = 2;
+  for (i = 0; i < NNS_TENSOR_RANK_LIMIT; i++) {
+    gst_info.info[0].dimension[i] = i + 1;
+    gst_info.info[1].dimension[i] = i + 1;
+  }
+
+  st
