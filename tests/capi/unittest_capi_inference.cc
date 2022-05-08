@@ -6789,4 +6789,26 @@ TEST (nnstreamer_capi_internal, copy_from_gst)
     gst_info.info[1].dimension[i] = i + 1;
   }
 
-  st
+  status = ml_tensors_info_create (&ml_info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  _ml_tensors_info_copy_from_gst ((ml_tensors_info_s *)ml_info, &gst_info);
+  status = ml_tensors_info_get_count (ml_info, &count);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (count, 2U);
+  status = ml_tensors_info_get_tensor_dimension (ml_info, 0, dim);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (dim[0], 1U);
+  EXPECT_EQ (dim[1], 2U);
+  EXPECT_EQ (dim[2], 3U);
+  EXPECT_EQ (dim[3], 4U);
+
+  gst_info.info[0].type = _NNS_INT32;
+  gst_info.info[1].type = _NNS_UINT32;
+  _ml_tensors_info_copy_from_gst ((ml_tensors_info_s *)ml_info, &gst_info);
+  status = ml_tensors_info_get_tensor_type (ml_info, 0, &type);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (type, ML_TENSOR_TYPE_INT32);
+  status = ml_tensors_info_get_tensor_type (ml_info, 1, &type);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPEC
