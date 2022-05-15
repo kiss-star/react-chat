@@ -6830,4 +6830,24 @@ TEST (nnstreamer_capi_internal, copy_from_gst)
   EXPECT_EQ (status, ML_ERROR_NONE);
   EXPECT_EQ (type, ML_TENSOR_TYPE_INT8);
   status = ml_tensors_info_get_tensor_type (ml_info, 1, &type);
-  EXPECT_EQ (status, ML_ERROR_
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (type, ML_TENSOR_TYPE_UINT8);
+
+  gst_info.info[0].type = _NNS_INT64;
+  gst_info.info[1].type = _NNS_UINT64;
+  _ml_tensors_info_copy_from_gst ((ml_tensors_info_s *)ml_info, &gst_info);
+  status = ml_tensors_info_get_tensor_type (ml_info, 0, &type);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (type, ML_TENSOR_TYPE_INT64);
+  status = ml_tensors_info_get_tensor_type (ml_info, 1, &type);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (type, ML_TENSOR_TYPE_UINT64);
+
+  gst_info.info[0].type = _NNS_FLOAT64;
+  gst_info.info[1].type = _NNS_FLOAT32;
+  _ml_tensors_info_copy_from_gst ((ml_tensors_info_s *)ml_info, &gst_info);
+  status = ml_tensors_info_get_tensor_type (ml_info, 0, &type);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (type, ML_TENSOR_TYPE_FLOAT64);
+  status = ml_tensors_info_get_tensor_type (ml_info, 1, &type);
+  EXPECT_EQ (stat
