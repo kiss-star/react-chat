@@ -6850,4 +6850,32 @@ TEST (nnstreamer_capi_internal, copy_from_gst)
   EXPECT_EQ (status, ML_ERROR_NONE);
   EXPECT_EQ (type, ML_TENSOR_TYPE_FLOAT64);
   status = ml_tensors_info_get_tensor_type (ml_info, 1, &type);
-  EXPECT_EQ (stat
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (type, ML_TENSOR_TYPE_FLOAT32);
+
+  gst_info.info[0].name = g_strdup ("tn1");
+  gst_info.info[1].name = g_strdup ("tn2");
+  _ml_tensors_info_copy_from_gst ((ml_tensors_info_s *)ml_info, &gst_info);
+  status = ml_tensors_info_get_tensor_name (ml_info, 0, &name);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_STREQ (name, "tn1");
+  g_free (name);
+  status = ml_tensors_info_get_tensor_name (ml_info, 1, &name);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_STREQ (name, "tn2");
+  g_free (name);
+
+  status = ml_tensors_info_destroy (ml_info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  gst_tensors_info_free (&gst_info);
+}
+
+/**
+ * @brief Test for internal function '_ml_tensors_info_copy_from_gst'.
+ */
+TEST (nnstreamer_capi_internal, copy_from_gst_extended)
+{
+  int status;
+  ml_tensors_info_h ml_info;
+  ml
