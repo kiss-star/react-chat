@@ -6903,4 +6903,40 @@ TEST (nnstreamer_capi_internal, copy_from_gst_extended)
   status = ml_tensors_info_get_tensor_dimension (ml_info, 0, dim);
   EXPECT_EQ (status, ML_ERROR_NONE);
   for (i = 0; i < NNS_TENSOR_RANK_LIMIT; i++) {
-    EXPECT_EQ (dim[i],
+    EXPECT_EQ (dim[i], i + 1);
+  }
+
+  status = ml_tensors_info_destroy (ml_info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  gst_tensors_info_free (&gst_info);
+}
+
+/**
+ * @brief Test for internal function '_ml_tensors_info_copy_from_gst'.
+ */
+TEST (nnstreamer_capi_internal, copy_from_gst_01_n)
+{
+  GstTensorsInfo gst_info;
+  int status;
+
+  gst_tensors_info_init (&gst_info);
+  status = _ml_tensors_info_copy_from_gst (NULL, &gst_info);
+  EXPECT_NE (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test for internal function '_ml_tensors_info_copy_from_gst'.
+ */
+TEST (nnstreamer_capi_internal, copy_from_gst_02_n)
+{
+  ml_tensors_info_h ml_info;
+  int status;
+
+  status = ml_tensors_info_create (&ml_info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = _ml_tensors_info_copy_from_gst ((ml_tensors_info_s *) ml_info, NULL);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_te
