@@ -7017,4 +7017,39 @@ TEST (nnstreamer_capi_internal, copy_from_ml)
   EXPECT_EQ (status, ML_ERROR_NONE);
   _ml_tensors_info_copy_from_ml (&gst_info, (ml_tensors_info_s *)ml_info);
   EXPECT_STREQ (gst_info.info[0].name, "tn1");
-  EXPECT_STREQ (gst_info.inf
+  EXPECT_STREQ (gst_info.info[1].name, "tn2");
+
+  status = ml_tensors_info_destroy (ml_info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  gst_tensors_info_free (&gst_info);
+}
+
+/**
+ * @brief Test for internal function '_ml_tensors_info_copy_from_ml'.
+ */
+TEST (nnstreamer_capi_internal, copy_from_ml_01_n)
+{
+  ml_tensors_info_h ml_info;
+  int status;
+
+  status = ml_tensors_info_create (&ml_info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = _ml_tensors_info_copy_from_ml (NULL, (ml_tensors_info_s *) ml_info);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_destroy (ml_info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test for internal function '_ml_tensors_info_copy_from_ml'.
+ */
+TEST (nnstreamer_capi_internal, copy_from_ml_02_n)
+{
+  GstTensorsInfo gst_info;
+  int status;
+
+  status = _ml_tensors_info_copy_from_ml (&gst_info, NULL);
+  EXPECT_NE 
