@@ -7000,4 +7000,21 @@ TEST (nnstreamer_capi_internal, copy_from_ml)
   status = ml_tensors_info_set_tensor_type (ml_info, 1, ML_TENSOR_TYPE_UINT64);
   EXPECT_EQ (status, ML_ERROR_NONE);
   _ml_tensors_info_copy_from_ml (&gst_info, (ml_tensors_info_s *)ml_info);
-  EXPECT_EQ (g
+  EXPECT_EQ (gst_info.info[0].type, _NNS_INT64);
+  EXPECT_EQ (gst_info.info[1].type, _NNS_UINT64);
+
+  status = ml_tensors_info_set_tensor_type (ml_info, 0, ML_TENSOR_TYPE_FLOAT64);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_set_tensor_type (ml_info, 1, ML_TENSOR_TYPE_FLOAT32);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  _ml_tensors_info_copy_from_ml (&gst_info, (ml_tensors_info_s *)ml_info);
+  EXPECT_EQ (gst_info.info[0].type, _NNS_FLOAT64);
+  EXPECT_EQ (gst_info.info[1].type, _NNS_FLOAT32);
+
+  status = ml_tensors_info_set_tensor_name (ml_info, 0, "tn1");
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  status = ml_tensors_info_set_tensor_name (ml_info, 1, "tn2");
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  _ml_tensors_info_copy_from_ml (&gst_info, (ml_tensors_info_s *)ml_info);
+  EXPECT_STREQ (gst_info.info[0].name, "tn1");
+  EXPECT_STREQ (gst_info.inf
