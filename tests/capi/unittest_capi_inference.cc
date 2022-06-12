@@ -7052,4 +7052,39 @@ TEST (nnstreamer_capi_internal, copy_from_ml_02_n)
   int status;
 
   status = _ml_tensors_info_copy_from_ml (&gst_info, NULL);
-  EXPECT_NE 
+  EXPECT_NE (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Invoke callback for custom-easy filter.
+ */
+static int
+test_custom_easy_cb (const ml_tensors_data_h in, ml_tensors_data_h out,
+    void *user_data)
+{
+  /* test code, set data size. */
+  if (user_data) {
+    void *raw_data = NULL;
+    size_t *data_size = (size_t *)user_data;
+
+    ml_tensors_data_get_tensor_data (out, 0, &raw_data, data_size);
+  }
+
+  return 0;
+}
+
+/**
+ * @brief Test for custom-easy registration.
+ */
+TEST (nnstreamer_capi_custom, register_filter_01_p)
+{
+  const char test_custom_filter[] = "test-custom-filter";
+  ml_pipeline_h pipe;
+  ml_pipeline_src_h src;
+  ml_pipeline_sink_h sink;
+  ml_custom_easy_filter_h custom;
+  ml_tensors_info_h in_info, out_info;
+  ml_tensors_data_h in_data;
+  ml_tensor_dimension dim = { 2, 1, 1, 1 };
+  int status;
+  gch
