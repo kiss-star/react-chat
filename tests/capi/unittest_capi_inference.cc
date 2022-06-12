@@ -7087,4 +7087,21 @@ TEST (nnstreamer_capi_custom, register_filter_01_p)
   ml_tensors_data_h in_data;
   ml_tensor_dimension dim = { 2, 1, 1, 1 };
   int status;
-  gch
+  gchar *pipeline = g_strdup_printf (
+      "appsrc name=srcx ! other/tensor,dimension=(string)2:1:1:1,type=(string)int8,framerate=(fraction)0/1 ! tensor_filter framework=custom-easy model=%s ! tensor_sink name=sinkx",
+      test_custom_filter);
+  guint *count_sink = (guint *)g_malloc0 (sizeof (guint));
+  size_t *filter_data_size = (size_t *)g_malloc0 (sizeof (size_t));
+  size_t data_size;
+  guint i;
+
+  ml_tensors_info_create (&in_info);
+  ml_tensors_info_set_count (in_info, 1);
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_INT8);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, dim);
+
+  ml_tensors_info_create (&out_info);
+  ml_tensors_info_set_count (out_info, 1);
+  ml_tensors_info_set_tensor_type (out_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tensor_dimension (out_info, 0, dim);
+  ml_tensors_info_get_tensor_size (out_info,
