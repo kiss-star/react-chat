@@ -7129,4 +7129,39 @@ TEST (nnstreamer_capi_custom, register_filter_01_p)
     EXPECT_EQ (status, ML_ERROR_NONE);
 
     status = ml_pipeline_src_input_data (src, in_data, ML_PIPELINE_BUF_POLICY_AUTO_FREE);
-    EXPECT_EQ (status, ML_ERROR_N
+    EXPECT_EQ (status, ML_ERROR_NONE);
+
+    g_usleep (50000); /* 50ms. Wait a bit. */
+  }
+
+  status = ml_pipeline_stop (pipe);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_src_release_handle (src);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_sink_unregister (sink);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (pipe);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_custom_easy_filter_unregister (custom);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* check received data in sink node */
+  EXPECT_TRUE (*count_sink > 0U);
+  EXPECT_TRUE (*filter_data_size > 0U && *filter_data_size == data_size);
+
+  ml_tensors_info_destroy (in_info);
+  ml_tensors_info_destroy (out_info);
+  g_free (pipeline);
+  g_free (count_sink);
+  g_free (filter_data_size);
+}
+
+/**
+ * @brief Test for custom-easy registration.
+ * @detail Invalid params.
+ */
+TEST (nn
