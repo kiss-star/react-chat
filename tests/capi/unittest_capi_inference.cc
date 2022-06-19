@@ -7104,4 +7104,29 @@ TEST (nnstreamer_capi_custom, register_filter_01_p)
   ml_tensors_info_set_count (out_info, 1);
   ml_tensors_info_set_tensor_type (out_info, 0, ML_TENSOR_TYPE_FLOAT32);
   ml_tensors_info_set_tensor_dimension (out_info, 0, dim);
-  ml_tensors_info_get_tensor_size (out_info,
+  ml_tensors_info_get_tensor_size (out_info, 0, &data_size);
+
+  /* test code for custom filter */
+  status = ml_pipeline_custom_easy_filter_register (test_custom_filter, in_info,
+      out_info, test_custom_easy_cb, filter_data_size, &custom);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &pipe);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_sink_register (
+      pipe, "sinkx", test_sink_callback_count, count_sink, &sink);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_src_get_handle (pipe, "srcx", &src);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_start (pipe);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  for (i = 0; i < 5; i++) {
+    status = ml_tensors_data_create (in_info, &in_data);
+    EXPECT_EQ (status, ML_ERROR_NONE);
+
+    status = ml_pipeline_src_input_data (src, in_data, ML_PIPELINE_BUF_POLICY_AUTO_FREE);
+    EXPECT_EQ (status, ML_ERROR_N
