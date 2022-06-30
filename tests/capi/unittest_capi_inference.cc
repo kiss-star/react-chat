@@ -7251,4 +7251,26 @@ TEST (nnstreamer_capi_custom, register_filter_04_n)
 TEST (nnstreamer_capi_custom, register_filter_05_n)
 {
   const char test_custom_filter[] = "test-custom-filter";
-  ml_custom_easy_fil
+  ml_custom_easy_filter_h custom;
+  ml_tensors_info_h in_info, out_info;
+  int status;
+  ml_tensor_dimension dim = { 2, 1, 1, 1 };
+
+  ml_tensors_info_create (&in_info);
+  ml_tensors_info_create (&out_info);
+
+  ml_tensors_info_set_count (in_info, 1);
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_INT8);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, dim);
+
+  ml_tensors_info_set_count (out_info, 1);
+  ml_tensors_info_set_tensor_type (out_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tensor_dimension (out_info, 0, dim);
+
+  /* test code with null param */
+  status = ml_pipeline_custom_easy_filter_register (
+      test_custom_filter, in_info, out_info, NULL, NULL, &custom);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  ml_tensors_info_destroy (in_info);
+  ml_tensors_info_destroy (out_info)
