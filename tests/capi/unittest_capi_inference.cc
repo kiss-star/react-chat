@@ -7300,4 +7300,40 @@ TEST (nnstreamer_capi_custom, register_filter_06_n)
 
   /* test code with null param */
   status = ml_pipeline_custom_easy_filter_register (
-      test_custom_filter, in_info, out_info, test_custom_easy_cb, NULL, NULL
+      test_custom_filter, in_info, out_info, test_custom_easy_cb, NULL, NULL);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  ml_tensors_info_destroy (in_info);
+  ml_tensors_info_destroy (out_info);
+}
+
+/**
+ * @brief Test for custom-easy registration.
+ * @detail Invalid params.
+ */
+TEST (nnstreamer_capi_custom, register_filter_07_n)
+{
+  int status;
+
+  /* test code with null param */
+  status = ml_pipeline_custom_easy_filter_unregister (NULL);
+  EXPECT_NE (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test for custom-easy registration.
+ * @detail Invalid params.
+ */
+TEST (nnstreamer_capi_custom, register_filter_08_n)
+{
+  const char test_custom_filter[] = "test-custom-filter";
+  ml_custom_easy_filter_h custom;
+  ml_tensors_info_h in_info, out_info;
+  ml_tensor_dimension dim = { 2, 1, 1, 1 };
+  int status;
+
+  ml_tensors_info_create (&in_info);
+  ml_tensors_info_create (&out_info);
+
+  /* test code with invalid output info */
+  ml_tensor
