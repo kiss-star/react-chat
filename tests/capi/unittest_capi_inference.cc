@@ -7412,4 +7412,28 @@ TEST (nnstreamer_capi_custom, register_filter_10_n)
   EXPECT_EQ (status, ML_ERROR_NONE);
 
   ml_tensors_info_destroy (in_info);
-  ml_tensors_info_de
+  ml_tensors_info_destroy (out_info);
+}
+
+/**
+ * @brief Test for custom-easy unregistration.
+ * @detail Failed if pipeline is constructed.
+ */
+TEST (nnstreamer_capi_custom, register_filter_11_n)
+{
+  ml_pipeline_h pipe1, pipe2;
+  ml_custom_easy_filter_h custom;
+  ml_tensors_info_h in_info, out_info;
+  ml_tensor_dimension dim = { 2, 1, 1, 1 };
+  int status;
+  gchar *pipeline = g_strdup_printf (
+      "appsrc name=srcx ! other/tensor,dimension=(string)2:1:1:1,type=(string)int8,framerate=(fraction)0/1 ! "
+      "tensor_filter framework=custom-easy model=tfilter_unreg_test ! tensor_sink name=sinkx");
+
+  ml_tensors_info_create (&in_info);
+  ml_tensors_info_set_count (in_info, 1);
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_INT8);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, dim);
+
+  ml_tensors_info_create (&out_info);
+  ml_tensors_info_set_count (out_info, 1);
