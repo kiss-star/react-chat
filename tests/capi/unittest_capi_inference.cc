@@ -7492,4 +7492,33 @@ test_if_custom_cb (const ml_tensors_data_h data, const ml_tensors_info_h info,
   if (sum >= 30)
     *result = 0;
   else
-    *result = 
+    *result = 1;
+
+  return 0;
+}
+
+/**
+ * @brief Test for tensor_if custom condition
+ */
+TEST (nnstreamer_capi_if, custom_01_p)
+{
+  const gchar *_tmpdir = g_get_tmp_dir ();
+  const gchar *_dirname = "nns-tizen-XXXXXX";
+  gchar *fullpath = g_build_path ("/", _tmpdir, _dirname, NULL);
+  gchar *dir = g_mkdtemp ((gchar *)fullpath);
+  gchar *file = g_build_path ("/", dir, "output", NULL);
+  ml_pipeline_h pipe;
+  ml_pipeline_src_h srchandle;
+  ml_pipeline_sink_h sink_false;
+  ml_pipeline_if_h custom;
+  ml_tensors_info_h info;
+  ml_tensors_data_h data;
+  unsigned int count = 0;
+  ml_tensor_type_e type = ML_TENSOR_TYPE_UNKNOWN;
+  int status;
+  uint8_t *uintarray[10];
+  uint8_t *content = NULL;
+  guint i;
+  gsize len;
+  gchar *pipeline = g_strdup_printf (
+      "appsrc name=appsrc ! other/tensor,dimension=(string)4:1:1:1, type=(stri
