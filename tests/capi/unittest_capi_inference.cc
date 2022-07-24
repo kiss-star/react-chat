@@ -7521,4 +7521,22 @@ TEST (nnstreamer_capi_if, custom_01_p)
   guint i;
   gsize len;
   gchar *pipeline = g_strdup_printf (
-      "appsrc name=appsrc ! other/tensor,dimension=(string)4:1:1:1, type=(stri
+      "appsrc name=appsrc ! other/tensor,dimension=(string)4:1:1:1, type=(string)uint8,framerate=(fraction)0/1 ! "
+      "tensor_if name=tif compared-value=CUSTOM compared-value-option=tif_custom_cb_name then=PASSTHROUGH else=PASSTHROUGH "
+      "tif.src_0 ! queue ! filesink location=\"%s\" buffer-mode=unbuffered "
+      "tif.src_1 ! queue ! tensor_sink name=sink_false sync=false async=false", file);
+
+  guint *count_sink = (guint *)g_malloc0 (sizeof (guint));
+  ASSERT_TRUE (count_sink != NULL);
+  *count_sink = 0;
+
+  /* test code for tensor_if custom */
+  status = ml_pipeline_tensor_if_custom_register ("tif_custom_cb_name",
+      test_if_custom_cb, NULL, &custom);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &pipe);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_sink_register (
+      pipe, "sink_false", test_sink_callback_count, count_sink, &si
