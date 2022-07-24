@@ -7460,4 +7460,36 @@ TEST (nnstreamer_capi_custom, register_filter_11_n)
   status = ml_pipeline_custom_easy_filter_unregister (custom);
   EXPECT_NE (status, ML_ERROR_NONE);
 
-  status = ml_pipeline_de
+  status = ml_pipeline_destroy (pipe2);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* succesfully done if all pipelines with custom-easy filter are destroyed */
+  status = ml_pipeline_custom_easy_filter_unregister (custom);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  ml_tensors_info_destroy (in_info);
+  ml_tensors_info_destroy (out_info);
+  g_free (pipeline);
+}
+
+/**
+ * @brief Callback for tensor_if custom condition.
+ */
+static int
+test_if_custom_cb (const ml_tensors_data_h data, const ml_tensors_info_h info,
+    int *result, void *user_data)
+{
+  void *data_ptr;
+  guint sum = 0, i;
+  size_t data_size;
+
+  ml_tensors_data_get_tensor_data (data, 0, &data_ptr, &data_size);
+
+  for (i = 0; i < data_size; i++)
+    sum += ((guint8 *) data_ptr)[i];
+
+  /* Sum value 30 means that the sixth buffer has arrived.*/
+  if (sum >= 30)
+    *result = 0;
+  else
+    *result = 
