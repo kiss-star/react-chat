@@ -7437,3 +7437,27 @@ TEST (nnstreamer_capi_custom, register_filter_11_n)
 
   ml_tensors_info_create (&out_info);
   ml_tensors_info_set_count (out_info, 1);
+  ml_tensors_info_set_tensor_type (out_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tensor_dimension (out_info, 0, dim);
+
+  status = ml_pipeline_custom_easy_filter_register ("tfilter_unreg_test",
+      in_info, out_info, test_custom_easy_cb, NULL, &custom);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &pipe1);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &pipe2);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* failed to unregister custom-easy filter if pipeline is constructed */
+  status = ml_pipeline_custom_easy_filter_unregister (custom);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (pipe1);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_custom_easy_filter_unregister (custom);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_de
