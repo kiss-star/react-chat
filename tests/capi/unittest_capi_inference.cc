@@ -7539,4 +7539,34 @@ TEST (nnstreamer_capi_if, custom_01_p)
   EXPECT_EQ (status, ML_ERROR_NONE);
 
   status = ml_pipeline_sink_register (
-      pipe, "sink_false", test_sink_callback_count, count_sink, &si
+      pipe, "sink_false", test_sink_callback_count, count_sink, &sink_false);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_src_get_handle (pipe, "appsrc", &srchandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_start (pipe);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  for (i = 0; i < 10; i++) {
+    uintarray[i] = (uint8_t *)g_malloc (4);
+    ASSERT_TRUE (uintarray[i] != NULL);
+    uintarray[i][0] = i + 4;
+    uintarray[i][1] = i + 1;
+    uintarray[i][2] = i + 3;
+    uintarray[i][3] = i + 2;
+  }
+
+  status = ml_pipeline_src_get_tensors_info (srchandle, &info);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  ml_tensors_info_get_count (info, &count);
+  EXPECT_EQ (count, 1U);
+
+  ml_tensors_info_get_tensor_type (info, 0, &type);
+  EXPECT_EQ (type, ML_TENSOR_TYPE_UINT8);
+
+  status = ml_tensors_data_create (info, &data);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Set tensor data and 
