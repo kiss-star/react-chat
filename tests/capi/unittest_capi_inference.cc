@@ -7569,4 +7569,31 @@ TEST (nnstreamer_capi_if, custom_01_p)
   status = ml_tensors_data_create (info, &data);
   EXPECT_EQ (status, ML_ERROR_NONE);
 
-  /* Set tensor data and 
+  /* Set tensor data and push buffers to source pad */
+  for (i = 0; i < 10; i++) {
+    status = ml_tensors_data_set_tensor_data (data, 0, uintarray[i], 4);
+    EXPECT_EQ (status, ML_ERROR_NONE);
+
+    status = ml_pipeline_src_input_data (srchandle, data,
+        ML_PIPELINE_BUF_POLICY_DO_NOT_FREE);
+    EXPECT_EQ (status, ML_ERROR_NONE);
+
+    g_usleep (50000); /* 50ms. Wait a bit. */
+  }
+
+  status = ml_pipeline_stop (pipe);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_src_release_handle (srchandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_sink_unregister (sink_false);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (pipe);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_tensor_if_custom_unregister (custom);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  EXPECT_TRUE (g_file_get_contents (file, (gchar **)&content, &len, NU
