@@ -7596,4 +7596,42 @@ TEST (nnstreamer_capi_if, custom_01_p)
   status = ml_pipeline_tensor_if_custom_unregister (custom);
   EXPECT_EQ (status, ML_ERROR_NONE);
 
-  EXPECT_TRUE (g_file_get_contents (file, (gchar **)&content, &len, NU
+  EXPECT_TRUE (g_file_get_contents (file, (gchar **)&content, &len, NULL));
+  EXPECT_EQ (len, 4U * 5);
+  EXPECT_TRUE (content != nullptr);
+
+  /* Check if the TRUE path data is received correctly.  */
+  if (content && len == 20) {
+    for (i = 0; i < 5; i++) {
+      EXPECT_EQ (content[i * 4 + 0], i + 4);
+      EXPECT_EQ (content[i * 4 + 1], i + 1);
+      EXPECT_EQ (content[i * 4 + 2], i + 3);
+      EXPECT_EQ (content[i * 4 + 3], i + 2);
+    }
+  }
+  g_free (content);
+
+  /* The FALSE path receives 5 buffers. */
+  EXPECT_EQ (*count_sink, 5U);
+
+  for (i = 0; i < 10; i++) {
+    g_free (uintarray[i]);
+  }
+  ml_tensors_info_destroy (info);
+  ml_tensors_data_destroy (data);
+  g_free (pipeline);
+  g_free (count_sink);
+  g_free (fullpath);
+  g_free (file);
+}
+
+/**
+ * @brief Test for tensor_if custom registration.
+ * @detail Invalid params.
+ */
+TEST (nnstreamer_capi_if, register_01_n)
+{
+  ml_pipeline_if_h custom;
+  int status;
+
+  /* test code w
