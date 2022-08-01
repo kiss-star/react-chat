@@ -7670,4 +7670,39 @@ TEST (nnstreamer_capi_if, register_03_n)
 }
 
 /**
- * @brief Test for tensor_if c
+ * @brief Test for tensor_if custom registration.
+ * @detail Invalid params.
+ */
+TEST (nnstreamer_capi_if, register_04_n)
+{
+  ml_pipeline_if_h custom1, custom2;
+  int status;
+
+  status = ml_pipeline_tensor_if_custom_register ("tif_custom_cb_name",
+      test_if_custom_cb, NULL, &custom1);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* test to register tensor_if custom twice with same name */
+  status = ml_pipeline_tensor_if_custom_register ("tif_custom_cb_name",
+      test_if_custom_cb, NULL, &custom2);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_tensor_if_custom_unregister (custom1);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test for tensor_if custom unregistration.
+ * @detail Invalid params.
+ */
+TEST (nnstreamer_capi_if, unregister_01_n)
+{
+  int status;
+
+  /* test code with null param */
+  status = ml_pipeline_tensor_if_custom_unregister (NULL);
+  EXPECT_NE (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Te
