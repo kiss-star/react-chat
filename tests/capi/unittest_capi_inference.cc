@@ -7705,4 +7705,23 @@ TEST (nnstreamer_capi_if, unregister_01_n)
 }
 
 /**
- * @brief Te
+ * @brief Test for tensor_if custom unregistration.
+ * @detail Failed if pipeline is constructed.
+ */
+TEST (nnstreamer_capi_if, unregister_02_n)
+{
+  ml_pipeline_h pipe1, pipe2;
+  ml_pipeline_if_h custom;
+  int status;
+  gchar *pipeline = g_strdup_printf (
+      "appsrc name=appsrc ! other/tensor,dimension=(string)4:1:1:1, type=(string)uint8,framerate=(fraction)0/1 ! "
+      "tensor_if name=tif compared-value=CUSTOM compared-value-option=tif_unreg_test then=PASSTHROUGH else=PASSTHROUGH "
+      "tif.src_0 ! queue ! tensor_sink name=sink_true sync=false async=false "
+      "tif.src_1 ! queue ! tensor_sink name=sink_false sync=false async=false");
+
+  status = ml_pipeline_tensor_if_custom_register ("tif_unreg_test",
+      test_if_custom_cb, NULL, &custom);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &pipe1);
+  EXPECT_EQ (stat
