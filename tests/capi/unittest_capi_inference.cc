@@ -7724,4 +7724,33 @@ TEST (nnstreamer_capi_if, unregister_02_n)
   EXPECT_EQ (status, ML_ERROR_NONE);
 
   status = ml_pipeline_construct (pipeline, NULL, NULL, &pipe1);
-  EXPECT_EQ (stat
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &pipe2);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* failed to unregister tensor_if custom if pipeline is constructed */
+  status = ml_pipeline_tensor_if_custom_unregister (custom);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (pipe1);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_tensor_if_custom_unregister (custom);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_destroy (pipe2);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* succesfully done if all pipelines with custom condition are destroyed */
+  status = ml_pipeline_tensor_if_custom_unregister (custom);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (pipeline);
+}
+
+/**
+ * @brief A tensor-sink callback for sink handle in a pipeline
+ */
+static void
+test_sink_callback_flush (const ml_tensors_data_h data,
