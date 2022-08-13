@@ -7754,3 +7754,38 @@ TEST (nnstreamer_capi_if, unregister_02_n)
  */
 static void
 test_sink_callback_flush (const ml_tensors_data_h data,
+    const ml_tensors_info_h info, void *user_data)
+{
+  guint *count = (guint *) user_data;
+
+  G_LOCK (callback_lock);
+  *count = *count + 1;
+
+  /* check first data */
+  if (*count == 1) {
+    gint *received;
+    size_t data_size;
+
+    ml_tensors_data_get_tensor_data (data, 0, (void **) &received, &data_size);
+    EXPECT_EQ (data_size, 3 * sizeof (gint));
+    EXPECT_EQ (received[0], 1);
+    EXPECT_EQ (received[1], 2);
+    EXPECT_EQ (received[2], 3);
+  }
+  G_UNLOCK (callback_lock);
+}
+
+/**
+ * @brief Test NNStreamer pipeline flush.
+ */
+TEST (nnstreamer_capi_flush, success_01_p)
+{
+  ml_pipeline_h handle;
+  ml_pipeline_src_h srchandle;
+  ml_pipeline_sink_h sinkhandle;
+  ml_tensors_info_h in_info;
+  ml_tensors_data_h in_data;
+  ml_tensor_dimension dim = { 10, 1, 1, 1 };
+  int status;
+  gchar pipeline[] = "appsrc name=srcx ! "
+      "other/tensor,dimension=(string)10:1
