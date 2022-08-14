@@ -7788,4 +7788,24 @@ TEST (nnstreamer_capi_flush, success_01_p)
   ml_tensor_dimension dim = { 10, 1, 1, 1 };
   int status;
   gchar pipeline[] = "appsrc name=srcx ! "
-      "other/tensor,dimension=(string)10:1
+      "other/tensor,dimension=(string)10:1:1:1,type=(string)int32,framerate=(fraction)0/1 ! "
+      "tensor_aggregator frames-in=10 frames-out=3 frames-flush=3 frames-dim=0 ! "
+      "tensor_sink name=sinkx";
+  gint test_data[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+  guint *count_sink = (guint *) g_malloc0 (sizeof (guint));
+  ASSERT_TRUE (count_sink != NULL);
+
+  /* prepare input data */
+  ml_tensors_info_create (&in_info);
+  ml_tensors_info_set_count (in_info, 1);
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_INT32);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, dim);
+
+  ml_tensors_data_create (in_info, &in_data);
+  ml_tensors_data_set_tensor_data (in_data, 0, test_data, 10 * sizeof (gint));
+
+  /* start pipeline */
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_src_get_handle (handle, "srcx", &srchandl
