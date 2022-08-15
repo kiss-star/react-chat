@@ -7836,4 +7836,44 @@ TEST (nnstreamer_capi_flush, success_01_p)
   *count_sink = 0;
   status = ml_pipeline_src_input_data (srchandle, in_data,
         ML_PIPELINE_BUF_POLICY_DO_NOT_FREE);
-  EXPECT_EQ (status, ML_ERR
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  wait_pipeline_process_buffers (*count_sink, 3);
+  g_usleep (300000);
+  EXPECT_EQ (*count_sink, 3U);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  ml_tensors_info_destroy (in_info);
+  ml_tensors_data_destroy (in_data);
+  g_free (count_sink);
+}
+
+/**
+ * @brief Test NNStreamer pipeline flush.
+ * @detail Failure case when the pipeline handle is invalid.
+ */
+TEST (nnstreamer_capi_flush, failure_02_n)
+{
+  int status;
+
+  status = ml_pipeline_flush (NULL, true);
+  EXPECT_NE (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief A tensor-sink callback for sink handle in a pipeline
+ */
+static void
+test_sink_callback_flex (const ml_tensors_data_h data,
+    const ml_tensors_info_h info, void *user_data)
+{
+  guint *count = (guint *) user_data;
+  gint status;
+  gint *received;
+  guint total = 0;
+  size_t data_size;
+
+  G_LOCK (callback_lock);
+  *count = *
