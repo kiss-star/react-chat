@@ -7876,4 +7876,28 @@ test_sink_callback_flex (const ml_tensors_data_h data,
   size_t data_size;
 
   G_LOCK (callback_lock);
-  *count = *
+  *count = *count + 1;
+
+  status = ml_tensors_info_get_count (info, &total);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (total, 3U);
+
+  status = ml_tensors_data_get_tensor_data (data, 0, (void **) &received, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (data_size, 4 * sizeof (gint));
+  EXPECT_EQ (received[0], 1);
+  EXPECT_EQ (received[1], 2);
+  EXPECT_EQ (received[2], 3);
+  EXPECT_EQ (received[3], 4);
+
+  status = ml_tensors_data_get_tensor_data (data, 1, (void **) &received, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (data_size, 2 * sizeof (gint));
+  EXPECT_EQ (received[0], 5);
+  EXPECT_EQ (received[1], 6);
+
+  status = ml_tensors_data_get_tensor_data (data, 2, (void **) &received, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (data_size, 4 * sizeof (gint));
+  EXPECT_EQ (received[0], 7);
+  EXPECT_E
