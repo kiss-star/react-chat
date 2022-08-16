@@ -7928,3 +7928,25 @@ TEST (nnstreamer_capi_flex, sink_multi)
   count_sink = (guint *) g_malloc0 (sizeof (guint));
   ASSERT_TRUE (count_sink != NULL);
 
+  /* prepare input data */
+  ml_tensors_info_create (&in_info);
+  ml_tensors_info_set_count (in_info, 1);
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_INT32);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, dim);
+
+  ml_tensors_data_create (in_info, &in_data);
+  ml_tensors_data_set_tensor_data (in_data, 0, test_data, 10 * sizeof (gint));
+
+  /* start pipeline */
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_src_get_handle (handle, "srcx", &srchandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_sink_register (handle, "sinkx",
+      test_sink_callback_flex, count_sink, &sinkhandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_start (handle);
+  EXPECT_EQ (status, ML_E
