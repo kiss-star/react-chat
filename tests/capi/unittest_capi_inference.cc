@@ -7900,4 +7900,31 @@ test_sink_callback_flex (const ml_tensors_data_h data,
   EXPECT_EQ (status, ML_ERROR_NONE);
   EXPECT_EQ (data_size, 4 * sizeof (gint));
   EXPECT_EQ (received[0], 7);
-  EXPECT_E
+  EXPECT_EQ (received[1], 8);
+  EXPECT_EQ (received[2], 9);
+  EXPECT_EQ (received[3], 10);
+
+  G_UNLOCK (callback_lock);
+}
+
+/**
+ * @brief Test NNStreamer pipeline for flexible tensors.
+ */
+TEST (nnstreamer_capi_flex, sink_multi)
+{
+  gchar pipeline[] = "appsrc name=srcx caps=application/octet-stream,framerate=(fraction)10/1 ! "
+      "tensor_converter input-dim=4,2,4 input-type=int32,int32,int32 ! "
+      "other/tensors,format=flexible ! tensor_sink name=sinkx sync=false";
+  guint test_data[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+  ml_pipeline_h handle;
+  ml_pipeline_src_h srchandle;
+  ml_pipeline_sink_h sinkhandle;
+  ml_tensors_info_h in_info;
+  ml_tensors_data_h in_data;
+  ml_tensor_dimension dim = { 10, 1, 1, 1 };
+  gint i, status;
+  guint *count_sink;
+
+  count_sink = (guint *) g_malloc0 (sizeof (guint));
+  ASSERT_TRUE (count_sink != NULL);
+
