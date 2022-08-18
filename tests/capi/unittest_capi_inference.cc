@@ -7978,4 +7978,27 @@ TEST (nnstreamer_capi_flex, sink_multi)
 TEST (nnstreamer_capi_flex, src_multi)
 {
   gchar pipeline[] = "appsrc name=srcx caps=other/tensors,format=flexible,framerate=(fraction)10/1 ! "
-      "tensor_converter input-dim=4,2,4 
+      "tensor_converter input-dim=4,2,4 input-type=int32,int32,int32 ! "
+      "tensor_sink name=sinkx sync=false";
+  guint test_data[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+  ml_pipeline_h handle;
+  ml_pipeline_src_h srchandle;
+  ml_pipeline_sink_h sinkhandle;
+  ml_tensors_info_h in_info;
+  ml_tensors_data_h in_data;
+  ml_tensor_dimension dim1 = { 4, 1, 1, 1 };
+  ml_tensor_dimension dim2 = { 2, 1, 1, 1 };
+  ml_tensor_dimension dim3 = { 4, 1, 1, 1 };
+  gint i, status;
+  guint *count_sink;
+
+  count_sink = (guint *) g_malloc0 (sizeof (guint));
+  ASSERT_TRUE (count_sink != NULL);
+
+  /* prepare input data */
+  ml_tensors_info_create (&in_info);
+  ml_tensors_info_set_count (in_info, 3);
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_INT32);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, dim1);
+  ml_tensors_info_set_tensor_type (in_info, 1, ML_TENSOR_TYPE_INT32);
+  ml_tensors_info_set
