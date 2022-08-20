@@ -8001,4 +8001,25 @@ TEST (nnstreamer_capi_flex, src_multi)
   ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_INT32);
   ml_tensors_info_set_tensor_dimension (in_info, 0, dim1);
   ml_tensors_info_set_tensor_type (in_info, 1, ML_TENSOR_TYPE_INT32);
-  ml_tensors_info_set
+  ml_tensors_info_set_tensor_dimension (in_info, 1, dim2);
+  ml_tensors_info_set_tensor_type (in_info, 2, ML_TENSOR_TYPE_INT32);
+  ml_tensors_info_set_tensor_dimension (in_info, 2, dim3);
+
+  ml_tensors_data_create (in_info, &in_data);
+  ml_tensors_data_set_tensor_data (in_data, 0, &test_data[0], 4 * sizeof (gint));
+  ml_tensors_data_set_tensor_data (in_data, 1, &test_data[4], 2 * sizeof (gint));
+  ml_tensors_data_set_tensor_data (in_data, 2, &test_data[6], 4 * sizeof (gint));
+
+  /* start pipeline */
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_src_get_handle (handle, "srcx", &srchandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_sink_register (handle, "sinkx",
+      test_sink_callback_flex, count_sink, &sinkhandle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_start (handle);
+  EXPECT_
