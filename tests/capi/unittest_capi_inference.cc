@@ -8022,4 +8022,43 @@ TEST (nnstreamer_capi_flex, src_multi)
   EXPECT_EQ (status, ML_ERROR_NONE);
 
   status = ml_pipeline_start (handle);
-  EXPECT_
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* push input data */
+  *count_sink = 0;
+  for (i = 0; i < 3; i++) {
+    g_usleep (50000);
+    status = ml_pipeline_src_input_data (srchandle, in_data,
+          ML_PIPELINE_BUF_POLICY_DO_NOT_FREE);
+    EXPECT_EQ (status, ML_ERROR_NONE);
+  }
+
+  wait_pipeline_process_buffers (*count_sink, 3);
+  g_usleep (300000);
+  EXPECT_EQ (*count_sink, 3U);
+
+  status = ml_pipeline_destroy (handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  ml_tensors_info_destroy (in_info);
+  ml_tensors_data_destroy (in_data);
+  g_free (count_sink);
+}
+
+/**
+ * @brief Main gtest
+ */
+int
+main (int argc, char **argv)
+{
+  int result = -1;
+
+  try {
+    testing::InitGoogleTest (&argc, argv);
+  } catch (...) {
+    g_warning ("catch 'testing::internal::<unnamed>::ClassUniqueToAlwaysTrue'");
+  }
+
+  _ml_initialize_gstreamer ();
+
+  /* ignore tizen feature status while run
