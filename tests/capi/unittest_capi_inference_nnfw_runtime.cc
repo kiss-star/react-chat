@@ -92,4 +92,39 @@ protected:
     if (single_h) {
       ml_single_close (single_h);
       single_h = nullptr;
-  
+    }
+
+    if (pipeline_h) {
+      ml_pipeline_destroy (pipeline_h);
+      pipeline_h = nullptr;
+    }
+
+    if (input)
+      ml_tensors_data_destroy (input);
+
+    if (input2)
+      ml_tensors_data_destroy (input2);
+
+    if (output)
+      ml_tensors_data_destroy (output);
+
+    ml_tensors_info_destroy (in_info);
+    ml_tensors_info_destroy (out_info);
+    ml_tensors_info_destroy (in_res);
+    ml_tensors_info_destroy (out_res);
+    g_free (const_cast<gchar *>(valid_model));
+  }
+
+  /**
+   * @brief Signal handler for new data of tensor_sink element
+   * @note This handler checks the number of received tensor counts.
+   */
+  static void
+  cb_new_data (const ml_tensors_data_h data, const ml_tensors_info_h info, void *user_data)
+  {
+    int status;
+    float *data_ptr;
+    size_t data_size;
+    int *checks = (int *)user_data;
+
+    status
