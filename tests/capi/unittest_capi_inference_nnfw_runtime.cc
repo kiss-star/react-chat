@@ -34,4 +34,29 @@ protected:
    * @brief Get the valid model file for NNFW test
    * @return gchar* the path of the model file
    */
-  gchar *GetVail
+  gchar *GetVaildModelFile () {
+    gchar *model_file;
+
+    /* nnfw needs a directory with model file and metadata in that directory */
+    g_autofree gchar *model_path = g_build_filename (root_path, "tests", "test_models", "models", NULL);
+
+    g_autofree gchar *meta_file = g_build_filename (model_path, "metadata", "MANIFEST", NULL);
+    if (!g_file_test (meta_file, G_FILE_TEST_EXISTS)) {
+      return NULL;
+    }
+
+    model_file = g_build_filename (model_path, "add.tflite", NULL);
+    if (!g_file_test (model_file, G_FILE_TEST_EXISTS)) {
+      g_free (model_file);
+      return NULL;
+    }
+    return model_file;
+  }
+
+protected:
+  /**
+   * @brief Construct a new MLAPIInferenceNNFW object
+   */
+  MLAPIInferenceNNFW ()
+    : single_h(nullptr), pipeline_h(nullptr), in_info(nullptr), out_info(nullptr),
+      in_res(nullp
