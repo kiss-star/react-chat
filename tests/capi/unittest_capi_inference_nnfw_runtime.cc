@@ -59,4 +59,37 @@ protected:
    */
   MLAPIInferenceNNFW ()
     : single_h(nullptr), pipeline_h(nullptr), in_info(nullptr), out_info(nullptr),
-      in_res(nullp
+      in_res(nullptr), out_res(nullptr), input(nullptr), input2(nullptr), output(nullptr),
+      root_path(nullptr), valid_model(nullptr)
+  {
+    for (int i = 0; i < ML_TENSOR_RANK_LIMIT; ++i)
+      in_dim[i] = out_dim[i] = res_dim[i] = 1;
+  }
+
+  /**
+   * @brief SetUp method for each test case
+   */
+  void SetUp () override
+  {
+    ml_tensors_info_create (&in_info);
+    ml_tensors_info_create (&out_info);
+    ml_tensors_info_create (&in_res);
+    ml_tensors_info_create (&out_res);
+
+    /* supposed to run test in build directory */
+    root_path = g_getenv ("MLAPI_SOURCE_ROOT_PATH");
+    if (root_path == NULL) {
+      root_path = "..";
+    }
+    valid_model = GetVaildModelFile();
+  }
+
+  /**
+   * @brief TearDown method for each test case
+   */
+  void TearDown () override
+  {
+    if (single_h) {
+      ml_single_close (single_h);
+      single_h = nullptr;
+  
