@@ -127,4 +127,32 @@ protected:
     size_t data_size;
     int *checks = (int *)user_data;
 
-    status
+    status = ml_tensors_data_get_tensor_data (data, 0, (void **)&data_ptr, &data_size);
+    EXPECT_EQ (status, ML_ERROR_NONE);
+    EXPECT_FLOAT_EQ (*data_ptr, 12.0);
+
+    *checks = *checks + 1;
+  }
+
+  /**
+   * @brief Signal handler for new data of tensor_sink element and check its shape and payload.
+   * @note This handler checks the rank, dimension, and payload of the received tensor.
+   */
+  static void
+  cb_new_data_checker (const ml_tensors_data_h data, const ml_tensors_info_h info, void *user_data)
+  {
+    unsigned int cnt = 0;
+    int status;
+    float *data_ptr;
+    size_t data_size;
+    int *checks = (int *)user_data;
+    ml_tensor_dimension out_dim;
+
+    ml_tensors_info_get_count (info, &cnt);
+    EXPECT_EQ (cnt, 1U);
+
+    ml_tensors_info_get_tensor_dimension (info, 0, out_dim);
+    EXPECT_EQ (out_dim[0], 1001U);
+    EXPECT_EQ (out_dim[1], 1U);
+    EXPECT_EQ (out_dim[2], 1U);
+    EXPECT_EQ (out_dim[3], 1U);
