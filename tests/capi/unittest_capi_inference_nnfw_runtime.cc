@@ -156,3 +156,41 @@ protected:
     EXPECT_EQ (out_dim[1], 1U);
     EXPECT_EQ (out_dim[2], 1U);
     EXPECT_EQ (out_dim[3], 1U);
+
+    status = ml_tensors_data_get_tensor_data (data, 0, (void **)&data_ptr, &data_size);
+    EXPECT_EQ (status, ML_ERROR_NONE);
+    EXPECT_EQ (data_size, 1001U);
+
+    *checks = *checks + 1;
+  }
+
+  /**
+   * @brief Synchronization function for the pipeline execution.
+   */
+  static void
+  wait_for_sink (guint* call_cnt, const guint expected_cnt)
+  {
+    guint waiting_time = 0U;
+    guint unit_time = 1000U * 1000; /* 1 second */
+    gboolean done = FALSE;
+
+    while (!done && waiting_time < unit_time * 10) {
+      done = (*call_cnt >= expected_cnt);
+      waiting_time += unit_time;
+      if (!done)
+        g_usleep (unit_time);
+    }
+    ASSERT_TRUE (done);
+  }
+};
+
+/**
+ * @brief Test nnfw subplugin with successful invoke (single ML-API)
+ */
+TEST_F (MLAPIInferenceNNFW, invoke_single_00)
+{
+  int status;
+  unsigned int count = 0;
+  float *data;
+  size_t data_size;
+  ml_tensor_type_e type = ML_TENSOR_TYPE_UNKNO
