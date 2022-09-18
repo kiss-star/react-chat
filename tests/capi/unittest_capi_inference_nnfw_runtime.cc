@@ -218,4 +218,29 @@ TEST_F (MLAPIInferenceNNFW, invoke_single_00)
   EXPECT_EQ (status, ML_ERROR_NONE);
 
   status = ml_tensors_info_get_count (in_res, &count);
-  EXPECT_EQ 
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (count, 1U);
+
+  status = ml_tensors_info_get_tensor_type (in_res, 0, &type);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (type, ML_TENSOR_TYPE_FLOAT32);
+
+  ml_tensors_info_get_tensor_dimension (in_res, 0, res_dim);
+  EXPECT_TRUE (in_dim[0] == res_dim[0]);
+  EXPECT_TRUE (in_dim[1] == res_dim[1]);
+  EXPECT_TRUE (in_dim[2] == res_dim[2]);
+  EXPECT_TRUE (in_dim[3] == res_dim[3]);
+
+  /* output tensor in filter */
+  status = ml_single_get_output_info (single_h, &out_res);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_get_count (out_res, &count);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (count, 1U);
+
+  status = ml_tensors_info_get_tensor_type (out_res, 0, &type);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (type, ML_TENSOR_TYPE_FLOAT32);
+
+  ml_tensors_info_get_tensor_dimension (ou
