@@ -271,4 +271,26 @@ TEST_F (MLAPIInferenceNNFW, invoke_single_00)
 
 
 /**
- * @brief Test nnfw subplugin w
+ * @brief Test nnfw subplugin with unsuccessful invoke (single ML-API)
+ * @detail Model is not found
+ */
+TEST_F (MLAPIInferenceNNFW, invoke_single_01_n)
+{
+  int status;
+  g_autofree gchar *invalid_model = nullptr;
+
+  invalid_model = g_build_filename (
+      root_path, "tests", "test_models", "models", "invalid_model.tflite", NULL);
+  EXPECT_FALSE (g_file_test (invalid_model, G_FILE_TEST_EXISTS));
+
+  ml_tensors_info_set_count (in_info, 1);
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+
+  ml_tensors_info_set_count (out_info, 1);
+  ml_tensors_info_set_tensor_type (out_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tensor_dimension (out_info, 0, out_dim);
+
+  status = ml_single_open (
+      &single_h, invalid_model, in_info, out_info, ML_NNFW_TYPE_NNFW, ML_NNFW_HW_ANY);
+  EXPECT_EQ (status, ML_ERROR_INVALID_
