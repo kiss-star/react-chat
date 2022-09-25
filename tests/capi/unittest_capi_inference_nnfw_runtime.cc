@@ -243,4 +243,32 @@ TEST_F (MLAPIInferenceNNFW, invoke_single_00)
   EXPECT_EQ (status, ML_ERROR_NONE);
   EXPECT_EQ (type, ML_TENSOR_TYPE_FLOAT32);
 
-  ml_tensors_info_get_tensor_dimension (ou
+  ml_tensors_info_get_tensor_dimension (out_res, 0, res_dim);
+  EXPECT_TRUE (out_dim[0] == res_dim[0]);
+  EXPECT_TRUE (out_dim[1] == res_dim[1]);
+  EXPECT_TRUE (out_dim[2] == res_dim[2]);
+  EXPECT_TRUE (out_dim[3] == res_dim[3]);
+
+  /* generate data */
+  status = ml_tensors_data_create (in_info, &input);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (input != NULL);
+
+  status = ml_tensors_data_get_tensor_data (input, 0, (void **)&data, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (data_size, sizeof (float));
+  *data = 10.0;
+
+  status = ml_single_invoke (single_h, input, &output);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (output != NULL);
+
+  status = ml_tensors_data_get_tensor_data (output, 0, (void **)&data, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (data_size, sizeof (float));
+  EXPECT_FLOAT_EQ (*data, 12.0);
+}
+
+
+/**
+ * @brief Test nnfw subplugin w
