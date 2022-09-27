@@ -293,4 +293,35 @@ TEST_F (MLAPIInferenceNNFW, invoke_single_01_n)
 
   status = ml_single_open (
       &single_h, invalid_model, in_info, out_info, ML_NNFW_TYPE_NNFW, ML_NNFW_HW_ANY);
-  EXPECT_EQ (status, ML_ERROR_INVALID_
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  /* generate data */
+  status = ml_tensors_data_create (in_info, &input);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (input != NULL);
+
+  status = ml_single_invoke (single_h, input, &output);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+}
+
+/**
+ * @brief Test nnfw subplugin with unsuccessful invoke (single ML-API)
+ * @detail Dimension of model is not matched.
+ */
+TEST_F (MLAPIInferenceNNFW, invoke_single_02_n)
+{
+  int status;
+  unsigned int count = 0;
+  float *data;
+  size_t data_size;
+  ml_tensor_type_e type = ML_TENSOR_TYPE_UNKNOWN;
+
+  ASSERT_TRUE (valid_model != nullptr);
+
+  ml_tensors_info_set_count (in_info, 1);
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+
+  ml_tensors_info_set_count (out_info, 1);
+  ml_tensors_info_set_tensor_type (out_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tens
