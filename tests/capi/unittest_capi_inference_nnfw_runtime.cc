@@ -324,4 +324,28 @@ TEST_F (MLAPIInferenceNNFW, invoke_single_02_n)
 
   ml_tensors_info_set_count (out_info, 1);
   ml_tensors_info_set_tensor_type (out_info, 0, ML_TENSOR_TYPE_FLOAT32);
-  ml_tensors_info_set_tens
+  ml_tensors_info_set_tensor_dimension (out_info, 0, out_dim);
+
+  /* Open model with proper dimension */
+  status = ml_single_open (
+      &single_h, valid_model, in_info, out_info, ML_NNFW_TYPE_NNFW, ML_NNFW_HW_ANY);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* let's ignore timeout (30 sec) */
+  status = ml_single_set_timeout (single_h, 30000);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* input tensor in filter */
+  status = ml_single_get_input_info (single_h, &in_res);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_get_count (in_res, &count);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (count, 1U);
+
+  status = ml_tensors_info_get_tensor_type (in_res, 0, &type);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (type, ML_TENSOR_TYPE_FLOAT32);
+
+  ml_tensors_info_get_tensor_dimension (in_res, 0, res_dim);
+  EXPECT_
