@@ -348,4 +348,29 @@ TEST_F (MLAPIInferenceNNFW, invoke_single_02_n)
   EXPECT_EQ (type, ML_TENSOR_TYPE_FLOAT32);
 
   ml_tensors_info_get_tensor_dimension (in_res, 0, res_dim);
-  EXPECT_
+  EXPECT_TRUE (in_dim[0] == res_dim[0]);
+  EXPECT_TRUE (in_dim[1] == res_dim[1]);
+  EXPECT_TRUE (in_dim[2] == res_dim[2]);
+  EXPECT_TRUE (in_dim[3] == res_dim[3]);
+
+  /* Change and update dimension for mismatch */
+  in_dim[0] = in_dim[1] = in_dim[2] = in_dim[3] = 2;
+  ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+
+  status = ml_tensors_data_create (in_info, &input);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (input != NULL);
+
+  status = ml_tensors_data_get_tensor_data (input, 0, (void **)&data, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (data_size, sizeof (float) * 16);
+  data[0] = 10.0;
+
+  status = ml_single_invoke (single_h, input, &output);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+}
+
+/**
+ * @brief Test nnfw subplugin with successful invoke (pipeline, ML-API)
+ */
+TEST_F (MLAPIInferenceNNFW, invoke_pipe
