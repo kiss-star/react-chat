@@ -419,4 +419,32 @@ TEST_F (MLAPIInferenceNNFW, invoke_pipeline_00)
   EXPECT_EQ (status, ML_ERROR_NONE);
   EXPECT_TRUE (input != NULL);
 
-  status = ml_tensors_data_get_tensor_data (inpu
+  status = ml_tensors_data_get_tensor_data (input, 0, (void **)&data, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (data_size, sizeof (float));
+  *data = 10.0;
+  status = ml_tensors_data_set_tensor_data (input, 0, data, sizeof (float));
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Push data to the source pad */
+  for (int i = 0; i < 5; i++) {
+    status = ml_pipeline_src_input_data (src_handle, input, ML_PIPELINE_BUF_POLICY_DO_NOT_FREE);
+    EXPECT_EQ (status, ML_ERROR_NONE);
+    g_usleep (100000);
+  }
+
+  MLAPIInferenceNNFW::wait_for_sink (&call_cnt, 5);
+
+  status = ml_pipeline_stop (pipeline_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+}
+
+/**
+ * @brief Test nnfw subplugin with invalid model file (pipeline, ML-API)
+ * @detail Failure case with invalid model file
+ */
+TEST_F (MLAPIInferenceNNFW, invoke_pipeline_01_n)
+{
+  int status;
+  g_autofree gchar *pipeline = nullptr;
+  g_autofree gcha
