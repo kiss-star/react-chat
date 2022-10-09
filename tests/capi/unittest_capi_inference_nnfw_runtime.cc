@@ -447,4 +447,28 @@ TEST_F (MLAPIInferenceNNFW, invoke_pipeline_01_n)
 {
   int status;
   g_autofree gchar *pipeline = nullptr;
-  g_autofree gcha
+  g_autofree gchar *invalid_model = nullptr;
+
+  /* Model does not exist. */
+  invalid_model = g_build_filename (
+      root_path, "tests", "test_models", "models", "NULL.tflite", NULL);
+  EXPECT_FALSE (g_file_test (invalid_model, G_FILE_TEST_EXISTS));
+
+  pipeline = g_strdup_printf (
+      "appsrc name=appsrc ! "
+      "other/tensor,dimension=(string)1:1:1:1,type=(string)float32,framerate=(fraction)0/1 ! "
+      "tensor_filter framework=nnfw model=%s ! tensor_sink name=tensor_sink",
+      invalid_model);
+
+  status = ml_pipeline_construct (NULL, NULL, NULL, &pipeline_h);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_pipeline_construct (pipeline, NULL, NULL, NULL);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &pipeline_h);
+  EXPECT_EQ (status, ML_ERROR_STREAMS_PIPE);
+}
+
+/**
+ * @brief Test nnfw subplugin wit
