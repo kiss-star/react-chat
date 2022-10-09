@@ -471,4 +471,28 @@ TEST_F (MLAPIInferenceNNFW, invoke_pipeline_01_n)
 }
 
 /**
- * @brief Test nnfw subplugin wit
+ * @brief Test nnfw subplugin with invalid data (pipeline, ML-API)
+ * @detail Failure case with invalid parameter
+ */
+TEST_F (MLAPIInferenceNNFW, invoke_pipeline_02_n)
+{
+  int status;
+  ml_pipeline_src_h src_handle;
+  ml_pipeline_state_e state;
+  g_autofree gchar *pipeline = nullptr;
+
+  pipeline = g_strdup_printf (
+      "appsrc name=appsrc ! "
+      "other/tensor,dimension=(string)1:1:1:1,type=(string)float32,framerate=(fraction)0/1 ! "
+      "tensor_filter framework=nnfw model=%s ! tensor_sink name=tensor_sink",
+      valid_model);
+
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &pipeline_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* get tensor element using name */
+  status = ml_pipeline_src_get_handle (pipeline_h, "appsrc", &src_handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  ml_tensors_info_set_count (in_info, 1);
+    m
