@@ -495,4 +495,27 @@ TEST_F (MLAPIInferenceNNFW, invoke_pipeline_02_n)
   EXPECT_EQ (status, ML_ERROR_NONE);
 
   ml_tensors_info_set_count (in_info, 1);
-    m
+    ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_UINT8);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+
+  status = ml_pipeline_start (pipeline_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_get_state (pipeline_h, &state);
+  EXPECT_EQ (status, ML_ERROR_NONE); /* At this moment, it can be READY, PAUSED, or PLAYING */
+  EXPECT_NE (state, ML_PIPELINE_STATE_UNKNOWN);
+  EXPECT_NE (state, ML_PIPELINE_STATE_NULL);
+
+  /* generate data with invalid type */
+  status = ml_tensors_data_create (in_info, &input);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (input != NULL);
+
+  /* Push data to the source pad */
+  status = ml_pipeline_src_input_data (src_handle, input, ML_PIPELINE_BUF_POLICY_DO_NOT_FREE);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  ml_tensors_data_destroy (input);
+  input = NULL;
+
+  /* generate data 
