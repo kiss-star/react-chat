@@ -518,4 +518,29 @@ TEST_F (MLAPIInferenceNNFW, invoke_pipeline_02_n)
   ml_tensors_data_destroy (input);
   input = NULL;
 
-  /* generate data 
+  /* generate data with invalid dimension */
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  in_dim[0] = 5;
+  ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+
+  status = ml_tensors_data_create (in_info, &input);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (input != NULL);
+
+  /* Push data to the source pad */
+  status = ml_pipeline_src_input_data (src_handle, input, ML_PIPELINE_BUF_POLICY_DO_NOT_FREE);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+}
+
+/**
+ * @brief Test nnfw subplugin multi-modal (pipeline, ML-API)
+ * @detail Invoke a model via Pipeline API, with two input streams into a single tensor
+ */
+TEST_F (MLAPIInferenceNNFW, multimodal_01_p)
+{
+  ml_pipeline_src_h src_handle_0, src_handle_1;
+  ml_pipeline_sink_h sink_handle;
+  ml_pipeline_state_e state;
+
+  g_autofree gchar *pipeline = nullptr;
+  g_autofree gchar *model_file = nul
