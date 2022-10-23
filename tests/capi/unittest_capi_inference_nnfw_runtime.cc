@@ -543,4 +543,28 @@ TEST_F (MLAPIInferenceNNFW, multimodal_01_p)
   ml_pipeline_state_e state;
 
   g_autofree gchar *pipeline = nullptr;
-  g_autofree gchar *model_file = nul
+  g_autofree gchar *model_file = nullptr;
+  g_autofree gchar *manifest_file = nullptr;
+  g_autofree gchar *replace_cmd = nullptr;
+  g_autofree gchar *revert_cmd = nullptr;
+  float *data1, *data2;
+  size_t data_size1, data_size2;
+  guint call_cnt = 0;
+  int status;
+
+  const gchar *orig_model = "add.tflite";
+  const gchar *new_model = "mobilenet_v1_1.0_224_quant.tflite";
+
+  model_file = g_build_filename (root_path, "tests", "test_models", "models",
+      "mobilenet_v1_1.0_224_quant.tflite", NULL);
+  EXPECT_TRUE (g_file_test (model_file, G_FILE_TEST_EXISTS));
+
+  manifest_file = g_build_filename (
+      root_path, "tests", "test_models", "models", "metadata", "MANIFEST", NULL);
+  EXPECT_TRUE (g_file_test (manifest_file, G_FILE_TEST_EXISTS));
+
+  replace_cmd = g_strdup_printf ("sed -i '/%s/c\\\"models\" : [ \"%s\" ],' %s",
+      orig_model, new_model, manifest_file);
+  ASSERT_EQ (system (replace_cmd), 0U);
+
+  pipeline = g_strdu
