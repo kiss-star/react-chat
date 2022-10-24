@@ -567,4 +567,18 @@ TEST_F (MLAPIInferenceNNFW, multimodal_01_p)
       orig_model, new_model, manifest_file);
   ASSERT_EQ (system (replace_cmd), 0U);
 
-  pipeline = g_strdu
+  pipeline = g_strdup_printf (
+      "appsrc name=appsrc_0 ! other/tensor,dimension=(string)3:112:224:1,type=(string)uint8,framerate=(fraction)0/1 ! mux.sink_0 "
+      "appsrc name=appsrc_1 ! other/tensor,dimension=(string)3:112:224:1,type=(string)uint8,framerate=(fraction)0/1 ! mux.sink_1 "
+      "tensor_merge mode=linear option=1 sync-mode=nosync name=mux ! "
+      "tensor_filter framework=nnfw input=3:224:224:1 inputtype=uint8 model=%s ! tensor_sink name=tensor_sink",
+      model_file);
+
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &pipeline_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* get tensor element using name */
+  status = ml_pipeline_src_get_handle (pipeline_h, "appsrc_0", &src_handle_0);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  status = ml_pipeline_src_get_handle (pipeline_h, "appsrc_1", &src_handle_1);
+  EXPECT_EQ (status, ML_ERROR_NONE)
