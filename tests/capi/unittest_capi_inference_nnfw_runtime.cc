@@ -581,4 +581,29 @@ TEST_F (MLAPIInferenceNNFW, multimodal_01_p)
   status = ml_pipeline_src_get_handle (pipeline_h, "appsrc_0", &src_handle_0);
   EXPECT_EQ (status, ML_ERROR_NONE);
   status = ml_pipeline_src_get_handle (pipeline_h, "appsrc_1", &src_handle_1);
-  EXPECT_EQ (status, ML_ERROR_NONE)
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_sink_register (
+      pipeline_h, "tensor_sink", MLAPIInferenceNNFW::cb_new_data_checker, &call_cnt, &sink_handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  in_dim[0] = 3;
+  in_dim[1] = 112;
+  in_dim[2] = 224;
+  in_dim[3] = 1;
+  ml_tensors_info_set_count (in_info, 1);
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_UINT8);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+
+  status = ml_pipeline_start (pipeline_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_get_state (pipeline_h, &state);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_NE (state, ML_PIPELINE_STATE_UNKNOWN);
+  EXPECT_NE (state, ML_PIPELINE_STATE_NULL);
+
+  /* generate data */
+  status = ml_tensors_data_create (in_info, &input);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE
