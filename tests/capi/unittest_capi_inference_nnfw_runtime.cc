@@ -606,4 +606,25 @@ TEST_F (MLAPIInferenceNNFW, multimodal_01_p)
   /* generate data */
   status = ml_tensors_data_create (in_info, &input);
   EXPECT_EQ (status, ML_ERROR_NONE);
-  EXPECT_TRUE
+  EXPECT_TRUE (input != NULL);
+
+  status = ml_tensors_data_get_tensor_data (input, 0, (void **)&data1, &data_size1);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (data_size1, 3U * 112U * 224U);
+
+  status = ml_tensors_data_create (in_info, &input2);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (input != NULL);
+  status = ml_tensors_data_get_tensor_data (input2, 0, (void **)&data2, &data_size2);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Push data to the source pad */
+  status = ml_pipeline_src_input_data (src_handle_0, input, ML_PIPELINE_BUF_POLICY_DO_NOT_FREE);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  status = ml_pipeline_src_input_data (src_handle_1, input2, ML_PIPELINE_BUF_POLICY_DO_NOT_FREE);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  MLAPIInferenceNNFW::wait_for_sink (&call_cnt, 1);
+
+  /* Revert the model file */
+  revert_cmd = g_strdup_printf 
