@@ -672,4 +672,29 @@ TEST_F (MLAPIInferenceNNFW, multimodel_01_p)
   EXPECT_EQ (status, ML_ERROR_NONE);
 
   ml_tensors_info_set_count (in_info, 1);
-  ml_tensors_info_set_tensor_type (in_info, 0, 
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+
+  status = ml_pipeline_start (pipeline_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_get_state (pipeline_h, &state);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_NE (state, ML_PIPELINE_STATE_UNKNOWN);
+  EXPECT_NE (state, ML_PIPELINE_STATE_NULL);
+
+  /* generate data */
+  status = ml_tensors_data_create (in_info, &input);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (input != NULL);
+
+  status = ml_tensors_data_get_tensor_data (input, 0, (void **)&data, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (data_size, sizeof (float));
+  *data = 10.0;
+
+  status = ml_tensors_data_set_tensor_data (input, 0, data, data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Push data to the source pad */
+  status = m
