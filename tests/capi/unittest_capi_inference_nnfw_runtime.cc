@@ -627,4 +627,30 @@ TEST_F (MLAPIInferenceNNFW, multimodal_01_p)
   MLAPIInferenceNNFW::wait_for_sink (&call_cnt, 1);
 
   /* Revert the model file */
-  revert_cmd = g_strdup_printf 
+  revert_cmd = g_strdup_printf ("sed -i '/%s/c\\\"models\" : [ \"%s\" ],' %s",
+      new_model, orig_model, manifest_file);
+  ASSERT_EQ (system (revert_cmd), 0U);
+}
+
+/**
+ * @brief Test nnfw subplugin multi-model (pipeline, ML-API)
+ * @detail Invoke two models via Pipeline API, sharing a single input stream
+ */
+TEST_F (MLAPIInferenceNNFW, multimodel_01_p)
+{
+  ml_pipeline_src_h src_handle;
+  ml_pipeline_sink_h sink_handle_0, sink_handle_1;
+  ml_pipeline_state_e state;
+
+  g_autofree gchar *pipeline = nullptr;
+  guint call_cnt1 = 0;
+  guint call_cnt2 = 0;
+  float *data;
+  size_t data_size;
+  int status;
+
+  pipeline = g_strdup_printf (
+      "appsrc name=appsrc ! "
+      "other/tensor,dimension=(string)1:1:1:1,type=(string)float32,framerate=(fraction)0/1 ! tee name=t "
+      "t. ! queue ! tensor_filter framework=nnfw model=%s ! tensor_sink name=tensor_sink_0 "
+      "t. ! queue ! tensor_filter 
