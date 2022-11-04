@@ -697,4 +697,31 @@ TEST_F (MLAPIInferenceNNFW, multimodel_01_p)
   EXPECT_EQ (status, ML_ERROR_NONE);
 
   /* Push data to the source pad */
-  status = m
+  status = ml_pipeline_src_input_data (src_handle, input, ML_PIPELINE_BUF_POLICY_DO_NOT_FREE);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  MLAPIInferenceNNFW::wait_for_sink (&call_cnt1, 1);
+  MLAPIInferenceNNFW::wait_for_sink (&call_cnt2, 1);
+}
+
+#ifdef ENABLE_TENSORFLOW_LITE
+/**
+ * @brief Test nnfw subplugin multi-model (pipeline, ML-API)
+ * @detail Invoke two models which have different framework via Pipeline API, sharing a single input stream
+ */
+TEST_F (MLAPIInferenceNNFW, multimodel_02_p)
+{
+  ml_pipeline_src_h src_handle;
+  ml_pipeline_sink_h sink_handle_0, sink_handle_1;
+  ml_pipeline_state_e state;
+
+  g_autofree gchar *pipeline = nullptr;
+  guint call_cnt1 = 0;
+  guint call_cnt2 = 0;
+  float *data;
+  size_t data_size;
+  int status;
+
+  pipeline = g_strdup_printf (
+      "appsrc name=appsrc ! "
+      "other/tensor,dimension=(string)1:1:1:1,type=(string)float32,framerate=(fra
