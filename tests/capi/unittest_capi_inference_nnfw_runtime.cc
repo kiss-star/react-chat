@@ -724,4 +724,21 @@ TEST_F (MLAPIInferenceNNFW, multimodel_02_p)
 
   pipeline = g_strdup_printf (
       "appsrc name=appsrc ! "
-      "other/tensor,dimension=(string)1:1:1:1,type=(string)float32,framerate=(fra
+      "other/tensor,dimension=(string)1:1:1:1,type=(string)float32,framerate=(fraction)0/1 ! tee name=t "
+      "t. ! queue ! tensor_filter framework=nnfw model=%s ! tensor_sink name=tensor_sink_0 "
+      "t. ! queue ! tensor_filter framework=tensorflow-lite model=%s ! tensor_sink name=tensor_sink_1",
+      valid_model, valid_model);
+
+  status = ml_pipeline_construct (pipeline, NULL, NULL, &pipeline_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* get tensor element using name */
+  status = ml_pipeline_src_get_handle (pipeline_h, "appsrc", &src_handle);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* register call back function when new data is arrived on sink pad */
+  status = ml_pipeline_sink_register (
+      pipeline_h, "tensor_sink_0", MLAPIInferenceNNFW::cb_new_data, &call_cnt1, &sink_handle_0);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  status = ml_pipeline_sink_register (
+      pipeline_h, "tensor_sink_1
