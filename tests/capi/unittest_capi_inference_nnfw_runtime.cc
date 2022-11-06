@@ -741,4 +741,27 @@ TEST_F (MLAPIInferenceNNFW, multimodel_02_p)
       pipeline_h, "tensor_sink_0", MLAPIInferenceNNFW::cb_new_data, &call_cnt1, &sink_handle_0);
   EXPECT_EQ (status, ML_ERROR_NONE);
   status = ml_pipeline_sink_register (
-      pipeline_h, "tensor_sink_1
+      pipeline_h, "tensor_sink_1", MLAPIInferenceNNFW::cb_new_data, &call_cnt2, &sink_handle_1);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  ml_tensors_info_set_count (in_info, 1);
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+
+  status = ml_pipeline_start (pipeline_h);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_pipeline_get_state (pipeline_h, &state);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_NE (state, ML_PIPELINE_STATE_UNKNOWN);
+  EXPECT_NE (state, ML_PIPELINE_STATE_NULL);
+
+  /* generate data */
+  status = ml_tensors_data_create (in_info, &input);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (input != NULL);
+
+  status = ml_tensors_data_get_tensor_data (input, 0, (void **)&data, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (data_size, sizeof (float));
+  *dat
