@@ -764,4 +764,36 @@ TEST_F (MLAPIInferenceNNFW, multimodel_02_p)
   status = ml_tensors_data_get_tensor_data (input, 0, (void **)&data, &data_size);
   EXPECT_EQ (status, ML_ERROR_NONE);
   EXPECT_EQ (data_size, sizeof (float));
-  *dat
+  *data = 10.0;
+
+  status = ml_tensors_data_set_tensor_data (input, 0, data, data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  /* Push data to the source pad */
+  status = ml_pipeline_src_input_data (src_handle, input, ML_PIPELINE_BUF_POLICY_DO_NOT_FREE);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  MLAPIInferenceNNFW::wait_for_sink (&call_cnt1, 1);
+  MLAPIInferenceNNFW::wait_for_sink (&call_cnt2, 1);
+}
+#endif /* ENABLE_TENSORFLOW_LITE */
+
+/**
+ * @brief Main gtest
+ */
+int
+main (int argc, char **argv)
+{
+  int result = -1;
+
+  try {
+    testing::InitGoogleTest (&argc, argv);
+  } catch (...) {
+    g_warning ("catch 'testing::internal::<unnamed>::ClassUniqueToAlwaysTrue'");
+  }
+
+  _ml_initialize_gstreamer ();
+
+  /* ignore tizen feature status while running the testcases */
+  set_feature_state (ML_FEATURE, SUPPORTED);
+  set_feature_state (ML_FEATURE_INFERENCE, SUPPORTED);
