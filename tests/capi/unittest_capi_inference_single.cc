@@ -2235,3 +2235,872 @@ TEST (nnstreamer_capi_singleshot, property_05_p)
 
   EXPECT_STREQ (prop_value, "5:1:1:1");
   g_free (prop_value);
+
+  status = ml_single_set_property (single, "input", "5:1:1");
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_single_get_property (single, "input", &prop_value);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  EXPECT_STREQ (prop_value, "5:1:1");
+  g_free (prop_value);
+
+  status = ml_single_set_property (single, "input", "5:1");
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_single_get_property (single, "input", &prop_value);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  EXPECT_STREQ (prop_value, "5:1");
+  g_free (prop_value);
+
+  status = ml_single_set_property (single, "input", "5");
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_single_get_property (single, "input", &prop_value);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  EXPECT_STREQ (prop_value, "5");
+  g_free (prop_value);
+
+  status = ml_single_set_property (single, "output", "5:1:1:1");
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_single_get_property (single, "output", &prop_value);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  EXPECT_STREQ (prop_value, "5:1:1:1");
+  g_free (prop_value);
+
+  status = ml_single_set_property (single, "output", "5:1:1");
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_single_get_property (single, "output", &prop_value);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  EXPECT_STREQ (prop_value, "5:1:1");
+  g_free (prop_value);
+
+  status = ml_single_set_property (single, "output", "5:1");
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_single_get_property (single, "output", &prop_value);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  EXPECT_STREQ (prop_value, "5:1");
+  g_free (prop_value);
+
+  status = ml_single_set_property (single, "output", "5");
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_single_get_property (single, "output", &prop_value);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  EXPECT_STREQ (prop_value, "5");
+  g_free (prop_value);
+
+skip_test:
+  g_free (test_model);
+}
+
+#ifdef ENABLE_NNFW_RUNTIME
+/**
+ * @brief Test NNStreamer single shot (nnfw backend)
+ */
+TEST (nnstreamer_capi_singleshot, invoke_05)
+{
+  ml_single_h single;
+  ml_tensors_info_h in_info, out_info;
+  ml_tensors_info_h in_res, out_res;
+  ml_tensors_data_h input, output;
+  ml_tensor_dimension in_dim, out_dim, res_dim;
+  ml_tensor_type_e type = ML_TENSOR_TYPE_UNKNOWN;
+  unsigned int count = 0;
+  char *name = NULL;
+  int status;
+
+  const gchar *root_path = g_getenv ("MLAPI_SOURCE_ROOT_PATH");
+  gchar *test_model;
+
+  /* supposed to run test in build directory */
+  if (root_path == NULL)
+    root_path = "..";
+
+  test_model = g_build_filename (
+      root_path, "tests", "test_models", "models", "add.tflite", NULL);
+  ASSERT_TRUE (g_file_test (test_model, G_FILE_TEST_EXISTS));
+
+  ml_tensors_info_create (&in_info);
+  ml_tensors_info_create (&out_info);
+
+  in_dim[0] = 1;
+  in_dim[1] = 1;
+  in_dim[2] = 1;
+  in_dim[3] = 1;
+  ml_tensors_info_set_count (in_info, 1);
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+
+  out_dim[0] = 1;
+  out_dim[1] = 1;
+  out_dim[2] = 1;
+  out_dim[3] = 1;
+  ml_tensors_info_set_count (out_info, 1);
+  ml_tensors_info_set_tensor_type (out_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tensor_dimension (out_info, 0, out_dim);
+
+  status = ml_single_open (
+      &single, test_model, in_info, out_info, ML_NNFW_TYPE_NNFW, ML_NNFW_HW_ANY);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+
+  /* input tensor in filter */
+  status = ml_single_get_input_info (single, &in_res);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_get_count (in_res, &count);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (count, 1U);
+
+  status = ml_tensors_info_get_tensor_name (in_res, 0, &name);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  g_free (name);
+
+  status = ml_tensors_info_get_tensor_type (in_res, 0, &type);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (type, ML_TENSOR_TYPE_FLOAT32);
+
+  ml_tensors_info_get_tensor_dimension (in_res, 0, res_dim);
+  EXPECT_TRUE (in_dim[0] == res_dim[0]);
+  EXPECT_TRUE (in_dim[1] == res_dim[1]);
+  EXPECT_TRUE (in_dim[2] == res_dim[2]);
+  EXPECT_TRUE (in_dim[3] == res_dim[3]);
+
+  /* output tensor in filter */
+  status = ml_single_get_output_info (single, &out_res);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_get_count (out_res, &count);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (count, 1U);
+
+  status = ml_tensors_info_get_tensor_name (out_res, 0, &name);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  g_free (name);
+
+  status = ml_tensors_info_get_tensor_type (out_res, 0, &type);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (type, ML_TENSOR_TYPE_FLOAT32);
+
+  ml_tensors_info_get_tensor_dimension (out_res, 0, res_dim);
+  EXPECT_TRUE (out_dim[0] == res_dim[0]);
+  EXPECT_TRUE (out_dim[1] == res_dim[1]);
+  EXPECT_TRUE (out_dim[2] == res_dim[2]);
+  EXPECT_TRUE (out_dim[3] == res_dim[3]);
+
+  input = output = NULL;
+
+  /* generate dummy data */
+  status = ml_tensors_data_create (in_info, &input);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (input != NULL);
+
+  status = ml_single_set_timeout (single, SINGLE_DEF_TIMEOUT_MSEC);
+  EXPECT_TRUE (status == ML_ERROR_NOT_SUPPORTED || status == ML_ERROR_NONE);
+
+  status = ml_single_invoke (single, input, &output);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (output != NULL);
+
+  status = ml_single_close (single);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  ml_tensors_data_destroy (output);
+  ml_tensors_data_destroy (input);
+
+  g_free (test_model);
+  ml_tensors_info_destroy (in_info);
+  ml_tensors_info_destroy (out_info);
+  ml_tensors_info_destroy (in_res);
+  ml_tensors_info_destroy (out_res);
+}
+
+/**
+ * @brief Test NNStreamer single shot (nnfw backend using model path)
+ */
+TEST (nnstreamer_capi_singleshot, open_dir)
+{
+  ml_single_h single;
+  int status;
+
+  const gchar *root_path = g_getenv ("MLAPI_SOURCE_ROOT_PATH");
+  gchar *test_model;
+
+  /* supposed to run test in build directory */
+  if (root_path == NULL)
+    root_path = "..";
+
+  test_model = g_build_filename (root_path, "tests", "test_models", "models", NULL);
+  ASSERT_TRUE (g_file_test (test_model, G_FILE_TEST_EXISTS));
+
+  status = ml_single_open (&single, test_model, NULL, NULL, ML_NNFW_TYPE_NNFW, ML_NNFW_HW_ANY);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_single_close (single);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (test_model);
+}
+
+#endif /* ENABLE_NNFW_RUNTIME */
+
+#ifdef ENABLE_ARMNN
+/**
+ * @brief Test NNStreamer single shot (caffe/armnn)
+ * @detail Run pipeline with caffe lenet model.
+ */
+TEST (nnstreamer_capi_singleshot, invoke_06)
+{
+  ml_single_h single;
+  ml_tensors_info_h in_info, out_info;
+  ml_tensors_info_h in_res, out_res;
+  ml_tensors_data_h input, output;
+  ml_tensor_dimension in_dim, out_dim, res_dim;
+  ml_tensor_type_e type = ML_TENSOR_TYPE_UNKNOWN;
+  unsigned int count = 0;
+  char *name = NULL;
+  int status, max_score_index;
+  float score, max_score;
+  void *data_ptr;
+  size_t data_size;
+
+  const gchar *root_path = g_getenv ("MLAPI_SOURCE_ROOT_PATH");
+  gchar *test_model, *test_file;
+  guint8 *contents_uint8 = NULL;
+  gfloat *contents_float = NULL;
+  gsize len = 0;
+
+  /* supposed to run test in build directory */
+  if (root_path == NULL)
+    root_path = "..";
+
+  test_model = g_build_filename (root_path, "tests", "test_models", "models",
+      "lenet_iter_9000.caffemodel", NULL);
+  ASSERT_TRUE (g_file_test (test_model, G_FILE_TEST_EXISTS));
+
+  test_file = g_build_filename (root_path, "tests", "test_models", "data", "9.raw", NULL);
+  ASSERT_TRUE (g_file_test (test_file, G_FILE_TEST_EXISTS));
+
+  ml_tensors_info_create (&in_info);
+  ml_tensors_info_create (&out_info);
+
+  in_dim[0] = 28;
+  in_dim[1] = 28;
+  in_dim[2] = 1;
+  in_dim[3] = 1;
+  ml_tensors_info_set_count (in_info, 1);
+  ml_tensors_info_set_tensor_name (in_info, 0, "data");
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+
+  out_dim[0] = 10;
+  out_dim[1] = 1;
+  out_dim[2] = 1;
+  out_dim[3] = 1;
+  ml_tensors_info_set_count (out_info, 1);
+  ml_tensors_info_set_tensor_name (out_info, 0, "prob");
+  ml_tensors_info_set_tensor_type (out_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tensor_dimension (out_info, 0, out_dim);
+
+  ASSERT_TRUE (g_file_get_contents (test_file, (gchar **)&contents_uint8, &len, NULL));
+  status = ml_tensors_info_get_tensor_size (in_info, 0, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  ASSERT_TRUE (len == data_size / sizeof (float));
+
+  /** Convert uint8 data with range [0, 255] to float with range [-1, 1] */
+  contents_float = (gfloat *)g_malloc (data_size);
+  for (unsigned int idx = 0; idx < len; idx++) {
+    contents_float[idx] = static_cast<float> (contents_uint8[idx]);
+    contents_float[idx] -= 127.5;
+    contents_float[idx] /= 127.5;
+  }
+
+  status = ml_single_open (&single, test_model, in_info, out_info,
+      ML_NNFW_TYPE_ARMNN, ML_NNFW_HW_ANY);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+
+  /* input tensor in filter */
+  status = ml_single_get_input_info (single, &in_res);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_get_count (in_res, &count);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (count, 1U);
+
+  status = ml_tensors_info_get_tensor_name (in_res, 0, &name);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_STREQ (name, "data");
+  g_free (name);
+
+  status = ml_tensors_info_get_tensor_type (in_res, 0, &type);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (type, ML_TENSOR_TYPE_FLOAT32);
+
+  ml_tensors_info_get_tensor_dimension (in_res, 0, res_dim);
+  EXPECT_TRUE (in_dim[0] == res_dim[0]);
+  EXPECT_TRUE (in_dim[1] == res_dim[1]);
+  EXPECT_TRUE (in_dim[2] == res_dim[2]);
+  EXPECT_TRUE (in_dim[3] == res_dim[3]);
+
+  /* output tensor in filter */
+  status = ml_single_get_output_info (single, &out_res);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_get_count (out_res, &count);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (count, 1U);
+
+  status = ml_tensors_info_get_tensor_name (out_res, 0, &name);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_STREQ (name, "prob");
+  g_free (name);
+
+  status = ml_tensors_info_get_tensor_type (out_res, 0, &type);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (type, ML_TENSOR_TYPE_FLOAT32);
+
+  ml_tensors_info_get_tensor_dimension (out_res, 0, res_dim);
+  EXPECT_TRUE (out_dim[0] == res_dim[0]);
+  EXPECT_TRUE (out_dim[1] == res_dim[1]);
+  EXPECT_TRUE (out_dim[2] == res_dim[2]);
+  EXPECT_TRUE (out_dim[3] == res_dim[3]);
+
+  input = output = NULL;
+
+  /* generate input data */
+  status = ml_tensors_data_create (in_info, &input);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (input != NULL);
+
+  status = ml_tensors_data_set_tensor_data (input, 0, contents_float, data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_single_set_timeout (single, SINGLE_DEF_TIMEOUT_MSEC);
+  EXPECT_TRUE (status == ML_ERROR_NOT_SUPPORTED || status == ML_ERROR_NONE);
+
+  status = ml_single_invoke (single, input, &output);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (output != NULL);
+
+  status = ml_tensors_data_get_tensor_data (output, 1, &data_ptr, &data_size);
+  EXPECT_EQ (status, ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_tensors_data_get_tensor_data (output, 0, &data_ptr, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  max_score = .0;
+  max_score_index = 0;
+  for (gint i = 0; i < 10; i++) {
+    score = ((float *)data_ptr)[i];
+    if (score > max_score) {
+      max_score = score;
+      max_score_index = i;
+    }
+  }
+
+  EXPECT_EQ (max_score_index, 9);
+
+  status = ml_single_close (single);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  ml_tensors_data_destroy (output);
+  ml_tensors_data_destroy (input);
+
+  g_free (test_model);
+  g_free (test_file);
+  g_free (contents_uint8);
+  g_free (contents_float);
+  ml_tensors_info_destroy (in_info);
+  ml_tensors_info_destroy (out_info);
+  ml_tensors_info_destroy (in_res);
+  ml_tensors_info_destroy (out_res);
+}
+
+/**
+ * @brief Test NNStreamer single shot (tflite/armnn)
+ * @detail Run pipeline with tflite basic model.
+ */
+TEST (nnstreamer_capi_singleshot, invoke_07)
+{
+  ml_single_h single;
+  ml_tensors_info_h in_info, out_info;
+  ml_tensors_info_h in_res, out_res;
+  ml_tensors_data_h input, output;
+  ml_tensor_dimension in_dim, out_dim, res_dim;
+  ml_tensor_type_e type = ML_TENSOR_TYPE_UNKNOWN;
+  unsigned int count = 0;
+  char *name = NULL;
+  int status;
+  void *data_ptr;
+  size_t data_size;
+
+  const gchar *root_path = g_getenv ("MLAPI_SOURCE_ROOT_PATH");
+  gchar *test_model;
+
+  /* supposed to run test in build directory */
+  if (root_path == NULL)
+    root_path = "..";
+
+  test_model = g_build_filename (
+      root_path, "tests", "test_models", "models", "add.tflite", NULL);
+  ASSERT_TRUE (g_file_test (test_model, G_FILE_TEST_EXISTS));
+
+  ml_tensors_info_create (&in_info);
+  ml_tensors_info_create (&out_info);
+
+  in_dim[0] = 1;
+  in_dim[1] = 1;
+  in_dim[2] = 1;
+  in_dim[3] = 1;
+  ml_tensors_info_set_count (in_info, 1);
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+
+  out_dim[0] = 1;
+  out_dim[1] = 1;
+  out_dim[2] = 1;
+  out_dim[3] = 1;
+  ml_tensors_info_set_count (out_info, 1);
+  ml_tensors_info_set_tensor_type (out_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tensor_dimension (out_info, 0, out_dim);
+
+  status = ml_single_open (&single, test_model, NULL, NULL, ML_NNFW_TYPE_ARMNN, ML_NNFW_HW_ANY);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+
+  /* input tensor in filter */
+  status = ml_single_get_input_info (single, &in_res);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_get_count (in_res, &count);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (count, 1U);
+
+  status = ml_tensors_info_get_tensor_name (in_res, 0, &name);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  g_free (name);
+
+  status = ml_tensors_info_get_tensor_type (in_res, 0, &type);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (type, ML_TENSOR_TYPE_FLOAT32);
+
+  ml_tensors_info_get_tensor_dimension (in_res, 0, res_dim);
+  EXPECT_TRUE (in_dim[0] == res_dim[0]);
+  EXPECT_TRUE (in_dim[1] == res_dim[1]);
+  EXPECT_TRUE (in_dim[2] == res_dim[2]);
+  EXPECT_TRUE (in_dim[3] == res_dim[3]);
+
+  /* output tensor in filter */
+  status = ml_single_get_output_info (single, &out_res);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_info_get_count (out_res, &count);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (count, 1U);
+
+  status = ml_tensors_info_get_tensor_name (out_res, 0, &name);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  g_free (name);
+
+  status = ml_tensors_info_get_tensor_type (out_res, 0, &type);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (type, ML_TENSOR_TYPE_FLOAT32);
+
+  ml_tensors_info_get_tensor_dimension (out_res, 0, res_dim);
+  EXPECT_TRUE (out_dim[0] == res_dim[0]);
+  EXPECT_TRUE (out_dim[1] == res_dim[1]);
+  EXPECT_TRUE (out_dim[2] == res_dim[2]);
+  EXPECT_TRUE (out_dim[3] == res_dim[3]);
+
+  input = output = NULL;
+
+  /* generate dummy data */
+  status = ml_tensors_data_create (in_info, &input);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (input != NULL);
+
+  status = ml_tensors_data_get_tensor_data (input, 0, &data_ptr, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  ((float *)data_ptr)[0] = 10.0;
+
+  status = ml_single_set_timeout (single, SINGLE_DEF_TIMEOUT_MSEC);
+  EXPECT_TRUE (status == ML_ERROR_NOT_SUPPORTED || status == ML_ERROR_NONE);
+
+  status = ml_single_invoke (single, input, &output);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (output != NULL);
+
+  status = ml_tensors_data_get_tensor_data (output, 0, &data_ptr, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_EQ (((float *)data_ptr)[0], 12.0);
+
+  status = ml_single_close (single);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  ml_tensors_data_destroy (output);
+  ml_tensors_data_destroy (input);
+
+  g_free (test_model);
+  ml_tensors_info_destroy (in_info);
+  ml_tensors_info_destroy (out_info);
+  ml_tensors_info_destroy (in_res);
+  ml_tensors_info_destroy (out_res);
+}
+
+/**
+ * @brief Test NNStreamer single shot (caffe/armnn)
+ * @detail Failure open with invalid param.
+ */
+TEST (nnstreamer_capi_singleshot, open_fail_03_n)
+{
+  ml_single_h single;
+  ml_tensors_info_h in_info, out_info;
+  ml_tensor_dimension in_dim, out_dim;
+  int status;
+  const gchar *root_path = g_getenv ("MLAPI_SOURCE_ROOT_PATH");
+  gchar *test_model;
+
+  /* supposed to run test in build directory */
+  if (root_path == NULL)
+    root_path = "..";
+
+  test_model = g_build_filename (root_path, "tests", "test_models", "models",
+      "lenet_iter_9000.caffemodel", NULL);
+  ASSERT_TRUE (g_file_test (test_model, G_FILE_TEST_EXISTS));
+
+  ml_tensors_info_create (&in_info);
+  ml_tensors_info_create (&out_info);
+
+  /** Set the correct input/output info */
+  in_dim[0] = 28;
+  in_dim[1] = 28;
+  in_dim[2] = 1;
+  in_dim[3] = 1;
+  ml_tensors_info_set_count (in_info, 1);
+  ml_tensors_info_set_tensor_name (in_info, 0, "data");
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+
+  out_dim[0] = 10;
+  out_dim[1] = 1;
+  out_dim[2] = 1;
+  out_dim[3] = 1;
+  ml_tensors_info_set_count (out_info, 1);
+  ml_tensors_info_set_tensor_name (out_info, 0, "prob");
+  ml_tensors_info_set_tensor_type (out_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tensor_dimension (out_info, 0, out_dim);
+
+  /** Modify the input or output name to be wrong and open */
+  ml_tensors_info_set_tensor_name (in_info, 0, "data1");
+  status = ml_single_open (&single, test_model, in_info, out_info,
+      ML_NNFW_TYPE_ARMNN, ML_NNFW_HW_ANY);
+  EXPECT_NE (status, ML_ERROR_NONE);
+  ml_tensors_info_set_tensor_name (in_info, 0, "data");
+
+  ml_tensors_info_set_tensor_name (out_info, 0, "prob1");
+  status = ml_single_open (&single, test_model, in_info, out_info,
+      ML_NNFW_TYPE_ARMNN, ML_NNFW_HW_ANY);
+  EXPECT_NE (status, ML_ERROR_NONE);
+  ml_tensors_info_set_tensor_name (out_info, 0, "prob");
+
+  /**
+   * Modify the input dim to be wrong and open
+   * output dim is not used for caffe, so wrong output dim will pass open
+   * but will fail at invoke (check nnstreamer_capi_singleshot.invoke_07_n)
+   */
+  ml_tensors_info_set_tensor_dimension (in_info, 0, out_dim);
+  status = ml_single_open (&single, test_model, in_info, out_info,
+      ML_NNFW_TYPE_ARMNN, ML_NNFW_HW_ANY);
+  EXPECT_NE (status, ML_ERROR_NONE);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+
+  g_free (test_model);
+  ml_tensors_info_destroy (in_info);
+  ml_tensors_info_destroy (out_info);
+}
+
+/**
+ * @brief Test NNStreamer single shot (caffe/armnn)
+ * @detail Failure invoke with invalid param.
+ */
+TEST (nnstreamer_capi_singleshot, invoke_08_n)
+{
+  ml_single_h single;
+  ml_tensors_info_h in_info, out_info;
+  ml_tensors_data_h input, output;
+  ml_tensor_dimension in_dim, out_dim;
+  int status;
+  size_t data_size;
+
+  const gchar *root_path = g_getenv ("MLAPI_SOURCE_ROOT_PATH");
+  gchar *test_model;
+  gfloat *contents_float = NULL;
+
+  /* supposed to run test in build directory */
+  if (root_path == NULL)
+    root_path = "..";
+
+  test_model = g_build_filename (root_path, "tests", "test_models", "models",
+      "lenet_iter_9000.caffemodel", NULL);
+  ASSERT_TRUE (g_file_test (test_model, G_FILE_TEST_EXISTS));
+
+  ml_tensors_info_create (&in_info);
+  ml_tensors_info_create (&out_info);
+
+  in_dim[0] = 28;
+  in_dim[1] = 28;
+  in_dim[2] = 1;
+  in_dim[3] = 1;
+  ml_tensors_info_set_count (in_info, 1);
+  ml_tensors_info_set_tensor_name (in_info, 0, "data");
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+
+  out_dim[0] = 10;
+  out_dim[1] = 1;
+  out_dim[2] = 1;
+  out_dim[3] = 1;
+  ml_tensors_info_set_count (out_info, 1);
+  ml_tensors_info_set_tensor_name (out_info, 0, "prob");
+  ml_tensors_info_set_tensor_type (out_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tensor_dimension (out_info, 0, out_dim);
+  ml_tensors_info_set_tensor_dimension (out_info, 0, in_dim);
+
+  status = ml_single_open (&single, test_model, in_info, out_info,
+      ML_NNFW_TYPE_ARMNN, ML_NNFW_HW_ANY);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+
+  input = output = NULL;
+
+  /* generate input data with wrong info */
+  status = ml_tensors_data_create (in_info, &input);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (input != NULL);
+
+  status = ml_tensors_info_get_tensor_size (in_info, 0, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  contents_float = (gfloat *)g_malloc (data_size);
+  status = ml_tensors_data_set_tensor_data (input, 0, contents_float, data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_single_set_timeout (single, SINGLE_DEF_TIMEOUT_MSEC);
+  EXPECT_TRUE (status == ML_ERROR_NOT_SUPPORTED || status == ML_ERROR_NONE);
+
+  status = ml_single_invoke (single, input, &output);
+  EXPECT_NE (status, ML_ERROR_NONE);
+  EXPECT_TRUE (output == NULL);
+
+  ml_tensors_data_destroy (input);
+
+  status = ml_single_close (single);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (test_model);
+  g_free (contents_float);
+  ml_tensors_info_destroy (in_info);
+  ml_tensors_info_destroy (out_info);
+}
+
+/**
+ * @brief Test NNStreamer single shot (caffe/armnn)
+ * @detail Failure invoke with invalid param.
+ */
+TEST (nnstreamer_capi_singleshot, invoke_09_n)
+{
+  ml_single_h single;
+  ml_tensors_info_h in_info, out_info;
+  ml_tensors_info_h in_res, out_res;
+  ml_tensors_data_h input, output;
+  ml_tensor_dimension in_dim, out_dim;
+  int status;
+  size_t data_size;
+
+  const gchar *root_path = g_getenv ("MLAPI_SOURCE_ROOT_PATH");
+  gchar *test_model;
+  gfloat *contents_float = NULL;
+
+  /* supposed to run test in build directory */
+  if (root_path == NULL)
+    root_path = "..";
+
+  test_model = g_build_filename (root_path, "tests", "test_models", "models",
+      "lenet_iter_9000.caffemodel", NULL);
+  ASSERT_TRUE (g_file_test (test_model, G_FILE_TEST_EXISTS));
+
+  ml_tensors_info_create (&in_info);
+  ml_tensors_info_create (&out_info);
+  ml_tensors_info_create (&in_res);
+  ml_tensors_info_create (&out_res);
+
+  in_dim[0] = 28;
+  in_dim[1] = 28;
+  in_dim[2] = 1;
+  in_dim[3] = 1;
+  ml_tensors_info_set_count (in_info, 1);
+  ml_tensors_info_set_tensor_name (in_info, 0, "data");
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+
+  out_dim[0] = 10;
+  out_dim[1] = 1;
+  out_dim[2] = 1;
+  out_dim[3] = 1;
+  ml_tensors_info_set_count (out_info, 1);
+  ml_tensors_info_set_tensor_name (out_info, 0, "prob");
+  ml_tensors_info_set_tensor_type (out_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  ml_tensors_info_set_tensor_dimension (out_info, 0, out_dim);
+
+  status = ml_single_open (&single, test_model, in_info, out_info,
+      ML_NNFW_TYPE_ARMNN, ML_NNFW_HW_ANY);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+
+  input = output = NULL;
+
+  /* generate input data with wrong info */
+  status = ml_tensors_data_create (out_info, &input);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (input != NULL);
+
+  status = ml_tensors_info_get_tensor_size (out_info, 0, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  contents_float = (gfloat *)g_malloc (data_size);
+  status = ml_tensors_data_set_tensor_data (input, 0, contents_float, data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_single_set_timeout (single, SINGLE_DEF_TIMEOUT_MSEC);
+  EXPECT_TRUE (status == ML_ERROR_NOT_SUPPORTED || status == ML_ERROR_NONE);
+
+  status = ml_single_invoke (single, input, &output);
+  EXPECT_NE (status, ML_ERROR_NONE);
+  EXPECT_TRUE (output == NULL);
+
+  ml_tensors_data_destroy (input);
+
+  status = ml_single_close (single);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (test_model);
+  g_free (contents_float);
+  ml_tensors_info_destroy (in_info);
+  ml_tensors_info_destroy (out_info);
+  ml_tensors_info_destroy (in_res);
+  ml_tensors_info_destroy (out_res);
+}
+#endif /* ENABLE_ARMNN */
+
+/**
+ * @brief Test NNStreamer single shot (custom filter)
+ * @detail Run pipeline with custom filter with allocate in invoke, handle multi tensors.
+ */
+TEST (nnstreamer_capi_singleshot, invoke_10_p)
+{
+  const gchar cf_name[] = "libnnstreamer_customfilter_scaler_allocator" SO_FILE_EXTENSION;
+  gchar *lib_path = NULL;
+  gchar *test_model = NULL;
+  ml_single_h single;
+  ml_tensors_info_h in_info, out_info;
+  ml_tensors_data_h input, output;
+  ml_tensor_dimension in_dim;
+  int status;
+  unsigned int i;
+  void *data_ptr;
+  size_t data_size;
+
+  lib_path = nnsconf_get_custom_value_string ("filter", "customfilters");
+  if (lib_path == NULL) {
+    /* cannot get custom-filter directory */
+    goto skip_test;
+  }
+
+  test_model = g_build_filename (lib_path, cf_name, NULL);
+  if (!g_file_test (test_model, G_FILE_TEST_EXISTS)) {
+    goto skip_test;
+  }
+
+  ml_tensors_info_create (&in_info);
+  ml_tensors_info_create (&out_info);
+
+  ml_tensors_info_set_count (in_info, 1);
+
+  in_dim[0] = 10;
+  in_dim[1] = 1;
+  in_dim[2] = 1;
+  in_dim[3] = 1;
+
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_INT16);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+
+  ml_tensors_info_clone (out_info, in_info);
+
+  status = ml_single_open (&single, test_model, in_info, out_info,
+      ML_NNFW_TYPE_CUSTOM_FILTER, ML_NNFW_HW_ANY);
+  ASSERT_EQ (status, ML_ERROR_NONE);
+
+  input = output = NULL;
+
+  /* generate input data */
+  status = ml_tensors_data_create (in_info, &input);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  ASSERT_TRUE (input != NULL);
+
+  status = ml_tensors_data_get_tensor_data (input, 0, &data_ptr, &data_size);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  for (i = 0; i < 10; i++) {
+    ((int16_t *)data_ptr)[i] = (int16_t) (i + 1);
+  }
+
+  status = ml_single_invoke (single, input, &output);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (output != NULL);
+
+  /**
+   * since the output data was allocated by the tensor filter element in the
+   * single API,
+   * closing this single handle will also delete the data
+   */
+  status = ml_single_close (single);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_tensors_data_destroy (input);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  ml_tensors_info_destroy (in_info);
+  ml_tensors_info_destroy (out_info);
+  ml_tensors_data_destroy (output);
+
+skip_test:
+  g_free (lib_path);
+  g_free (test_model);
+}
+
+/**
+ * @brief Test NNStreamer single shot (custom filter)
+ * @detail Run pipeline with custom filter with allocate in invoke, handle multi tensors.
+ */
+TEST (nnstreamer_capi_singleshot, invoke_11_p)
+{
+  const gchar cf_name[] = "libnnstreamer_customfilter_scaler_allocator" SO_FILE_EXTENSION;
+  gchar *lib_path = NULL;
+  gchar *test_model = NULL;
+  ml_single_h single;
+  ml_tensors_info_h in_info, out_info;
+  ml_tensors_data_h input, output;
+  ml_tensor_dimension in_dim;
+  int status;
+  unsigned int i;
+  void *data_ptr;
+  size_t data_size;
+
+  lib_path = nnsconf_get_custom_value_string ("filter", "customfilters");
+  if (lib_path == NULL) {
+    /* cannot get custom-filter directory */
+    goto skip_test;
