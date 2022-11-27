@@ -3895,3 +3895,400 @@ TEST (nnstreamer_capi_ml_option, tensorflow_lite)
   /* supposed to run test in build directory */
   if (root_path == NULL)
     root_path = "..";
+
+  test_model = g_build_filename (root_path, "tests", "test_models", "models",
+      "mobilenet_v1_1.0_224_quant.tflite", NULL);
+  ASSERT_TRUE (g_file_test (test_model, G_FILE_TEST_EXISTS));
+
+  ml_tensors_info_create (&in_info);
+  ml_tensors_info_create (&out_info);
+
+  in_dim[0] = 3;
+  in_dim[1] = 224;
+  in_dim[2] = 224;
+  in_dim[3] = 1;
+  ml_tensors_info_set_count (in_info, 1);
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_UINT8);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+
+  out_dim[0] = 1001;
+  out_dim[1] = 1;
+  out_dim[2] = 1;
+  out_dim[3] = 1;
+  ml_tensors_info_set_count (out_info, 1);
+  ml_tensors_info_set_tensor_type (out_info, 0, ML_TENSOR_TYPE_UINT8);
+  ml_tensors_info_set_tensor_dimension (out_info, 0, out_dim);
+
+  status = ml_option_set (option, "input_info", in_info, NULL);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  status = ml_option_set (option, "output_info", out_info, NULL);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_option_set (option, "models", test_model, NULL);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  ml_nnfw_type_e nnfw_type = ML_NNFW_TYPE_TENSORFLOW_LITE;
+  status = ml_option_set (option, "nnfw", &nnfw_type, NULL);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  ml_single_h single;
+  status = ml_single_open_with_option (&single, option);
+  if (is_enabled_tensorflow_lite) {
+    EXPECT_EQ (status, ML_ERROR_NONE);
+  } else {
+    EXPECT_NE (status, ML_ERROR_NONE);
+    goto skip_test;
+  }
+
+  /* invoke */
+  input = output = NULL;
+
+  /* generate dummy data */
+  status = ml_tensors_data_create (in_info, &input);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (input != NULL);
+
+  status = ml_single_set_timeout (single, SINGLE_DEF_TIMEOUT_MSEC);
+  EXPECT_TRUE (status == ML_ERROR_NOT_SUPPORTED || status == ML_ERROR_NONE);
+
+  status = ml_single_invoke (single, input, &output);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_TRUE (output != NULL);
+
+  status = ml_single_close (single);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  ml_tensors_data_destroy (output);
+  ml_tensors_data_destroy (input);
+  /* invoke finished */
+
+skip_test:
+  ml_tensors_info_destroy (in_info);
+  ml_tensors_info_destroy (out_info);
+
+  status = ml_option_destroy (option);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (test_model);
+}
+
+#if defined (ENABLE_TENSORFLOW_LITE) && defined (ENABLE_TENSORFLOW2_LITE)
+/**
+ * @brief Test ml_option with tensorflow1-lite (manually set by ml_option_se, NULLt)
+ */
+TEST (nnstreamer_capi_ml_option, tensorflow1_lite)
+{
+  int status;
+  ml_option_h option;
+  ml_tensors_info_h in_info, out_info;
+  ml_tensor_dimension in_dim, out_dim;
+  ml_tensors_data_h input, output;
+
+  status = ml_option_create (&option);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  const gchar *root_path = g_getenv ("MLAPI_SOURCE_ROOT_PATH");
+  gchar *test_model;
+
+  /* supposed to run test in build directory */
+  if (root_path == NULL)
+    root_path = "..";
+
+  test_model = g_build_filename (root_path, "tests", "test_models", "models",
+      "mobilenet_v1_1.0_224_quant.tflite", NULL);
+  ASSERT_TRUE (g_file_test (test_model, G_FILE_TEST_EXISTS));
+
+  ml_tensors_info_create (&in_info);
+  ml_tensors_info_create (&out_info);
+
+  in_dim[0] = 3;
+  in_dim[1] = 224;
+  in_dim[2] = 224;
+  in_dim[3] = 1;
+  ml_tensors_info_set_count (in_info, 1);
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_UINT8);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+
+  out_dim[0] = 1001;
+  out_dim[1] = 1;
+  out_dim[2] = 1;
+  out_dim[3] = 1;
+  ml_tensors_info_set_count (out_info, 1);
+  ml_tensors_info_set_tensor_type (out_info, 0, ML_TENSOR_TYPE_UINT8);
+  ml_tensors_info_set_tensor_dimension (out_info, 0, out_dim);
+
+  status = ml_option_set (option, "input_info", in_info, NULL);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  status = ml_option_set (option, "output_info", out_info, NULL);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  status = ml_option_set (option, "models", test_model, NULL);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  ml_nnfw_type_e nnfw_type = ML_NNFW_TYPE_TENSORFLOW_LITE;
+  status = ml_option_set (option, "nnfw", &nnfw_type, NULL);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  gchar *fw_name = g_strdup ("tensorflow1-lite");
+  status = ml_option_set (option, "framework_name", fw_name, g_free);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  ml_single_h single;
+  status = ml_single_open_with_option (&single, option);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  /* invoke */
+  input = output = NULL;
+
+  /* generate dummy data */
+  status = ml_tensors_data_create (in_info, &input);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+  EXPECT_TRUE (input != NULL);
+
+  status = ml_single_set_timeout (single, SINGLE_DEF_TIMEOUT_MSEC);
+  EXPECT_TRUE (status == ML_ERROR_NOT_SUPPORTED || status == ML_ERROR_NONE);
+
+  status = ml_single_invoke (single, input, &output);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_TRUE (output != NULL);
+
+  status = ml_single_close (single);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  ml_tensors_data_destroy (output);
+  ml_tensors_data_destroy (input);
+  /* invoke finished */
+
+  ml_tensors_info_destroy (in_info);
+  ml_tensors_info_destroy (out_info);
+
+  status = ml_option_destroy (option);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+
+  g_free (test_model);
+}
+#endif
+
+/**
+ * @brief Test utility functions (private)
+ * @details check sub-plugin type and name
+ */
+TEST (nnstreamer_capi_util, nnfw_name_01_p)
+{
+  EXPECT_STREQ (_ml_get_nnfw_subplugin_name (ML_NNFW_TYPE_TENSORFLOW_LITE), "tensorflow-lite");
+  EXPECT_EQ (_ml_get_nnfw_type_by_subplugin_name ("tensorflow-lite"), ML_NNFW_TYPE_TENSORFLOW_LITE);
+  EXPECT_STREQ (_ml_get_nnfw_subplugin_name (ML_NNFW_TYPE_TENSORFLOW), "tensorflow");
+  EXPECT_EQ (_ml_get_nnfw_type_by_subplugin_name ("tensorflow"), ML_NNFW_TYPE_TENSORFLOW);
+  EXPECT_STREQ (_ml_get_nnfw_subplugin_name (ML_NNFW_TYPE_NNFW), "nnfw");
+  EXPECT_EQ (_ml_get_nnfw_type_by_subplugin_name ("nnfw"), ML_NNFW_TYPE_NNFW);
+  EXPECT_STREQ (_ml_get_nnfw_subplugin_name (ML_NNFW_TYPE_VIVANTE), "vivante");
+  EXPECT_EQ (_ml_get_nnfw_type_by_subplugin_name ("vivante"), ML_NNFW_TYPE_VIVANTE);
+  EXPECT_STREQ (_ml_get_nnfw_subplugin_name (ML_NNFW_TYPE_SNAP), "snap");
+  EXPECT_EQ (_ml_get_nnfw_type_by_subplugin_name ("snap"), ML_NNFW_TYPE_SNAP);
+  EXPECT_STREQ (_ml_get_nnfw_subplugin_name (ML_NNFW_TYPE_MXNET), "mxnet");
+  EXPECT_EQ (_ml_get_nnfw_type_by_subplugin_name ("mxnet"), ML_NNFW_TYPE_MXNET);
+  EXPECT_STREQ (_ml_get_nnfw_subplugin_name (ML_NNFW_TYPE_TVM), "tvm");
+  EXPECT_EQ (_ml_get_nnfw_type_by_subplugin_name ("tvm"), ML_NNFW_TYPE_TVM);
+}
+
+/**
+ * @brief Test utility functions (private)
+ * @details check sub-plugin type and name
+ */
+TEST (nnstreamer_capi_util, nnfw_name_02_n)
+{
+  EXPECT_EQ (_ml_get_nnfw_type_by_subplugin_name ("invalid-fw"), ML_NNFW_TYPE_ANY);
+  EXPECT_EQ (_ml_get_nnfw_type_by_subplugin_name (NULL), ML_NNFW_TYPE_ANY);
+}
+
+/**
+ * @brief Test for internal function '_ml_validate_model_file'.
+ * @detail Invalid params.
+ */
+TEST (nnstreamer_capi_internal, validate_model_file_01_n)
+{
+  const gchar cf_name[] = "libnnstreamer_customfilter_passthrough_variable" SO_FILE_EXTENSION;
+  gchar *lib_path = NULL;
+  gchar *test_model = NULL;
+  int status;
+  ml_nnfw_type_e nnfw = ML_NNFW_TYPE_CUSTOM_FILTER;
+
+  lib_path = nnsconf_get_custom_value_string ("filter", "customfilters");
+  if (lib_path == NULL) {
+    /* cannot get custom-filter directory */
+    goto skip_test;
+  }
+
+  test_model = g_build_filename (lib_path, cf_name, NULL);
+  if (!g_file_test (test_model, G_FILE_TEST_EXISTS)) {
+    goto skip_test;
+  }
+
+  status = _ml_validate_model_file (NULL, 1, &nnfw);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = _ml_validate_model_file (&test_model, 0, &nnfw);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  status = _ml_validate_model_file (&test_model, 1, NULL);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+skip_test:
+  g_free (lib_path);
+  g_free (test_model);
+}
+
+/**
+ * @brief Test for internal function '_ml_validate_model_file'.
+ * @detail Invalid file extension.
+ */
+TEST (nnstreamer_capi_internal, validate_model_file_02_n)
+{
+  const gchar *sroot_path = g_getenv ("MLAPI_SOURCE_ROOT_PATH");
+  const gchar cf_name[] = "libnnstreamer_customfilter_passthrough_variable" SO_FILE_EXTENSION;
+  gchar *lib_path = NULL;
+  gchar *test_model1 = NULL;
+  gchar *test_model2 = NULL;
+  gchar *test_models[2];
+  int status;
+  ml_nnfw_type_e nnfw;
+
+  lib_path = nnsconf_get_custom_value_string ("filter", "customfilters");
+  if (lib_path == NULL) {
+    /* cannot get custom-filter directory */
+    goto skip_test;
+  }
+
+  test_model1 = g_build_filename (lib_path, cf_name, NULL);
+  if (!g_file_test (test_model1, G_FILE_TEST_EXISTS)) {
+    goto skip_test;
+  }
+
+  /* supposed to run test in build directory */
+  if (sroot_path == NULL)
+    sroot_path = "..";
+
+  test_model2 = g_build_filename (sroot_path, "tests", "test_models", "models",
+      "mobilenet_v1_1.0_224_quant.tflite", NULL);
+  ASSERT_TRUE (g_file_test (test_model2, G_FILE_TEST_EXISTS));
+
+  test_models[0] = test_model1;
+  test_models[1] = test_model2;
+
+  nnfw = ML_NNFW_TYPE_CUSTOM_FILTER;
+  status = _ml_validate_model_file (&test_model2, 1, &nnfw);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  nnfw = ML_NNFW_TYPE_TENSORFLOW_LITE;
+  status = _ml_validate_model_file (&test_model1, 1, &nnfw);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  nnfw = ML_NNFW_TYPE_TENSORFLOW;
+  status = _ml_validate_model_file (&test_model2, 1, &nnfw);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  /* snap only for android */
+  nnfw = ML_NNFW_TYPE_SNAP;
+  status = _ml_validate_model_file (&test_model1, 1, &nnfw);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  nnfw = ML_NNFW_TYPE_VIVANTE;
+  status = _ml_validate_model_file (test_models, 1, &nnfw);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  /** @todo currently mvnc, openvino and edgetpu always return failure */
+  nnfw = ML_NNFW_TYPE_MVNC;
+  status = _ml_validate_model_file (&test_model1, 1, &nnfw);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  nnfw = ML_NNFW_TYPE_OPENVINO;
+  status = _ml_validate_model_file (&test_model1, 1, &nnfw);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  nnfw = ML_NNFW_TYPE_EDGE_TPU;
+  status = _ml_validate_model_file (&test_model1, 1, &nnfw);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  nnfw = ML_NNFW_TYPE_ARMNN;
+  status = _ml_validate_model_file (&test_model1, 1, &nnfw);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+skip_test:
+  g_free (lib_path);
+  g_free (test_model1);
+  g_free (test_model2);
+}
+
+/**
+ * @brief Test for internal function '_ml_validate_model_file'.
+ * @detail Invalid model path.
+ */
+TEST (nnstreamer_capi_internal, validate_model_file_03_n)
+{
+  const gchar *root_path = g_getenv ("MLAPI_SOURCE_ROOT_PATH");
+  int status;
+  ml_nnfw_type_e nnfw;
+  gchar *test_dir1, *test_dir2;
+
+  /* supposed to run test in build directory */
+  if (root_path == NULL)
+    root_path = "..";
+
+  /* test model path */
+  test_dir1 = g_build_filename (root_path, "tests", "test_models", "models", NULL);
+
+  /* invalid dir */
+  test_dir2 = g_build_filename (test_dir1, "invaliddir", NULL);
+
+  nnfw = ML_NNFW_TYPE_TENSORFLOW_LITE;
+  status = _ml_validate_model_file (&test_dir1, 1, &nnfw);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  nnfw = ML_NNFW_TYPE_TENSORFLOW;
+  status = _ml_validate_model_file (&test_dir1, 1, &nnfw);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+  nnfw = ML_NNFW_TYPE_NNFW;
+  status = _ml_validate_model_file (&test_dir2, 1, &nnfw);
+  EXPECT_NE (status, ML_ERROR_NONE);
+
+#ifdef ENABLE_NNFW_RUNTIME
+  /* only NNFW supports dir path */
+  nnfw = ML_NNFW_TYPE_NNFW;
+  status = _ml_validate_model_file (&test_dir1, 1, &nnfw);
+  EXPECT_EQ (status, ML_ERROR_NONE);
+#endif
+
+  g_free (test_dir1);
+  g_free (test_dir2);
+}
+
+/**
+ * @brief Main gtest
+ */
+int
+main (int argc, char **argv)
+{
+  int result = -1;
+
+  try {
+    testing::InitGoogleTest (&argc, argv);
+  } catch (...) {
+    g_warning ("catch 'testing::internal::<unnamed>::ClassUniqueToAlwaysTrue'");
+  }
+
+  /* ignore tizen feature status while running the testcases */
+  set_feature_state (ML_FEATURE, SUPPORTED);
+  set_feature_state (ML_FEATURE_INFERENCE, SUPPORTED);
+
+  try {
+    result = RUN_ALL_TESTS ();
+  } catch (...) {
+    g_warning ("catch `testing::internal::GoogleTestFailureException`");
+  }
+
+  set_feature_state (ML_FEATURE, NOT_CHECKED_YET);
+  set_feature_state (ML_FEATURE_INFERENCE, NOT_CHECKED_YET);
+
+  return result;
+}
