@@ -192,4 +192,30 @@ TEST_F (MLServiceAgentTest, usecase_01)
   /* create server pipeline */
   pipeline_desc = g_strdup_printf ("tensor_query_serversrc port=%u num-buffers=10 ! other/tensors,num_tensors=1,dimensions=3:4:4:1,types=uint8,format=static,framerate=0/1 ! tensor_query_serversink async=false", port);
 
-  status = ml_service_set_pipeline (service_name, pipeline_
+  status = ml_service_set_pipeline (service_name, pipeline_desc);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  gchar *ret_pipeline;
+  status = ml_service_get_pipeline (service_name, &ret_pipeline);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_STREQ (pipeline_desc, ret_pipeline);
+  g_free (ret_pipeline);
+
+  ml_service_h service;
+  ml_pipeline_state_e state;
+  status = ml_service_launch_pipeline (service_name, &service);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  status = ml_service_get_pipeline_state (service, &state);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_EQ (ML_PIPELINE_STATE_PAUSED, state);
+
+  status = ml_service_start_pipeline (service);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  status = ml_service_get_pipeline_state (service, &state);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_EQ (ML_PIPELINE_STATE_PLAYING, state);
+
+  /* create client pipeline */
+  guint sink_port = _get_available_port ();
+  gchar *clien
