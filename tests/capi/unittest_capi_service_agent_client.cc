@@ -166,4 +166,30 @@ TEST_F (MLServiceAgentTest, usecase_00)
   EXPECT_EQ (ML_ERROR_NONE, status);
 
   /** delete finished service */
-  status = 
+  status = ml_service_delete_pipeline (service_name);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  /** it would fail if get the removed service */
+  status = ml_service_get_pipeline (service_name, &ret_pipeline);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  g_free (pipeline_desc);
+  g_free (client_pipeline_desc);
+}
+
+/**
+ * @brief use case of using service api and agent
+ */
+TEST_F (MLServiceAgentTest, usecase_01)
+{
+  int status;
+
+  const gchar *service_name = "simple_query_server_for_test";
+  gchar *pipeline_desc;
+
+  guint port = _get_available_port ();
+
+  /* create server pipeline */
+  pipeline_desc = g_strdup_printf ("tensor_query_serversrc port=%u num-buffers=10 ! other/tensors,num_tensors=1,dimensions=3:4:4:1,types=uint8,format=static,framerate=0/1 ! tensor_query_serversink async=false", port);
+
+  status = ml_service_set_pipeline (service_name, pipeline_
