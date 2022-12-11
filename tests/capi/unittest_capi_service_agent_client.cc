@@ -218,4 +218,28 @@ TEST_F (MLServiceAgentTest, usecase_01)
 
   /* create client pipeline */
   guint sink_port = _get_available_port ();
-  gchar *clien
+  gchar *client_pipeline_desc = g_strdup_printf ("videotestsrc num-buffers=10 ! videoconvert ! videoscale ! video/x-raw,width=4,height=4,format=RGB,framerate=10/1 ! tensor_converter ! other/tensors,num_tensors=1,format=static ! tensor_query_client dest-port=%u port=%u ! fakesink sync=true", port, sink_port);
+
+  ml_pipeline_h client;
+  status = ml_pipeline_construct (client_pipeline_desc, NULL, NULL, &client);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  g_usleep (1 * 1000 * 1000);
+
+  status = ml_pipeline_start (client);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  g_usleep (1 * 1000 * 1000);
+
+  status = ml_pipeline_stop (client);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  g_usleep (1 * 1000 * 1000);
+
+  status = ml_pipeline_destroy (client);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  g_usleep (1 * 1000 * 1000);
+
+  status = ml_service_stop_pipeline (service);
+  EXPECT_EQ (ML_ERROR_
