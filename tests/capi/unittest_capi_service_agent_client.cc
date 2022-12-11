@@ -132,4 +132,38 @@ TEST_F (MLServiceAgentTest, usecase_00)
   EXPECT_EQ (ML_ERROR_NONE, status);
 
   ml_service_h client;
-  status = ml_service_launch_pipeline ("client", 
+  status = ml_service_launch_pipeline ("client", &client);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  g_usleep (1 * 1000 * 1000);
+
+  status = ml_service_start_pipeline (client);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  g_usleep (1 * 1000 * 1000);
+
+  status = ml_service_stop_pipeline (client);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  g_usleep (1 * 1000 * 1000);
+
+  status = ml_service_destroy (client);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  g_usleep (1 * 1000 * 1000);
+
+  status = ml_service_stop_pipeline (service);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  g_usleep (1 * 1000 * 1000);
+
+  status = ml_service_get_pipeline_state (service, &state);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_EQ (ML_PIPELINE_STATE_PAUSED, state);
+
+  /** destroy the pipeline */
+  status = ml_service_destroy (service);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  /** delete finished service */
+  status = 
