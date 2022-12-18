@@ -242,4 +242,35 @@ TEST_F (MLServiceAgentTest, usecase_01)
   g_usleep (1 * 1000 * 1000);
 
   status = ml_service_stop_pipeline (service);
-  EXPECT_EQ (ML_ERROR_
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  g_usleep (1 * 1000 * 1000);
+
+  status = ml_service_get_pipeline_state (service, &state);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_EQ (ML_PIPELINE_STATE_PAUSED, state);
+
+  /** destroy the pipeline */
+  status = ml_service_destroy (service);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  /** delete finished service */
+  status = ml_service_delete_pipeline (service_name);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  /** it would fail if get the removed service */
+  status = ml_service_get_pipeline (service_name, &ret_pipeline);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  g_free (pipeline_desc);
+  g_free (client_pipeline_desc);
+}
+
+/**
+ * @brief Test ml_service_set_pipeline with invalid param.
+ */
+TEST_F (MLServiceAgentTest, set_pipeline_00_n)
+{
+  int status;
+  status = ml_service_set_pipeline (NULL, "some pipeline");
+  EXPECT_EQ (ML_ERROR_INVALID_P
