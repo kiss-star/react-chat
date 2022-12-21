@@ -273,4 +273,41 @@ TEST_F (MLServiceAgentTest, set_pipeline_00_n)
 {
   int status;
   status = ml_service_set_pipeline (NULL, "some pipeline");
-  EXPECT_EQ (ML_ERROR_INVALID_P
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+}
+
+/**
+ * @brief Test ml_service_set_pipeline with invalid param.
+ */
+TEST_F (MLServiceAgentTest, set_pipeline_01_n)
+{
+  int status;
+  status = ml_service_set_pipeline ("some key", NULL);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+}
+
+/**
+ * @brief Test ml_service_get_pipeline with invalid param.
+ */
+TEST_F (MLServiceAgentTest, get_pipeline_00_n)
+{
+  int status;
+  gchar *ret_pipeline = NULL;
+  status = ml_service_get_pipeline (NULL, &ret_pipeline);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+}
+
+/**
+ * @brief Test ml_service_get_pipeline with invalid param.
+ */
+TEST_F (MLServiceAgentTest, get_pipeline_01_n)
+{
+  int status;
+  status = ml_service_get_pipeline ("some key", NULL);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+}
+
+/**
+ * @brief Test ml_service_delete_pipeline with invalid param.
+ */
+TEST_F (MLServiceAgentTest, delete_pipel
