@@ -371,4 +371,39 @@ TEST_F (MLServiceAgentTest, launch_pipeline_01_n)
 
   /* service_h is still NULL */
   status = ml_service_destroy (service_h);
-  EXPECT_EQ (ML_ER
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+}
+
+/**
+ * @brief Test ml_service_launch_pipeline with invalid pipeline.
+ */
+TEST_F (MLServiceAgentTest, launch_pipeline_02_n)
+{
+  int status;
+  ml_service_h h;
+
+  status = ml_service_set_pipeline ("key", "invalid_element ! invalid_element");
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  status = ml_service_launch_pipeline ("key", &h);
+  EXPECT_EQ (ML_ERROR_STREAMS_PIPE, status);
+}
+
+/**
+ * @brief Test ml_service_start_pipeline with invalid param.
+ */
+TEST_F (MLServiceAgentTest, start_pipeline_00_n)
+{
+  int status;
+  status = ml_service_start_pipeline (NULL);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+}
+
+/**
+ * @brief Test ml_service_stop_pipeline with invalid param.
+ */
+TEST_F (MLServiceAgentTest, stop_pipeline_00_n)
+{
+  int status;
+  status = ml_service_stop_pipeline (NULL);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAME
