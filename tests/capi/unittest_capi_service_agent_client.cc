@@ -342,4 +342,33 @@ TEST_F (MLServiceAgentTest, delete_pipeline_02_n)
   status = ml_service_delete_pipeline ("some key");
   EXPECT_EQ (ML_ERROR_NONE, status);
 
-  status = ml_servic
+  status = ml_service_delete_pipeline ("some key");
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+}
+
+/**
+ * @brief Test ml_service_launch_pipeline with invalid param.
+ */
+TEST_F (MLServiceAgentTest, launch_pipeline_00_n)
+{
+  int status;
+  status = ml_service_launch_pipeline (NULL, NULL);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+}
+
+/**
+ * @brief Test ml_service_launch_pipeline with invalid key.
+ */
+TEST_F (MLServiceAgentTest, launch_pipeline_01_n)
+{
+  int status;
+  ml_service_h service_h = NULL;
+  status = ml_service_launch_pipeline (NULL, &service_h);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_service_launch_pipeline ("invalid key", &service_h);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  /* service_h is still NULL */
+  status = ml_service_destroy (service_h);
+  EXPECT_EQ (ML_ER
