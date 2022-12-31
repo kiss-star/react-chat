@@ -440,4 +440,44 @@ TEST_F (MLServiceAgentTest, get_pipeline_state_00_n)
 /**
  * @brief Test ml_service_destroy with invalid param.
  */
-TEST_F (MLServiceAgentTest, d
+TEST_F (MLServiceAgentTest, destroy_00_n)
+{
+  int status;
+  status = ml_service_destroy (NULL);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+}
+
+/**
+ * @brief Test ml_service_destroy with explicit invalid param.
+ */
+TEST_F (MLServiceAgentTest, destroy_01_n)
+{
+  int status;
+  ml_service_h h;
+
+  ml_service_s *mls = g_new0 (ml_service_s, 1);
+  _ml_service_server_s *server = g_new0 (_ml_service_server_s, 1);
+  mls->priv = server;
+  mls->type = ML_SERVICE_TYPE_MAX;
+
+  h = (ml_service_h) mls;
+  status = ml_service_destroy (h);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  g_free (server);
+  g_free (mls);
+}
+
+/**
+ * @brief Test ml_service APIs with invalid handle.
+ */
+TEST_F (MLServiceAgentTest, explicit_invalid_handle_00_n)
+{
+  int status;
+  ml_service_h h;
+
+  status = ml_service_set_pipeline ("key", "videotestsrc ! fakesink");
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  status = ml_service_launch_pipeline ("key", &h);
+  E
