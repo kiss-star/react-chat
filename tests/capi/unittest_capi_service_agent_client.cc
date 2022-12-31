@@ -406,4 +406,38 @@ TEST_F (MLServiceAgentTest, stop_pipeline_00_n)
 {
   int status;
   status = ml_service_stop_pipeline (NULL);
-  EXPECT_EQ (ML_ERROR_INVALID_PARAME
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+}
+
+/**
+ * @brief Test ml_service_get_pipeline_state with invalid param.
+ */
+TEST_F (MLServiceAgentTest, get_pipeline_state_00_n)
+{
+  int status;
+  ml_service_h h;
+  ml_pipeline_state_e state;
+
+  status = ml_service_get_pipeline_state (NULL, &state);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_service_set_pipeline ("key", "videotestsrc ! fakesink");
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  status = ml_service_launch_pipeline ("key", &h);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  status = ml_service_get_pipeline_state (h, NULL);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_service_destroy (h);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  status = ml_service_delete_pipeline ("key");
+  EXPECT_EQ (ML_ERROR_NONE, status);
+}
+
+/**
+ * @brief Test ml_service_destroy with invalid param.
+ */
+TEST_F (MLServiceAgentTest, d
