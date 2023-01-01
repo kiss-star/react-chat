@@ -532,4 +532,28 @@ TEST_F (MLServiceAgentTest, query_client)
   g_free (ret_pipeline);
 
   ml_service_h service;
-  ml_p
+  ml_pipeline_state_e state;
+  status = ml_service_launch_pipeline (service_name, &service);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  status = ml_service_get_pipeline_state (service, &state);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_EQ (ML_PIPELINE_STATE_PAUSED, state);
+
+  status = ml_service_start_pipeline (service);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  status = ml_service_get_pipeline_state (service, &state);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_EQ (ML_PIPELINE_STATE_PLAYING, state);
+
+  ml_service_h client;
+  ml_option_h query_client_option = NULL;
+
+  status = ml_option_create (&query_client_option);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  gchar *host = g_strdup ("localhost");
+  status = ml_option_set (query_client_option, "host", host, g_free);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  guint client_port = 
