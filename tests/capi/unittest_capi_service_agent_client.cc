@@ -509,4 +509,27 @@ TEST_F (MLServiceAgentTest, explicit_invalid_handle_00_n)
 }
 
 /**
- * @brief use case of 
+ * @brief use case of using service api
+ */
+TEST_F (MLServiceAgentTest, query_client)
+{
+  int status;
+
+  /** Set server pipeline and launch it */
+  const gchar *service_name = "simple_query_server_for_test";
+  int num_buffers = 5;
+  guint server_port = _get_available_port ();
+  gchar *server_pipeline_desc = g_strdup_printf ("tensor_query_serversrc port=%u num-buffers=%d ! other/tensors,num_tensors=1,dimensions=3:4:4:1,types=uint8,format=static,framerate=0/1 ! tensor_query_serversink async=false sync=false", server_port, num_buffers);
+
+  status = ml_service_set_pipeline (service_name, server_pipeline_desc);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  gchar *ret_pipeline;
+  status = ml_service_get_pipeline (service_name, &ret_pipeline);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_STREQ (server_pipeline_desc, ret_pipeline);
+  g_free (server_pipeline_desc);
+  g_free (ret_pipeline);
+
+  ml_service_h service;
+  ml_p
