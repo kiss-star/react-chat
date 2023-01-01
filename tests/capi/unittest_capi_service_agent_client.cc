@@ -480,4 +480,33 @@ TEST_F (MLServiceAgentTest, explicit_invalid_handle_00_n)
   EXPECT_EQ (ML_ERROR_NONE, status);
 
   status = ml_service_launch_pipeline ("key", &h);
-  E
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  ml_service_s *mls = (ml_service_s *) h;
+  _ml_service_server_s *server = (_ml_service_server_s *) mls->priv;
+  gint64 _id = server->id;
+  server->id = -987654321; /* explicitly set id as invalid number */
+
+  status = ml_service_start_pipeline (h);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_service_stop_pipeline (h);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  ml_pipeline_state_e state;
+  status = ml_service_get_pipeline_state (h, &state);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_service_destroy (h);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  server->id = _id;
+  status = ml_service_destroy (h);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  status = ml_service_delete_pipeline ("key");
+  EXPECT_EQ (ML_ERROR_NONE, status);
+}
+
+/**
+ * @brief use case of 
