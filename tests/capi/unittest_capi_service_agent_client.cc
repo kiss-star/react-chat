@@ -556,4 +556,24 @@ TEST_F (MLServiceAgentTest, query_client)
   status = ml_option_set (query_client_option, "host", host, g_free);
   EXPECT_EQ (ML_ERROR_NONE, status);
 
-  guint client_port = 
+  guint client_port = _get_available_port ();
+  status = ml_option_set (query_client_option, "port", &client_port, NULL);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  gchar *dest_host = g_strdup ("localhost");
+  status = ml_option_set (query_client_option, "dest-host", dest_host, g_free);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  guint dest_port = server_port;
+  status = ml_option_set (query_client_option, "dest-port", &dest_port, NULL);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  gchar *connect_type = g_strdup ("TCP");
+  status = ml_option_set (query_client_option, "connect-type", connect_type, g_free);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  guint timeout = 10000U;
+  status = ml_option_set (query_client_option, "timeout", &timeout, NULL);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  gchar *caps_str = g_strdup ("other/tensors,num_tensors=1,format=static,types=uint8,dimensions=3:4:4
