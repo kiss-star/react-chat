@@ -606,4 +606,29 @@ TEST_F (MLServiceAgentTest, query_client)
   for (int i = 0; i < num_buffers; ++i) {
     ml_tensors_data_h output;
     uint8_t *received;
-    size_t input_data_size,
+    size_t input_data_size, output_data_size;
+    uint8_t test_data = (uint8_t) i;
+
+    ml_tensors_data_set_tensor_data (input, 0, &test_data, sizeof (uint8_t));
+
+    status = ml_service_query_request (client, input, &output);
+    EXPECT_EQ (ML_ERROR_NONE, status);
+    EXPECT_TRUE (NULL != output);
+
+    status = ml_tensors_info_get_tensor_size (in_info, 0, &input_data_size);
+    EXPECT_EQ (ML_ERROR_NONE, status);
+
+    status = ml_tensors_data_get_tensor_data (output, 0, (void **) &received, &output_data_size);
+    EXPECT_EQ (ML_ERROR_NONE, status);
+    EXPECT_EQ (input_data_size, output_data_size);
+    EXPECT_EQ (test_data, received[0]);
+
+    status = ml_tensors_data_destroy (output);
+    EXPECT_EQ (ML_ERROR_NONE, status);
+  }
+
+  /** destroy client ml_service_h */
+  status = ml_service_destroy (client);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  /**
