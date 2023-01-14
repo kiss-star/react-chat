@@ -576,4 +576,34 @@ TEST_F (MLServiceAgentTest, query_client)
   status = ml_option_set (query_client_option, "timeout", &timeout, NULL);
   EXPECT_EQ (ML_ERROR_NONE, status);
 
-  gchar *caps_str = g_strdup ("other/tensors,num_tensors=1,format=static,types=uint8,dimensions=3:4:4
+  gchar *caps_str = g_strdup ("other/tensors,num_tensors=1,format=static,types=uint8,dimensions=3:4:4:1,framerate=0/1");
+  status = ml_option_set (query_client_option, "caps", caps_str, g_free);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  /* set input tensor */
+  ml_tensors_info_h in_info;
+  ml_tensor_dimension in_dim;
+  ml_tensors_data_h input;
+
+  ml_tensors_info_create (&in_info);
+  in_dim[0] = 3;
+  in_dim[1] = 4;
+  in_dim[2] = 4;
+  in_dim[3] = 1;
+
+  ml_tensors_info_set_count (in_info, 1);
+  ml_tensors_info_set_tensor_type (in_info, 0, ML_TENSOR_TYPE_UINT8);
+  ml_tensors_info_set_tensor_dimension (in_info, 0, in_dim);
+
+  status = ml_service_query_create (query_client_option, &client);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  status = ml_tensors_data_create (in_info, &input);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_TRUE (NULL != input);
+
+  /* request output tensor with input tensor */
+  for (int i = 0; i < num_buffers; ++i) {
+    ml_tensors_data_h output;
+    uint8_t *received;
+    size_t input_data_size,
