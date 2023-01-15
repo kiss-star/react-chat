@@ -631,4 +631,31 @@ TEST_F (MLServiceAgentTest, query_client)
   status = ml_service_destroy (client);
   EXPECT_EQ (ML_ERROR_NONE, status);
 
-  /**
+  /** destroy server pipeline */
+  status = ml_service_stop_pipeline (service);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  status = ml_service_get_pipeline_state (service, &state);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_EQ (ML_PIPELINE_STATE_PAUSED, state);
+
+  status = ml_service_destroy (service);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  /** delete finished service */
+  status = ml_service_delete_pipeline (service_name);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  /** it would fail if get the removed service */
+  status = ml_service_get_pipeline (service_name, &ret_pipeline);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  ml_option_destroy (query_client_option);
+  ml_tensors_data_destroy (input);
+  ml_tensors_info_destroy (in_info);
+}
+
+/**
+ * @brief Test ml_service_query_create with invalid param.
+ */
+TEST_F (MLServiceAgentTest, query_create_0
