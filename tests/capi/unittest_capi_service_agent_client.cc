@@ -658,4 +658,38 @@ TEST_F (MLServiceAgentTest, query_client)
 /**
  * @brief Test ml_service_query_create with invalid param.
  */
-TEST_F (MLServiceAgentTest, query_create_0
+TEST_F (MLServiceAgentTest, query_create_00_n)
+{
+  int status;
+  ml_option_h option = NULL;
+
+  status = ml_service_query_create (NULL, NULL);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_option_create (&option);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  status = ml_service_query_create (option, NULL);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_option_destroy (option);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+}
+
+/**
+ * @brief Test ml_service_query_create with invalid param. caps must be set.
+ */
+TEST_F (MLServiceAgentTest, query_create_01_n)
+{
+  int status;
+  ml_service_h client = NULL;
+  ml_option_h invalid_option = NULL;
+
+  status = ml_option_create (&invalid_option);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  status = ml_service_query_create (invalid_option, &client);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_option_destroy (invalid_option);
+  EXPECT_EQ (ML_ERROR_N
