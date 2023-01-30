@@ -692,4 +692,34 @@ TEST_F (MLServiceAgentTest, query_create_01_n)
   EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
 
   status = ml_option_destroy (invalid_option);
-  EXPECT_EQ (ML_ERROR_N
+  EXPECT_EQ (ML_ERROR_NONE, status);
+}
+
+/**
+ * @brief Test ml_service_query_create with invalid param.
+ */
+TEST_F (MLServiceAgentTest, query_create_02_n)
+{
+  int status;
+  ml_service_h client = NULL;
+  ml_option_h invalid_option = NULL;
+
+  status = ml_option_create (&invalid_option);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  gchar *topic = g_strdup ("sample-topic");
+  status = ml_option_set (invalid_option, "topic", topic, g_free);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  gint some_int = 0;
+  status = ml_option_set (invalid_option, "unknown-key", &some_int, NULL);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  gchar *caps_str = g_strdup ("some invalid caps");
+  status = ml_option_set (invalid_option, "caps", caps_str, g_free);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  status = ml_service_query_create (invalid_option, &client);
+  EXPECT_EQ (ML_ERROR_STREAMS_PIPE, status);
+
+  status = ml_option_destroy (in
