@@ -753,4 +753,32 @@ TEST_F (MLServiceAgentTest, model_register_00_n)
   status = ml_service_model_register (NULL, path, is_active, desc, &version);
   EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
 
-  status = ml_service_model_register (name, NULL, is_active, desc, &versio
+  status = ml_service_model_register (name, NULL, is_active, desc, &version);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_service_model_register (name, path, is_active, desc, NULL);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+}
+
+/**
+ * @brief Test ml_service_model_update_description with invalid param.
+ */
+TEST_F (MLServiceAgentTest, model_update_description_00_n)
+{
+  int status;
+
+  const gchar *name = "some_model_name";
+  const gchar *desc = "some valid description";
+  guint version = 12345U;
+
+  status = ml_service_model_update_description (NULL, version, desc);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_service_model_update_description (name, 0U, desc);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_service_model_update_description (name, version, NULL);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_service_model_update_description (name, version, desc);
+  EXPECT_E
