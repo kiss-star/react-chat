@@ -722,4 +722,35 @@ TEST_F (MLServiceAgentTest, query_create_02_n)
   status = ml_service_query_create (invalid_option, &client);
   EXPECT_EQ (ML_ERROR_STREAMS_PIPE, status);
 
-  status = ml_option_destroy (in
+  status = ml_option_destroy (invalid_option);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+}
+
+/**
+ * @brief Test ml_service_query_request with invalid param.
+ */
+TEST_F (MLServiceAgentTest, query_request_00_n)
+{
+  int status;
+  status = ml_service_query_request (NULL, NULL, NULL);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+}
+
+/**
+ * @brief Test ml_service_model_register with invalid param.
+ */
+TEST_F (MLServiceAgentTest, model_register_00_n)
+{
+  int status;
+
+  const gchar *name = "some_model_name";
+  const gchar *path = "/valid/path/to/some/model.tflite";
+
+  const bool is_active = true;
+  const gchar *desc = "some valid description";
+  guint version;
+
+  status = ml_service_model_register (NULL, path, is_active, desc, &version);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_service_model_register (name, NULL, is_active, desc, &versio
