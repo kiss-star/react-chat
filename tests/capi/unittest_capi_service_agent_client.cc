@@ -814,4 +814,32 @@ TEST_F (MLServiceAgentTest, model_get_00_n)
   status = ml_service_model_get (NULL, version, &info_h);
   EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
 
-  status = m
+  status = ml_service_model_get (name, version, NULL);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_service_model_get (name, version, &info_h);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+}
+
+/**
+ * @brief Test ml_service_model_get with invalid param.
+ */
+TEST_F (MLServiceAgentTest, model_get_01_n)
+{
+  int status;
+
+  const gchar *model_name = "some_invalid_model_name";
+
+  const gchar *root_path = g_getenv ("MLAPI_SOURCE_ROOT_PATH");
+  gchar *test_model;
+  unsigned int version;
+
+  /* ml_service_model_register() requires absolute path to model, ignore this case. */
+  if (root_path == NULL)
+    return;
+
+  test_model = g_build_filename (root_path, "tests", "test_models", "models",
+      "some_invalid_model_name", NULL);
+  ASSERT_FALSE (g_file_test (test_model, G_FILE_TEST_EXISTS));
+
+  status = ml_service_model_delete (model_name,
