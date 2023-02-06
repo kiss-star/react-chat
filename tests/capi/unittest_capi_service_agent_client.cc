@@ -871,4 +871,34 @@ TEST_F (MLServiceAgentTest, model_get_activated_00_n)
   status = ml_service_model_get_activated (NULL, &info_h);
   EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
 
-  status = ml_serv
+  status = ml_service_model_get_activated (name, NULL);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_service_model_get_activated (name, &info_h);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+}
+
+/**
+ * @brief Test ml_service_model_get_all with invalid param.
+ */
+TEST_F (MLServiceAgentTest, model_get_all_00_n)
+{
+  int status;
+
+  const gchar *name = "some_model_name";
+  ml_option_h *info_list_h;
+  guint list_size;
+
+  status = ml_service_model_get_all (NULL, &info_list_h, &list_size);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_service_model_get_all (name, NULL, &list_size);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_service_model_get_all (name, &info_list_h, NULL);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_service_model_get_all (name, &info_list_h, &list_size);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+}
+
