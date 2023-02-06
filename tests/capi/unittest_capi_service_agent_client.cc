@@ -842,4 +842,33 @@ TEST_F (MLServiceAgentTest, model_get_01_n)
       "some_invalid_model_name", NULL);
   ASSERT_FALSE (g_file_test (test_model, G_FILE_TEST_EXISTS));
 
-  status = ml_service_model_delete (model_name,
+  status = ml_service_model_delete (model_name, 0U);
+  EXPECT_TRUE (status == ML_ERROR_NONE || status == ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_service_model_register (model_name, test_model, true, NULL, &version);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  ml_option_h info_h;
+  status = ml_service_model_get (model_name, 987654321U, &info_h);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_service_model_delete (model_name, version);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  g_free (test_model);
+}
+
+/**
+ * @brief Test ml_service_model_get_activated with invalid param.
+ */
+TEST_F (MLServiceAgentTest, model_get_activated_00_n)
+{
+  int status;
+
+  const gchar *name = "some_model_name";
+  ml_option_h info_h;
+
+  status = ml_service_model_get_activated (NULL, &info_h);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_serv
