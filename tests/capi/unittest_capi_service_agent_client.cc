@@ -902,3 +902,38 @@ TEST_F (MLServiceAgentTest, model_get_all_00_n)
   EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
 }
 
+/**
+ * @brief Test ml_service_model_delete with invalid param.
+ */
+TEST_F (MLServiceAgentTest, model_delete_00_n)
+{
+  int status;
+
+  const gchar *name = "some_model_name";
+  guint version = 12345U;
+
+  status = ml_service_model_delete (NULL, version);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_service_model_delete (name, version);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_service_model_delete (name, 0U);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+}
+
+/**
+ * @brief Test ml_option_get with invalid param.
+ */
+TEST_F (MLServiceAgentTest, model_ml_option_get_00_n)
+{
+  int status;
+
+  const gchar *key = "some_key";
+  ml_option_h info_h;
+  gchar *value;
+
+  status = ml_option_create (&info_h);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  status = ml_option_get (
