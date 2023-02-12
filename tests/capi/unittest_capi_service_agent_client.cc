@@ -967,4 +967,28 @@ TEST_F (MLServiceAgentTest, model_ml_option_get_01_n)
   if (root_path == NULL)
     return;
 
-  gchar *test
+  gchar *test_model = g_build_filename (root_path, "tests", "test_models", "models",
+      "mobilenet_v1_1.0_224_quant.tflite", NULL);
+  ASSERT_TRUE (g_file_test (test_model, G_FILE_TEST_EXISTS));
+
+  const gchar *key = "some_invalid_key";
+  ml_option_h info_h = NULL;
+  gchar *value;
+
+  status = ml_service_model_delete (model_name, 0U);
+  EXPECT_TRUE (status == ML_ERROR_NONE || status == ML_ERROR_INVALID_PARAMETER);
+
+  status = ml_service_model_register (model_name, test_model, true, NULL, &version);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  status = ml_service_model_get (model_name, version, &info_h);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  gchar *path;
+  status = ml_option_get (info_h, "path", (void **) &path);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_STREQ (test_model, path);
+
+  gchar *description;
+  status = ml_option_get (info_h, "description", (void **) &description);
+  EXP
