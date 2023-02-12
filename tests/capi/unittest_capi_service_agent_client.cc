@@ -936,4 +936,35 @@ TEST_F (MLServiceAgentTest, model_ml_option_get_00_n)
   status = ml_option_create (&info_h);
   EXPECT_EQ (ML_ERROR_NONE, status);
 
-  status = ml_option_get (
+  status = ml_option_get (NULL, key, (void **) &value);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_option_get (info_h, NULL, (void **) &value);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_option_get (info_h, key, NULL);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_option_get (info_h, key, (void **) &value);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_option_destroy (info_h);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+}
+
+/**
+ * @brief Test ml_option_get with invalid param.
+ */
+TEST_F (MLServiceAgentTest, model_ml_option_get_01_n)
+{
+  int status;
+
+  const gchar *model_name = "some_model_name";
+  guint version;
+  const gchar *root_path = g_getenv ("MLAPI_SOURCE_ROOT_PATH");
+
+  /* ml_service_model_register() requires absolute path to model, ignore this case. */
+  if (root_path == NULL)
+    return;
+
+  gchar *test
