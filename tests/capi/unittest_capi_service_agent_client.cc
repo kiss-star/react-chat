@@ -991,4 +991,36 @@ TEST_F (MLServiceAgentTest, model_ml_option_get_01_n)
 
   gchar *description;
   status = ml_option_get (info_h, "description", (void **) &description);
-  EXP
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_STREQ ("", description);
+
+  status = ml_option_get (info_h, key, NULL);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_option_get (info_h, key, (void **) &value);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_option_get (NULL, key, (void **) &value);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  status = ml_option_destroy (info_h);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  status = ml_service_model_delete (model_name, 0U);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  g_free (test_model);
+}
+
+/**
+ * @brief Test the usecase of ml_servive for model. TBU.
+ */
+TEST_F (MLServiceAgentTest, model_scenario)
+{
+  int status;
+  const gchar *key = "mobilenet_v1";
+  const gchar *root_path = g_getenv ("MLAPI_SOURCE_ROOT_PATH");
+  gchar *test_model1, *test_model2;
+  unsigned int version;
+
+  /* ml_service_model
