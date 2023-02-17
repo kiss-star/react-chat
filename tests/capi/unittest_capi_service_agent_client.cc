@@ -1023,4 +1023,26 @@ TEST_F (MLServiceAgentTest, model_scenario)
   gchar *test_model1, *test_model2;
   unsigned int version;
 
-  /* ml_service_model
+  /* ml_service_model_register() requires absolute path to model, ignore this case. */
+  if (root_path == NULL)
+    return;
+
+  /* delete all model with the key before test */
+  status = ml_service_model_delete (key, 0U);
+  EXPECT_TRUE (status == ML_ERROR_NONE || status == ML_ERROR_INVALID_PARAMETER);
+
+  test_model1 = g_build_filename (root_path, "tests", "test_models", "models",
+      "mobilenet_v1_1.0_224_quant.tflite", NULL);
+  ASSERT_TRUE (g_file_test (test_model1, G_FILE_TEST_EXISTS));
+
+  status = ml_service_model_register (key, test_model1, true, "temp description", &version);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_EQ (1U, version);
+
+  status = ml_service_model_update_description (key, version, "updated description");
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  status = ml_service_model_update_description (key, 32U, "updated description");
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  test_model2 = g_build_file
