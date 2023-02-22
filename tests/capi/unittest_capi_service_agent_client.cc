@@ -1045,4 +1045,26 @@ TEST_F (MLServiceAgentTest, model_scenario)
   status = ml_service_model_update_description (key, 32U, "updated description");
   EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
 
-  test_model2 = g_build_file
+  test_model2 = g_build_filename (root_path, "tests", "test_models", "models",
+      "add.tflite", NULL);
+  ASSERT_TRUE (g_file_test (test_model2, G_FILE_TEST_EXISTS));
+
+
+  status = ml_service_model_register (key, test_model2, false, "this is the temp tflite model", &version);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_EQ (version, 2U);
+
+  ml_option_h activated_model_info;
+  status = ml_service_model_get_activated (key, &activated_model_info);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_NE (activated_model_info, nullptr);
+
+  gchar *test_description;
+  status = ml_option_get (activated_model_info, "path", (void **) &test_description);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_STREQ (test_description, test_model1);
+  status = ml_option_destroy (activated_model_info);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  ml_option_h _model_info;
+  status = ml_service_model_get (key, 2U, &
