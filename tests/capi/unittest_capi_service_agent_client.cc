@@ -1092,4 +1092,32 @@ TEST_F (MLServiceAgentTest, model_scenario)
     if (g_ascii_strcasecmp (version_str, "1") == 0) {
       gchar *is_active;
       status = ml_option_get (info_list[i], "active", (void **) &is_active);
-      EXPECT_EQ (ML_ERROR_NONE,
+      EXPECT_EQ (ML_ERROR_NONE, status);
+      EXPECT_STREQ (is_active, "T");
+
+      gchar *path;
+      status = ml_option_get (info_list[i], "path", (void **) &path);
+      EXPECT_EQ (ML_ERROR_NONE, status);
+      EXPECT_STREQ (path, test_model1);
+    } else if (g_ascii_strcasecmp (version_str, "2") == 0) {
+      gchar *is_active;
+      status = ml_option_get (info_list[i], "active", (void **) &is_active);
+      EXPECT_EQ (ML_ERROR_NONE, status);
+      EXPECT_STREQ (is_active, "F");
+
+      gchar *path;
+      status = ml_option_get (info_list[i], "path", (void **) &path);
+      EXPECT_EQ (ML_ERROR_NONE, status);
+      EXPECT_STREQ (path, test_model2);
+    } else {
+      EXPECT_TRUE (false);
+    }
+
+    status = ml_option_destroy (info_list[i]);
+    EXPECT_EQ (ML_ERROR_NONE, status);
+  }
+
+  g_free (info_list);
+
+  /* delete the active model */
+  status = ml_service_model_delete (
