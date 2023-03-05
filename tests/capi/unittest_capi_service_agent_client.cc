@@ -1067,4 +1067,29 @@ TEST_F (MLServiceAgentTest, model_scenario)
   EXPECT_EQ (ML_ERROR_NONE, status);
 
   ml_option_h _model_info;
-  status = ml_service_model_get (key, 2U, &
+  status = ml_service_model_get (key, 2U, &_model_info);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_NE (_model_info, nullptr);
+
+  status = ml_option_get (_model_info, "path", (void **) &test_description);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_STREQ (test_description, test_model2);
+  status = ml_option_destroy (_model_info);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+
+  ml_option_h *info_list;
+  guint info_num;
+
+  status = ml_service_model_get_all (key, &info_list, &info_num);
+  EXPECT_EQ (ML_ERROR_NONE, status);
+  EXPECT_EQ (info_num, 2U);
+
+  for (guint i = 0; i < info_num; i++) {
+    gchar *version_str;
+
+    status = ml_option_get (info_list[i], "version", (void **) &version_str);
+    EXPECT_EQ (ML_ERROR_NONE, status);
+    if (g_ascii_strcasecmp (version_str, "1") == 0) {
+      gchar *is_active;
+      status = ml_option_get (info_list[i], "active", (void **) &is_active);
+      EXPECT_EQ (ML_ERROR_NONE,
