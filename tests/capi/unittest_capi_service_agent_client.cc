@@ -1146,4 +1146,34 @@ TEST_F (MLServiceAgentTest, model_scenario)
   status = ml_service_model_delete (key, 2U);
   EXPECT_EQ (ML_ERROR_NONE, status);
 
-  status 
+  status = ml_service_model_delete (key, 1U);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, status);
+
+  g_free (test_model1);
+  g_free (test_model2);
+}
+
+/**
+ * @brief Negative testcase of pipeline gdbus call.
+ */
+TEST_F (MLServiceAgentTest, pipeline_gdbus_call_n)
+{
+  int ret;
+  GError *error = NULL;
+
+  MachinelearningServicePipeline *proxy_for_pipeline = machinelearning_service_pipeline_proxy_new_for_bus_sync (
+    G_BUS_TYPE_SESSION, G_DBUS_PROXY_FLAGS_NONE,
+    "org.tizen.machinelearning.service",
+    "/Org/Tizen/MachineLearning/Service/Pipeline", NULL, &error);
+
+  if (!proxy_for_pipeline || error) {
+    g_critical ("Failed to create proxy_for_pipeline for machinelearning service pipeline");
+    if (error) {
+      g_critical ("Error Message : %s", error->message);
+      g_clear_error (&error);
+    }
+    ASSERT_TRUE (false);
+  }
+
+  /* gdbus call with empty string */
+  machinelearning_service_pipeline_call_set_
