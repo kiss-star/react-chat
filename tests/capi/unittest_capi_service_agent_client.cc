@@ -1176,4 +1176,33 @@ TEST_F (MLServiceAgentTest, pipeline_gdbus_call_n)
   }
 
   /* gdbus call with empty string */
-  machinelearning_service_pipeline_call_set_
+  machinelearning_service_pipeline_call_set_pipeline_sync (
+    proxy_for_pipeline, "", "", &ret, nullptr, nullptr);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, ret);
+}
+
+/**
+ * @brief Negative testcase of model gdbus call.
+ */
+TEST_F (MLServiceAgentTest, model_gdbus_call_n)
+{
+  int ret;
+  GError *error = NULL;
+
+  MachinelearningServiceModel *proxy_for_model = machinelearning_service_model_proxy_new_for_bus_sync (
+    G_BUS_TYPE_SESSION, G_DBUS_PROXY_FLAGS_NONE,
+    "org.tizen.machinelearning.service",
+    "/Org/Tizen/MachineLearning/Service/Model", NULL, &error);
+
+  if (!proxy_for_model || error) {
+    g_critical ("Failed to create proxy_for_model for machinelearning service model");
+    if (error) {
+      g_critical ("Error Message : %s", error->message);
+      g_clear_error (&error);
+    }
+    ASSERT_TRUE (false);
+  }
+
+  /* empty string */
+  machinelearning_service_model_call_register_sync (
+    proxy_for_m
