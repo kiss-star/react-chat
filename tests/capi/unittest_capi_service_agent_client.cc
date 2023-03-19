@@ -1235,4 +1235,36 @@ TEST (MLServiceAgentTestDbusUnconnected, pipeline_n)
   status = ml_service_launch_pipeline ("test", &service);
   EXPECT_EQ (ML_ERROR_IO_ERROR, status);
 
-  ml_service_s *mls = g_n
+  ml_service_s *mls = g_new0 (ml_service_s, 1);
+  _ml_service_server_s *server = g_new0 (_ml_service_server_s, 1);
+  mls->priv = server;
+
+  server->id = -987654321; /* explicitly set id as invalid number */
+
+  service = (ml_service_h) mls;
+  status = ml_service_start_pipeline (service);
+  EXPECT_EQ (ML_ERROR_IO_ERROR, status);
+
+  status = ml_service_stop_pipeline (service);
+  EXPECT_EQ (ML_ERROR_IO_ERROR, status);
+
+  ml_pipeline_state_e state;
+  status = ml_service_get_pipeline_state (service, &state);
+  EXPECT_EQ (ML_ERROR_IO_ERROR, status);
+
+  mls->type = ML_SERVICE_TYPE_SERVER_PIPELINE;
+  status = ml_service_destroy (service);
+  EXPECT_EQ (ML_ERROR_IO_ERROR, status);
+
+  g_free (server);
+  g_free (mls);
+}
+
+/**
+ * @brief Negative test for model. With DBus unconnected.
+ */
+TEST (MLServiceAgentTestDbusUnconnected, model_n)
+{
+  int status;
+
+  const gchar *root_path = g_getenv ("MLAPI_SOU
