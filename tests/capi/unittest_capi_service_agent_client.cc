@@ -1205,4 +1205,34 @@ TEST_F (MLServiceAgentTest, model_gdbus_call_n)
 
   /* empty string */
   machinelearning_service_model_call_register_sync (
-    proxy_for_m
+    proxy_for_model, "", "", false, "test", NULL, &ret, nullptr, nullptr);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, ret);
+
+  /* empty string */
+  machinelearning_service_model_call_get_all_sync (
+    proxy_for_model, "", NULL, &ret, nullptr, nullptr);
+  EXPECT_EQ (ML_ERROR_INVALID_PARAMETER, ret);
+
+  g_object_unref (proxy_for_model);
+}
+
+/**
+ * @brief Negative test for pipeline. With DBus unconnected.
+ */
+TEST (MLServiceAgentTestDbusUnconnected, pipeline_n)
+{
+  int status;
+
+  status = ml_service_set_pipeline ("test", "test");
+  EXPECT_EQ (ML_ERROR_IO_ERROR, status);
+
+  gchar *ret_pipeline;
+  status = ml_service_get_pipeline ("test", &ret_pipeline);
+  EXPECT_EQ (ML_ERROR_IO_ERROR, status);
+
+
+  ml_service_h service;
+  status = ml_service_launch_pipeline ("test", &service);
+  EXPECT_EQ (ML_ERROR_IO_ERROR, status);
+
+  ml_service_s *mls = g_n
