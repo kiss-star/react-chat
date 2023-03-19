@@ -1267,4 +1267,30 @@ TEST (MLServiceAgentTestDbusUnconnected, model_n)
 {
   int status;
 
-  const gchar *root_path = g_getenv ("MLAPI_SOU
+  const gchar *root_path = g_getenv ("MLAPI_SOURCE_ROOT_PATH");
+  unsigned int version;
+
+  /* ml_service_model_register() requires absolute path to model, ignore this case. */
+  if (root_path == NULL)
+    return;
+
+  gchar *test_model = g_build_filename (root_path, "tests", "test_models", "models",
+      "mobilenet_v1_1.0_224_quant.tflite", NULL);
+  ASSERT_TRUE (g_file_test (test_model, G_FILE_TEST_EXISTS));
+
+  status = ml_service_model_register ("test", test_model, false, "test", &version);
+  EXPECT_EQ (ML_ERROR_IO_ERROR, status);
+
+  g_free (test_model);
+
+  status = ml_service_model_update_description ("test", 1U, "test");
+  EXPECT_EQ (ML_ERROR_IO_ERROR, status);
+
+  status = ml_service_model_activate ("test", 1U);
+  EXPECT_EQ (ML_ERROR_IO_ERROR, status);
+
+  ml_option_h model_info;
+  status = ml_service_model_get ("test", 1U, &model_info);
+  EXPECT_EQ (ML_ERROR_IO_ERROR, status);
+
+  status = m
