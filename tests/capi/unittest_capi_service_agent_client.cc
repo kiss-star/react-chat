@@ -1293,4 +1293,37 @@ TEST (MLServiceAgentTestDbusUnconnected, model_n)
   status = ml_service_model_get ("test", 1U, &model_info);
   EXPECT_EQ (ML_ERROR_IO_ERROR, status);
 
-  status = m
+  status = ml_service_model_get_activated ("test", &model_info);
+  EXPECT_EQ (ML_ERROR_IO_ERROR, status);
+
+  ml_option_h *info_list;
+  guint info_num;
+  status = ml_service_model_get_all ("test", &info_list, &info_num);
+  EXPECT_EQ (ML_ERROR_IO_ERROR, status);
+}
+
+/**
+ * @brief Main gtest
+ */
+int
+main (int argc, char **argv)
+{
+  int result = -1;
+
+  try {
+    testing::InitGoogleTest (&argc, argv);
+  } catch (...) {
+    g_warning ("catch 'testing::internal::<unnamed>::ClassUniqueToAlwaysTrue'");
+  }
+
+  _ml_initialize_gstreamer ();
+
+  /* ignore tizen feature status while running the testcases */
+  set_feature_state (ML_FEATURE, SUPPORTED);
+  set_feature_state (ML_FEATURE_INFERENCE, SUPPORTED);
+  set_feature_state (ML_FEATURE_SERVICE, SUPPORTED);
+
+  try {
+    result = RUN_ALL_TESTS ();
+  } catch (...) {
+    g_warning ("catch `testing::internal::GoogleTest
