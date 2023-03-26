@@ -1326,4 +1326,12 @@ main (int argc, char **argv)
   try {
     result = RUN_ALL_TESTS ();
   } catch (...) {
-    g_warning ("catch `testing::internal::GoogleTest
+    g_warning ("catch `testing::internal::GoogleTestFailureException`");
+  }
+
+  set_feature_state (ML_FEATURE, NOT_CHECKED_YET);
+  set_feature_state (ML_FEATURE_INFERENCE, NOT_CHECKED_YET);
+  set_feature_state (ML_FEATURE_SERVICE, NOT_CHECKED_YET);
+
+  return result;
+}
