@@ -162,3 +162,203 @@ TEST (serviceDB, update_model_description_n)
     db.update_model_description ("test", 0, "");
   } catch (const std::exception &e) {
     g_critical ("Got Exception: %s", e.what ());
+    gotException = 1;
+  }
+  EXPECT_EQ (gotException, 1);
+}
+
+/**
+ * @brief Negative test for activate_model. Empty name
+ */
+TEST (serviceDB, activate_model_n)
+{
+  MLServiceDB &db = MLServiceDB::getInstance ();
+  int gotException = 0;
+
+  try {
+    db.activate_model ("", 0);
+  } catch (const std::exception &e) {
+    g_critical ("Got Exception: %s", e.what ());
+    gotException = 1;
+  }
+  EXPECT_EQ (gotException, 1);
+}
+
+/**
+ * @brief Negative test for delete_model. Empty name.
+ */
+TEST (serviceDB, delete_model_n)
+{
+  MLServiceDB &db = MLServiceDB::getInstance ();
+  int gotException = 0;
+
+  try {
+    db.delete_model ("", 0);
+  } catch (const std::exception &e) {
+    g_critical ("Got Exception: %s", e.what ());
+    gotException = 1;
+  }
+  EXPECT_EQ (gotException, 1);
+}
+
+/**
+ * @brief Negative test for set_pipline. DB is not initialized.
+ */
+TEST (serviceDBNotInitalized, set_pipeline_n)
+{
+  MLServiceDB &db = MLServiceDB::getInstance ();
+  int gotException = 0;
+
+  try {
+    db.set_pipeline ("test", "videotestsrc ! fakesink");
+  } catch (const std::exception &e) {
+    g_critical ("Got Exception: %s", e.what ());
+    gotException = 1;
+  }
+  EXPECT_EQ (gotException, 1);
+}
+
+/**
+ * @brief Negative test for get_pipline. DB is not initialized.
+ */
+TEST (serviceDBNotInitalized, get_pipeline_n)
+{
+  MLServiceDB &db = MLServiceDB::getInstance ();
+  int gotException = 0;
+
+  try {
+    std::string pd;
+    db.get_pipeline ("test", pd);
+  } catch (const std::exception &e) {
+    g_critical ("Got Exception: %s", e.what ());
+    gotException = 1;
+  }
+  EXPECT_EQ (gotException, 1);
+}
+
+/**
+ * @brief Negative test for delete_pipeline. DB is not initialized.
+ */
+TEST (serviceDBNotInitalized, delete_pipeline_n)
+{
+  MLServiceDB &db = MLServiceDB::getInstance ();
+  int gotException = 0;
+
+  try {
+    db.delete_pipeline ("test");
+  } catch (const std::exception &e) {
+    g_critical ("Got Exception: %s", e.what ());
+    gotException = 1;
+  }
+  EXPECT_EQ (gotException, 1);
+}
+
+/**
+ * @brief Negative test for set_model. DB is not initialized.
+ */
+TEST (serviceDBNotInitalized, set_model_n)
+{
+  MLServiceDB &db = MLServiceDB::getInstance ();
+  int gotException = 0;
+
+  try {
+    guint version;
+    db.set_model ("test", "model", true, "description", &version);
+  } catch (const std::exception &e) {
+    g_critical ("Got Exception: %s", e.what ());
+    gotException = 1;
+  }
+  EXPECT_EQ (gotException, 1);
+}
+
+/**
+ * @brief Negative test for update_model_description. DB is not initialized.
+ */
+TEST (serviceDBNotInitalized, update_model_description_n)
+{
+  MLServiceDB &db = MLServiceDB::getInstance ();
+  int gotException = 0;
+
+  try {
+    db.update_model_description ("test", 0, "description");
+  } catch (const std::exception &e) {
+    g_critical ("Got Exception: %s", e.what ());
+    gotException = 1;
+  }
+  EXPECT_EQ (gotException, 1);
+}
+
+/**
+ * @brief Negative test for activate_model. DB is not initialized.
+ */
+TEST (serviceDBNotInitalized, activate_model_n)
+{
+  MLServiceDB &db = MLServiceDB::getInstance ();
+  int gotException = 0;
+
+  try {
+    db.activate_model ("test", 0);
+  } catch (const std::exception &e) {
+    g_critical ("Got Exception: %s", e.what ());
+    gotException = 1;
+  }
+  EXPECT_EQ (gotException, 1);
+}
+
+/**
+ * @brief Negative test for get_model. DB is not initialized.
+ */
+TEST (serviceDBNotInitalized, get_model_n)
+{
+  MLServiceDB &db = MLServiceDB::getInstance ();
+  int gotException = 0;
+
+  try {
+    std::string model_path;
+    db.get_model ("test", model_path, 0);
+  } catch (const std::exception &e) {
+    g_critical ("Got Exception: %s", e.what ());
+    gotException = 1;
+  }
+  EXPECT_EQ (gotException, 1);
+}
+
+/**
+ * @brief Negative test for delete_model. DB is not initialized.
+ */
+TEST (serviceDBNotInitalized, delete_model_n)
+{
+  MLServiceDB &db = MLServiceDB::getInstance ();
+  int gotException = 0;
+
+  try {
+    db.delete_model ("test", 0U);
+  } catch (const std::exception &e) {
+    g_critical ("Got Exception: %s", e.what ());
+    gotException = 1;
+  }
+  EXPECT_EQ (gotException, 1);
+}
+
+/**
+ * @brief Main gtest
+ */
+int
+main (int argc, char **argv)
+{
+  int result = -1;
+
+  try {
+    testing::InitGoogleTest (&argc, argv);
+  } catch (...) {
+    g_warning ("catch 'testing::internal::<unnamed>::ClassUniqueToAlwaysTrue'");
+  }
+
+  try {
+    result = RUN_ALL_TESTS ();
+  } catch (...) {
+    g_warning ("catch `testing::internal::GoogleTestFailureException`");
+  }
+
+  return result;
+}
