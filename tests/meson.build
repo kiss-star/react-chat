@@ -15,3 +15,23 @@ if gtest_dep.found()
       output: ['test-dbus.h', 'test-dbus.c'],
       command: [gdbus_prog, '--interface-prefix', 'org.tizen',
                 '--generate-c-code', 'test-dbus',
+                '--output-directory', meson.current_build_dir(),
+                '@INPUT@'])
+
+    gdbus_gen_header_test_dep = declare_dependency(sources: gdbus_gen_test_src,
+      dependencies: gdbus_gen_header_dep)
+
+    nns_ml_agent_common_objs = nns_ml_agent_executable.extract_objects(nns_ml_agent_common_srcs)
+    executable('machine-learning-agent-test',
+      [nns_ml_agent_service_db_srcs, files('daemon/test-dbus-impl.c')],
+      dependencies: [ai_service_daemon_deps, gdbus_gen_header_test_dep],
+      include_directories: nns_ml_agent_incs,
+      objects: [nns_ml_agent_common_objs],
+      cpp_args: [daemon_cpp_db_key_prefix_arg, '-DDB_PATH="."']
+    )
+
+    test_db_config_args = declare_dependency(
+      compile_args: ['-DDB_PATH="."', daemon_cpp_db_key_prefix_arg])
+
+    service_db_dep_for_test = declare_dependency(
+      sources: files('../daemon/service-d
