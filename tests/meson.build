@@ -34,4 +34,21 @@ if gtest_dep.found()
       compile_args: ['-DDB_PATH="."', daemon_cpp_db_key_prefix_arg])
 
     service_db_dep_for_test = declare_dependency(
-      sources: files('../daemon/service-d
+      sources: files('../daemon/service-db.cc'),
+      dependencies: [glib_dep, sqlite_dep, test_db_config_args],
+      include_directories: nns_ml_agent_incs
+    )
+  endif
+
+  subdir('capi')
+  if get_option('enable-ml-service')
+    subdir('services')
+    subdir('daemon')
+  endif
+else
+  warning('You should install google-test on your machine.')
+endif
+
+if get_option('install-test')
+  install_subdir('test_models', install_dir: unittest_install_dir)
+endif
